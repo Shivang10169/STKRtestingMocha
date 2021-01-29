@@ -1,0 +1,354 @@
+<!--
+<div data-role="view" data-title="Action New Action" data-use-native-scrolling="true" data-show="DataShowActionData"
+    data-after-show="NewActionDataAfterShow" id="CreateAction">
+
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="backbutton">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+        </div>
+    </header>
+
+    <div class="mdl-shadow--2dp" style="background-color:white;margin:3%;padding:5%;">
+
+        <div class="NewActionPageMDLButton mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <textarea class="NewActionPageMDLButton mdl-textfield__input" style="background-color:white;" type="text"
+                rows="5" id="newActionTextarea" onclick="OpenNewActionDataModalView(this.value)" readonly
+                placeholder=" Action Detail">
+            </textarea>
+        </div>
+
+        <div class="ActionDetailMDLButton mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <label>
+                Assign To:
+            </label>
+            <select id="UserOptionOfNewAction" class="ActionDetailMDLButton mdl-textfield__input"></select>
+        </div>
+
+        <div class="NewActionPageMDLButton mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <textarea class="NewActionPageMDLButton  mdl-textfield__input" type="text" rows="5" id="NewtextAreaComments"
+                onclick="OpenNewActionCommentsModalView(this.value)" readonly placeholder="Comment">
+
+            </textarea>
+        </div>
+    </div>
+
+    <div style="background-color:white;margin:3%;padding:5%;" class="mdl-shadow--2dp">
+        <ul data-role="listview">
+            <li style="height:4.2em;background-color:white">
+                Status
+                <ul data-role="buttongroup" id="NewActionStatus" style="float:right;border-color:#0A7CB2;">
+                    <li style="font-size:14px;">Open</li>
+                    <li style="font-size:14px;">Complete</li>
+                </ul>
+            </li>
+            <li style="background-color:white">
+                priority
+                <ul data-role="buttongroup" id="NewActionPriority" style="float:right;border-color:#0A7CB2;">
+                    <li style="font-size:14px;">High</li>
+                    <li style="font-size:14px;">Medium</li>
+                    <li style="font-size:14px;">Low</li>
+                </ul>
+            </li>
+        </ul>
+
+        <label class="NewActionPageMDLButton mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="NewActionCheckbox"
+            style="margin-left:4%;">
+            <input type="checkbox" id="NewActionCheckbox" class="NewActionPageMDLButton mdl-checkbox__input" />
+            <span class="NewActionPageMDLButton mdl-checkbox__label">Is client Action ?</span>
+        </label>
+    </div>
+
+    <div style="background-color:white;margin:3%;padding:2%;" class="mdl-shadow--2dp">
+        <div class="NewActionPageMDLButton mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="NewActionPageMDLButton mdl-textfield__input" type="date" id="newActionDate">
+            <label class="NewActionPageMDLButton mdl-textfield__label" for="newActionDate">Date for Completion</label>
+        </div>
+    </div>
+
+    <br />
+    <center>
+        <button
+            class="NewActionPageMDLButton mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onclick="window.history.back();" style="background:grey;color:white;font-weight:bold;">
+            CANCEL
+        </button>
+        <button
+            class="NewActionPageMDLButton mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onclick="createAction()" style="background:#7FE817;color:white;font-weight:bold;">
+            SAVE
+        </button>
+    </center>
+
+</div>
+
+<div data-role="modalview" id="NewActionMandatoryFieldsModalView" style="border-radius:10px;">
+    <h5 style="margin-left:5%;">Mandatory Fields</h5>
+    <p style="margin-left:5%;">One or more mandatory fields are not set. </p>
+    <div data-role="footer" style="background-color:white">
+        <a onclick="$('#NewActionMandatoryFieldsModalView').kendoMobileModalView('close')"
+            style="float:right;color:rgb(102,178,255);margin-right:5%;margin-bottom:5%;">OK</a>
+    </div>
+</div>
+
+<div data-role="modalview" id="NewActionDataModalView" style="margin-left:0%;width: 100%;">
+    <div data-role="header">
+        <div data-role="navbar">
+
+            <span data-role="data-title">Action Detail</span>
+
+        </div>
+    </div>
+
+    <textarea rows="5" id="NewActionDataInModalView"
+        style="margin-top:3%;margin-left:3%;height:18em;width:90%;border-style:none;color:black"
+        placeholder="Action Detail"></textarea>
+
+
+    <a style="float:left;color:rgb(102,178,255);height:15%;width:5em;margin-left:4%;margin-bottom:2%;"
+        onclick="CloseNewActionDataModalView()">CLOSE</a>
+    <a style="float:right;color:rgb(102,178,255);height:15%;width:20%;margin-bottom:2%"
+        onclick="BindNewActionDataModalView()">OK</a>
+
+
+</div>
+<div data-role="modalview" id="NewActionCommentsModalView" style="margin-left:0%;width: 100%;">
+    <div data-role="header">
+        <div data-role="navbar">
+
+            <span data-role="data-title">Comments</span>
+
+        </div>
+    </div>
+
+    <textarea rows="5" id="NewActionCommentsInModalView"
+        style="margin-top:3%;margin-left:3%;height:18em;width:90%;border-style:none;color:black"
+        placeholder="Comments"></textarea>
+
+
+    <a style="float:left;color:rgb(102,178,255);height:15%;width:5em;margin-left:4%;margin-bottom:2%;"
+        onclick="CloseNewActionCommentsModalView()">CLOSE</a>
+    <a style="float:right;color:rgb(102,178,255);height:15%;width:20%;margin-bottom:2%"
+        onclick="BindNewActionCommentsModalView()">OK</a>
+
+
+</div>
+
+<script>
+    var UserOption = '';
+    var NewActionstatus = '';
+    var NewActionpriority = '';
+
+    function DataShowActionData(e) {
+        CountNumberOfOflineItem();
+        UserOption = '';
+        UserOption += '  <option selected="true" disabled="disabled">SELECT </option>';
+        for (var i = 0; i < Userdata.length; i++) {
+            if (Userdata[i]['IsActive'] === true) {
+                UserOption += '<option value="' + Userdata[i]['Id'] + '" >' + Userdata[i]['Name'] + '</option>';
+            }
+        }
+        $('#UserOptionOfNewAction').html(UserOption);
+        console.log(Userdata);
+        $('#newActionTextarea').val('');
+
+        $("#UserOptionOfNewAction").prop("selected", false)
+        $('#NewActionCheckbox').prop('checked', false);
+        $('#NewtextAreaComments').val('');
+        $('#newActionDate').val('');
+        $('#NewActionStatus').data("kendoMobileButtonGroup").select(3);
+        $('#NewActionStatus').data("kendoMobileButtonGroup").selectedIndex = undefined;
+
+        $('#NewActionPriority').data("kendoMobileButtonGroup").select(3);
+        $('#NewActionPriority').data("kendoMobileButtonGroup").selectedIndex = undefined;
+    }
+
+    function createAction() {
+        var saveAction = {};
+        NewActionstatus = $('#NewActionStatus').data("kendoMobileButtonGroup").selectedIndex;
+        if (NewActionstatus === 0)
+            NewActionstatus = 'Open';
+        if (NewActionstatus === 1)
+            NewActionstatus = 'Complete';
+
+        NewActionpriority = $('#NewActionPriority').data("kendoMobileButtonGroup").selectedIndex;
+        if (NewActionpriority === 0)
+            NewActionpriority = 'High';
+        if (NewActionpriority === 1)
+            NewActionpriority = 'Medium';
+        if (NewActionpriority === 2)
+            NewActionpriority = 'Low';
+        if (ActionFor === 'FromInspectionDetail') {
+            saveAction = {
+                STKR__Action__c: $('#newActionTextarea').val(),
+                STKR__Assigned_To__c: $('#UserOptionOfNewAction').val(),
+                STKR__Status__c: NewActionstatus,
+                STKR__Priority__c: NewActionpriority,
+                STKR__Client_Action__c: $('#NewActionCheckbox').prop('checked'),
+                STKR__Comments__c: $('#NewtextAreaComments').val(),
+                STKR__Date_for_Completion__c: $('#newActionDate').val(),
+                STKR__Account__c: newDetailValue[0]['STKR__Account_lkp__c'],
+                STKR__Visit__c: ActionPage_VisitId,
+                STKR__Type__c: 'Inspection Action'
+            }
+
+            if (InspectionItemId && InspectionItemId.length == 18) {
+                saveAction['STKR__Service_Item__c'] = InspectionItemId;
+            } else if (InspectionItemId) {
+                saveAction['STKR__Mobile_Unique_Id__c'] = InspectionItemId + ";MobileAction;";
+            }
+        } else {
+            saveAction = {
+                STKR__Action__c: $('#newActionTextarea').val(),
+                STKR__Assigned_To__c: $('#UserOptionOfNewAction').val(),
+                STKR__Status__c: NewActionstatus,
+                STKR__Priority__c: NewActionpriority,
+                STKR__Client_Action__c: $('#NewActionCheckbox').prop('checked'),
+                STKR__Comments__c: $('#NewtextAreaComments').val(),
+                STKR__Date_for_Completion__c: $('#newActionDate').val(),
+                STKR__Account__c: newDetailValue[0]['STKR__Account_lkp__c'],
+                STKR__Visit__c: ActionPage_VisitId,
+                STKR__Type__c: 'Visit Action'
+            }
+        }
+
+        console.log('Action data' + JSON.stringify(saveAction));
+        console.log(($('#newActionTextarea').val() === ''))
+        console.log($('#UserOptionOfNewAction').val() === null)
+        console.log(NewActionstatus === undefined)
+        console.log(NewActionpriority === undefined)
+        console.log($('#newActionDate').val())
+        if (($('#newActionTextarea').val() === '') || ($('#UserOptionOfNewAction').val() === null) || (NewActionstatus === undefined) || (NewActionpriority === undefined) || ($('#newActionDate').val() === '')) {
+            // app.toastMessage('Plz Fill All Required fieds', 'long');
+            $('#NewActionMandatoryFieldsModalView').kendoMobileModalView('open')
+        } else {
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+                jsconn.sobject("STKR__Actions__c").create(saveAction, function (err, ret) {
+                    if (err || !ret.success) {
+                        StoreError(err);
+                        return console.error(err, ret);
+                    }
+                    console.log('create Successfully : ' + ret.id);
+                    saveAction['Id'] = ret.id;
+
+                    var data = {
+                        JsonData: JSON.stringify(saveAction),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+
+                    }
+                    console.log(JSON.stringify(saveAction));
+                    ActionData.push(saveAction);
+                    app.insertRecord('Action', data);
+                    app.toastMessage('Action is Created', 'long');
+                    window.history.back();
+                });
+            } else {
+                var timestamp = new Date().getTime().toString();
+
+                saveAction['Id'] = timestamp;
+                var dataOftable = {
+                    JsonData: JSON.stringify(saveAction),
+                    UserId: creds.UserID,
+                    ActionId: timestamp
+                }
+                app.insertRecord('Action', dataOftable);
+
+                var datatoupload = {
+                    JsonData: JSON.stringify(saveAction),
+                    ObjectName: 'STKR__Actions__c',
+                    Updated: 'false',
+                    UpdateOrInsert: 'insert',
+                    UserId: creds.UserID,
+                    RecordId: timestamp
+                }
+                ActionData.push(saveAction);
+
+                app.insertRecord('DataToUpdate', datatoupload);
+                app.toastMessage('Action is Created offline, Reload the data', 'long');
+
+                window.history.back();
+            }
+        }
+        //else{
+        ///    app.toastMessage('You have not enter any information ', 'long');
+        // }
+    }
+
+    function NewActionDataAfterShow() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('NewActionPageMDLButton'));
+    }
+
+    //open ModalView of  New Action  data
+    function OpenNewActionDataModalView(data) {
+
+        if (!(data === 'null')) {
+            $("#NewActionDataInModalView").val($("#newActionTextarea").val())
+            $('#NewActionDataModalView').kendoMobileModalView('open')
+        }
+        else {
+            $('#NewActionDataModalView').kendoMobileModalView('open')
+        }
+
+    }
+
+    //Close ModalView of New Action data
+    function CloseNewActionDataModalView() {
+        $('#NewActionDataModalView').kendoMobileModalView('close')
+    }
+
+    //Bind data of New Action 
+    function BindNewActionDataModalView() {
+
+        $("#newActionTextarea").val($("#NewActionDataInModalView").val());
+        $("#NewActionDataInModalView").val('');
+        CloseNewActionDataModalView();
+
+
+
+    }
+
+    //open ModalView of Comments
+    function OpenNewActionCommentsModalView(data) {
+
+        if (!(data === 'null')) {
+            $("#NewActionCommentsInModalView").val($("#NewtextAreaComments").val())
+            $('#NewActionCommentsModalView').kendoMobileModalView('open')
+        }
+        else {
+            $('#NewActionCommentsModalView').kendoMobileModalView('open')
+        }
+    }
+
+    //Close ModalView of New Action Comments
+    function CloseNewActionCommentsModalView() {
+        $('#NewActionCommentsModalView').kendoMobileModalView('close')
+    }
+
+    //Bind Comments of Action Detail 
+    function BindNewActionCommentsModalView() {
+
+        $("#NewtextAreaComments").val($("#NewActionCommentsInModalView").val());
+        $("#NewActionCommentsInModalView").val('');
+        CloseNewActionCommentsModalView();
+    }
+
+
+
+
+
+</script>
+
+<style>
+    #CreateAction .km-content {
+        background: #E6E6E6;
+    }
+</style>
+
+-->

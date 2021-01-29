@@ -1,0 +1,244 @@
+<div data-role="view" id="GetImage" data-show="getPicture" data-after-show="ripleffect"
+    data-use-native-scrolling="true">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span>Upload Photos to ST</span>
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()"
+                class="ImageFromLibraryMdl mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="ImageFromLibraryMdl headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+    <center>
+        <button id="liOfCamera"
+            class="ImageFromLibraryMdl mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onclick="CaptureMultiplePhotos()" style="width:90%;margin-top:6%;">
+            TAKE A PHOTO
+        </button>
+        <button id="liOfGallery"
+            class="ImageFromLibraryMdl mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onclick="SelectMultiplePhotos()" style="width:90%;margin-top:6%;">
+            GALLERY
+        </button>
+        <button
+            class="ImageFromLibraryMdl mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onclick="window.history.back();" style="width:90%;margin-top:6%;">
+            CANCEL
+        </button>
+    </center>
+</div>
+
+<script>
+    var StoreImages = [];
+    //var pictureSource;
+    //var destinationType;
+    var flag_capture = 0;
+    var folderDestination ='';
+    // sets the format of returned value 
+    function getPicture() {
+        CountNumberOfOflineItem();
+        flag_capture = 0;
+        fromImagefromLibraryPage = true;
+        //pictureSource = navigator.camera.PictureSourceType;
+        //destinationType = navigator.camera.DestinationType;
+        StoreImages = [];
+        $('#imagecenter img').css('display', 'none');
+
+        folderDestination ='';
+        try {
+            if(newDetailValue){
+                folderDestination = newDetailValue[0]['Name'];
+            }
+            else{
+                folderDestination = 'VehicleImage';
+            }
+        } catch(e){
+            folderDestination = 'VehicleImage';
+            console.log(e);
+        }
+    }
+
+    function ripleffect() {
+        if (device.platform.toLowerCase() == 'android') {
+            componentHandler.upgradeElements(document.getElementsByClassName('ImageFromLibraryMdl'));
+        }
+    }
+
+    function SelectMultiplePhotos() {
+       
+        var options = {
+            //destinationType: Camera.DestinationType.DATA_URL,
+            //destinationType: Camera.DestinationType.FILE_URI,
+            //sourceType: pictureSource.SAVEDPHOTOALBUM,
+            //sourceType: Camera.PictureSourceType.SAVEDPHOTOALBUM
+        };
+
+        /*try {
+            if (CameraSettings['STKR__AllowEdit__c']) {
+                options['allowEdit'] = CameraSettings['STKR__AllowEdit__c'];
+            }
+        } catch (err) {
+        }
+        try {
+            if (CameraSettings['STKR__Height__c']) {
+                options['height'] = CameraSettings['STKR__Height__c'];
+            }
+        } catch (err) {
+        }
+        try {
+            if (CameraSettings['STKR__Quality__c']) {
+                options['quality'] = CameraSettings['STKR__Quality__c'] <= 50 ? CameraSettings['STKR__Quality__c'] : 50;
+            } else {
+                options['quality'] = 50;
+            }
+        } catch (err) {
+            options['quality'] = 50;
+        }
+        try {
+            if (CameraSettings['STKR__Width__c']) {
+                options['width'] = CameraSettings['STKR__Width__c'];
+            }
+        } catch (err) {
+        }
+    
+        options['maxImages'] = 10;
+        options['maximumImagesCount'] = 10;
+        */
+
+        options['maxSelectCount'] = 10;
+        options['selectMode'] = 100;
+        options['maxSelectSize'] = 188743680;  //188743680=180M (Optional) 
+
+        /* window.plugins.imagePicker.getPictures(function (results) {
+            var countImages = 0, totalImages = results.length;
+            //move the files to permanent location and delete the temp files
+            for (var i = 0; i < results.length; i++) {
+                window.resolveLocalFileSystemURL(results[i], function (cachedFile) {
+                    var directoryPath = null;
+                    if (device.platform == "iOS") {
+                        directoryPath = cordova.file.dataDirectory;
+                    } else {
+                        directoryPath = cordova.file.externalDataDirectory;
+                    }
+                    window.resolveLocalFileSystemURL(directoryPath, function (mdir) {
+                        mdir.getDirectory(newDetailValue[0]['Name'] + '/', { create: true, exclusive: false }, function (dirEntry1) {
+                            cachedFile.moveTo(dirEntry1, cachedFile.name, function (suc) {
+                                StoreImages.push(suc.nativeURL);
+                                countImages++;
+                                if (countImages == totalImages) {
+                                    flag_capture = 0;
+                                    window.history.back();
+                                }
+                            }, function (err) { console.error(err); });
+                        }, function (err) { console.error(err); });
+                    }, function (err) { console.error(err); });
+                });
+    
+            }
+        }, function (error) {
+            alert(error);
+            window.history.back();
+            console.log('Error: ' + error);
+        }, options); */
+
+        MediaPicker.getMedias(options, function (results) {
+            var countImages = 0, totalImages = results.length;
+            //getThumbnail(medias);
+            for (var i = 0; i < results.length; i++) {
+                //Compress the image
+                results[i].quality = CameraSettings['STKR__Quality__c'] <= 50 ? CameraSettings['STKR__Quality__c'] : 50;
+                MediaPicker.compressImage(results[i], function (compressData) {
+                    window.resolveLocalFileSystemURL(compressData.uri, function (cachedFile) {
+                        var directoryPath = null;
+                        if (device.platform == "iOS") {
+                            directoryPath = cordova.file.dataDirectory;
+                        } else {
+                            directoryPath = cordova.file.externalDataDirectory;
+                        }
+                        window.resolveLocalFileSystemURL(directoryPath, function (mdir) {
+                            mdir.getDirectory(folderDestination + '/', { create: true, exclusive: false }, function (dirEntry1) {
+                                cachedFile.moveTo(dirEntry1, cachedFile.name, function (suc) {
+                                    StoreImages.push(suc.nativeURL);
+                                    countImages++;
+                                    if (countImages == totalImages) {
+                                        flag_capture = 0;
+                                        window.history.back();
+                                    }
+                                }, function (err) { console.error(err); });
+                            }, function (err) { console.error(err); });
+                        }, function (err) { console.error(err); });
+                    });
+                }, function (e) { console.log(e) });
+            }
+        }, function (e) {
+            alert(error);
+            window.history.back();
+            console.log('Error: ' + error);
+        })
+    }
+
+    function CaptureMultiplePhotos() {
+        var options = {
+            //destinationType: Camera.DestinationType.DATA_URL
+            destinationType: Camera.DestinationType.FILE_URI,
+        };
+        try {
+            if (CameraSettings['STKR__AllowEdit__c']) {
+                options['allowEdit'] = CameraSettings['STKR__AllowEdit__c'];
+            }
+        } catch (err) {
+        }
+        try {
+            if (CameraSettings['STKR__Height__c']) {
+                options['targetHeight'] = CameraSettings['STKR__Height__c'];
+            }
+        } catch (err) {
+        }
+        try {
+            if (CameraSettings['STKR__Quality__c']) {
+                options['quality'] = CameraSettings['STKR__Quality__c'] <= 50 ? CameraSettings['STKR__Quality__c'] : 50;
+            } else {
+                options['quality'] = 50;
+            }
+        } catch (err) {
+            options['quality'] = 50;
+        }
+        try {
+            if (CameraSettings['STKR__Width__c']) {
+                options['targetWidth'] = CameraSettings['STKR__Width__c'];
+            }
+        } catch (err) {
+        }
+
+        navigator.camera.getPicture(function (imageURI) {
+            //move the files to permanent location and delete the temp files
+            window.resolveLocalFileSystemURL(imageURI, function (cachedFile) {
+                var directoryPath = null;
+                if (device.platform == "iOS") {
+                    dataDirectory = cordova.file.dataDirectory;
+                } else {
+                    dataDirectory = cordova.file.externalDataDirectory;
+                }
+                window.resolveLocalFileSystemURL(dataDirectory, function (mdir) {
+                    mdir.getDirectory(folderDestination + '/', { create: true, exclusive: false }, function (dirEntry1) {
+                        cachedFile.moveTo(dirEntry1, cachedFile.name, function (suc) {
+                            StoreImages.push(suc.nativeURL);
+                            flag_capture = 1;
+                            window.history.back();
+                        });
+                    });
+                });
+            });
+        }, function (error) {
+            console.log('Error: ' + error);
+            flag_capture = 1;
+            window.history.back();
+        }, options);
+    }
+</script>

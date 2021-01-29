@@ -1,0 +1,164 @@
+<div data-role="view" data-show="DataShowInspectionHistory" id="InspectionHistory" data-use-native-scrolling="true"
+    data-after-show="DataAfterShowInspectionHistory">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();"
+                data-role="button" class="InspectionHistoryMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <b>
+                <span id="InspectionHistory_ItemNumber"></span>
+            </b>
+        </div>
+    </header>
+    <center style="background: #e6e6e6;padding:1%;">
+        <b>
+            <h4>Inspection History</h4>
+        </b>
+    </center>
+    <div style="background:white;">
+        <center>
+            <div class="mainBody" id="MessageOfInspectionHistory"></div>
+        </center>
+        <ul data-role="listview" id="ListviewForInspectionHistory" data-style="inset"
+            data-template="TemplateForInspectionHistory" style="margin:1%;background:white">
+        </ul>
+    </div>
+</div>
+<script>
+    var InspectionHistory_Id = '';
+    var InspectionHistory_Name = '';
+    var Array_InspectionHistory = [];
+
+    function DataShowInspectionHistory(e) {
+        e.view.scroller.reset();
+        InspectionHistory_Id = '';
+        InspectionHistory_Name = '';
+        Array_InspectionHistory = [];
+        try {
+            InspectionHistory_Id = e.view.params.InspectionItemDetail_Id;
+            console.log(InspectionHistory_Id);
+            $("#ListviewForInspectionHistory").data("kendoMobileListView").refresh();
+        } catch (err) {
+            StoreError(err);
+            console.log(err);
+        }
+        for (var i = 0; i < InspectionItemData.length; i++) {
+            if (InspectionItemData[i]['Id'] === InspectionHistory_Id) {
+                InspectionHistory_Name = InspectionItemData[i]['Name'];
+            }
+        }
+        try {
+            $('#InspectionHistory_ItemNumber').text('Inspection Item : ' + InspectionHistory_Name);
+        } catch (e) {
+        }
+        if (navigator.onLine && AppIsOnline && InspectionHistory_Id.length == 18) {
+            app.pane.loader.show();
+            jsconn.query("SELECT STKR__Inspection_Date_Time__c,STKR__Result__c,STKR__Notes__c,STKR__Reason_for_failure__c FROM STKR__Inspection__c WHERE STKR__Status__c = 'Inspected' AND STKR__Service_Item__c = '" + InspectionHistory_Id + "' ORDER BY STKR__Inspection_Date_Time__c DESC", function (err, result) {
+                if (err) { return console.error(err); }
+                console.log(result.records);
+
+                for (var i = 0; i < result.records.length; i++) {
+                    Array_InspectionHistory.push(result.records[i]);
+                }
+                console.log(Array_InspectionHistory);
+                if (Array_InspectionHistory.length) {
+                    $('#MessageOfInspectionHistory').hide();
+                    $("#ListviewForInspectionHistory").data("kendoMobileListView").replace(Array_InspectionHistory);
+                    $('#ListviewForInspectionHistory li:nth-child(odd)').css('background-color', 'cyan');
+                    $('#ListviewForInspectionHistory li:nth-child(even)').css('background-color', 'dodgerblue');
+                } else {
+
+                    $("#ListviewForInspectionHistory").data("kendoMobileListView").replace([]);
+                    var InspectionHistoryPlaceholder = $('<p>').text("No inspection history for this item");
+                    InspectionHistoryPlaceholder.css('color', 'grey');
+                    InspectionHistoryPlaceholder.css('position', 'absolute');
+                    InspectionHistoryPlaceholder.css('top', '50%');
+                    InspectionHistoryPlaceholder.css('left', '17%');
+                    $('#MessageOfInspectionHistory').html(InspectionHistoryPlaceholder);
+                    $('#MessageOfInspectionHistory').show();
+                }
+                app.pane.loader.hide();
+            });
+        } else {
+            var newData_InspectionHistory = [];
+            for (var i = 0; i < InspectionData.length; i++) {
+                if (InspectionData[i]['STKR__Status__c'] === 'Inspected' && InspectionData[i]['STKR__Service_Item__c'] === InspectionHistory_Id) {
+                    newData_InspectionHistory.push(InspectionData[i]);
+                    console.log(newData_InspectionHistory);
+                    if (newData_InspectionHistory.length) {
+                        $('#MessageOfInspectionHistory').hide();
+                        $("#ListviewForInspectionHistory").data("kendoMobileListView").replace(newData_InspectionHistory.sort(Sort_InspectionHistory));
+                        $('#ListviewForInspectionHistory li:nth-child(odd)').css('background-color', 'cyan');
+                        $('#ListviewForInspectionHistory li:nth-child(even)').css('background-color', 'dodgerblue');
+                    } else {
+                        var InspectionHistoryPlaceholder = $('<p>').text("No inspection history for this item");
+                        InspectionHistoryPlaceholder.css('color', 'grey');
+                        InspectionHistoryPlaceholder.css('position', 'absolute');
+                        InspectionHistoryPlaceholder.css('top', '50%');
+                        InspectionHistoryPlaceholder.css('left', '17%');
+                        $('#MessageOfInspectionHistory').html(InspectionHistoryPlaceholder);
+                        $('#MessageOfInspectionHistory').show();
+                    }
+                }
+            }
+        }
+    }
+
+    function Sort_InspectionHistory(a, b) {
+        try {
+            if (!a.Result)
+                return 1;
+            if (!b.Result)
+                return -1;
+            if (a.Result > b.Result)
+                return -1;
+            if (a.Result < b.Result)
+                return 1;
+        } catch (err) {
+            console.error(err);
+        }
+        return 0;
+    }
+</script>
+
+<script type="script/x-kendo-template" id="TemplateForInspectionHistory">
+    #    
+    var InspectionDateTime;   
+    if (device.platform==='Win32NT') {
+        InspectionDateTime = new Date(STKR__Inspection_Date_Time__c.split('+')[0] + 'Z');
+    } else if (device.platform==='iOS') {
+        InspectionDateTime = new Date(STKR__Inspection_Date_Time__c.split('.')[0]);
+    } else {
+        InspectionDateTime = new Date(STKR__Inspection_Date_Time__c);
+    }    
+    # 
+    <div style="padding:3%;font-weight:bold;">
+           # 
+           var day = (InspectionDateTime.getDate() < 10 ? '0' : '') + InspectionDateTime.getDate();
+            var month = ((InspectionDateTime.getMonth() + 1) < 10 ? '0' : '') + (InspectionDateTime.getMonth() + 1);
+            #
+     <center>
+        #if (STKR__Inspection_Date_Time__c) {#
+          
+            <span  style="float:left;">  <span> Inspection Date Time :</span>${InspectionDateTime.toLocaleDateString()}</span><br/>
+            
+            #}if (STKR__Result__c) {#
+                
+              <span style="float:left;"> <span>Result :</span> #:STKR__Result__c# </span> <br/>
+             
+            
+              #}if (STKR__Reason_for_failure__c) {#
+               
+             <span style="float:left;">  <span>Reason for failure: </span>#:STKR__Reason_for_failure__c # </span> <br/>
+
+             #}if (STKR__Notes__c) {#
+               
+             <span style="float:left;"> <span>Inspection Notes:</span> #:STKR__Notes__c#</span> <br/>
+
+
+              #}#
+
+    </center>
+    </div>
+</script>

@@ -1,0 +1,229 @@
+<script type="text/x-kendo-template" id="PrintServiceReport_KendoTemplate"
+    objects="User,STKR__Visit__c,STKR__Service__c,STKR__Prep_Waste__c,STKR__Prep_Waste_Management__c,STKR__Actions__c">
+    <table style="border-collapse:collapse;">
+        <tr>
+            <td>
+                <span style="font-weight:bold;font-size:150%;">SERVICE REPORT</span>
+            </td>
+            <td>
+                <div align="right" style="margin-right:10px;font-size:75%;font-weight:bold;">
+                    #if(User.STKR__Org_Name_and_Address__c){
+                        let doc = new DOMParser().parseFromString(User.STKR__Org_Name_and_Address__c, "text/html");
+                        let address = doc.getElementsByTagName('body')[0].innerText;#
+                        ${address}
+                    #}#
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td width="50%">
+                <div style="font-size:75%;">
+                    <b>Site : </b>
+                    <span>${STKR__Visit__c.STKR__Account__c}</span>
+                    <br/>
+                    <span>${STKR__Visit__c.STKR__Address__c}</span>
+                </div>
+            </td>
+            <td width="50%">
+                <div style="font-size:75%;text-align: right;margin-right:5px;">
+                    <b>Service Date:</b>
+                    <span>
+                        #if(STKR__Visit__c.STKR__Completion_Time__c){#
+                            ${new Date(STKR__Visit__c.STKR__Completion_Time__c).toLocaleDateString('en-GB')}
+                        #}#
+                    </span>
+                    <br/>
+                    <b>Visit Number:</b>
+                    <span>${STKR__Visit__c.Name}</span>
+                    <br />
+                    <b>Time in:</b>
+                    <span>
+                        #if(STKR__Visit__c.STKR__Arrival_Time__c){
+                            try{#
+                                ${new Date(STKR__Visit__c.STKR__Arrival_Time__c).toLocaleTimeString('en-GB')}    
+                            #}catch(err){console.error('1', err);}#
+                        #}#
+                    <br/>
+                    <b>Time out:</b>
+                    <span> 
+                        #if(STKR__Visit__c.STKR__Completion_Time__c){
+                            try{#
+                                ${new Date(STKR__Visit__c.STKR__Completion_Time__c).toLocaleTimeString('en-GB')}
+                            #}catch(err){console.error('2',err)}#
+                        #}#
+                    </span>
+                    <br/>
+                    #if(STKR__Service__c.STKR__Current_Visit_Number__c && STKR__Service__c.STKR__Number_of_Visit_Per_Year__c){#
+                        <span> 
+                            Visit ${STKR__Service__c.STKR__Current_Visit_Number__c} of ${STKR__Service__c.STKR__Number_of_Visit_Per_Year__c}
+                        </span>
+                        <br/>
+                    #}#
+                </div>
+            </td>
+        </tr>
+        </table>
+        
+        <hr width="100%" size="4" />
+        <br />
+        <table border="1" width="100%" style="border-collapse:collapse;">
+            <tr style="font-weight:bold;">
+                <th>Type of Visit</th>
+                <th>Risk</th>
+                <th>Proofing</th>
+            </tr>
+            <tr>
+                <td style="padding:1px;" id="Print_Visit_Type__c">
+                    #if(STKR__Visit__c.STKR__Visit_Type__c){#
+                        ${STKR__Visit__c.STKR__Visit_Type__c}
+                    #}# 
+                </td>
+                <td style="padding:1px;" id="Print_Risk__c">
+                    #if(STKR__Visit__c.STKR__Risk__c){#
+                        ${STKR__Visit__c.STKR__Risk__c}
+                    #}#
+                </td>
+                <td style="padding:1px;" id="Print_Proofing__c">
+                    #if(STKR__Visit__c.STKR__Proofing__c){#
+                        ${STKR__Visit__c.STKR__Proofing__c}
+                    #}#
+                </td>
+            </tr>
+        </table>
+        <br />
+        <table border="1" width="100%" style="border-collapse:collapse;">
+            <tr style="font-weight:bold;">
+                <th>Pests Found</th>
+                <th>Hygiene</th>
+            </tr>
+            <tr>
+                <td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;">
+                    #if(STKR__Visit__c.STKR__Pests_Found__c){#
+                        ${STKR__Visit__c.STKR__Pests_Found__c}
+                    #}#
+                </td>
+                <td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;">
+                    #if(STKR__Visit__c.STKR__Hygiene__c){#
+                        ${STKR__Visit__c.STKR__Hygiene__c}
+                    #}#
+                </td>
+            </tr>
+        </table>
+        <br />
+        <div>
+            <center style="font-weight:bold;padding: 5px;">Pesticides/Materials & Quanitities Used</center>
+            <table border="1" width="100%" id="Print_Prep_Waste" style="border-collapse:collapse;">
+                <tr style="font-weight:bold;">
+                    <th>Code</th>
+                    <th>Trade Name</th>
+                    <th>Quantity</th>
+                </tr>
+                #for (var i=0;i<STKR__Prep_Waste_Management__c.length; i++) {
+                    if (STKR__Prep_Waste_Management__c[i]['STKR__Visit__c'] === STKR__Visit__c.Id) {#
+                        <tr>
+                            #for (var j = 0; j < STKR__Prep_Waste__c.length; j++) {
+                                if (STKR__Prep_Waste__c[j]['Id'] === STKR__Prep_Waste_Management__c[i]['STKR__Prep_Waste__c']) {#
+                                    <td> ${STKR__Prep_Waste__c[j]['STKR__Waste_Code__c']} </td>
+                                    <td> ${STKR__Prep_Waste__c[j]['Name']} </td>
+                                #} } if (STKR__Prep_Waste_Management__c[i]['STKR__Qty__c']) {#
+                                <td>${STKR__Prep_Waste_Management__c[i]['STKR__Qty__c']} </td>
+                            #}# 
+                        </tr> 
+                    #} }# 
+            </table> 
+        </div><br/>
+        <div id="PrintServiceReportFindingsSection">
+            <table border="1" width="100%" style="border-collapse:collapse;">
+                <tr style="font-weight:bold;">
+                    <th>Findings and Actions taken by Technician</th>
+                </tr>
+                <tr>
+                    <td>
+                        #if(STKR__Visit__c.STKR__Field_Notes__c){#
+                           #=STKR__Visit__c.STKR__Field_Notes__c.replace(/\n|\r\n|\r/g, '<br/>')# 
+                        #}#
+                    </td>
+                </tr>
+            </table>
+            <br/>
+        </div>
+        <div id="PrintServiceReportRecommendations">
+            <table border="1" width="100%" style="border-collapse:collapse;">
+                <tr style="font-weight:bold;">
+                    <th>Recommendations</th>
+                </tr>
+                <tr>
+                    <td>
+                        #if(STKR__Visit__c.STKR__Recommendations__c){#
+                            #=STKR__Visit__c.STKR__Recommendations__c.replace(/\n|\r\n|\r/g,'<br/>')#
+                        #}#
+                    </td>
+                </tr>
+            </table>
+            <br/>
+        </div>
+      
+        <div id="ActionTableDiv">
+            <center style="font-weight:bold;padding: 5px;">Actions</center>
+            <table border="1" width="100%" id="ActionTable" style="border-collapse:collapse;">
+                <tr>
+                    <th>Action No</th>
+                    <th>Action</th>
+                    <th>Date for Completion</th>
+                    <th>Status</th>
+                </tr>
+                #for (var i = 0; i < STKR__Actions__c.length; i++) {#
+                    #if (STKR__Actions__c[i]['STKR__Visit__c'] === STKR__Visit__c['Id']) {#
+                        <tr>
+                            #if(STKR__Actions__c[i]['Name']) {#
+                                <td>${STKR__Actions__c[i]['Name']}</td>
+                            #}else {#
+                               <td></td>
+                            #}#
+                            #if (STKR__Actions__c[i]['STKR__Action__c']) {#
+                               <td>${STKR__Actions__c[i]['STKR__Action__c']}</td>
+                            #} else {#
+                               <td></td>
+                            #}#
+                           
+                            #let VisitAssignDate = '';
+                            try {
+                                VisitAssignDate =  new Date(STKR__Actions__c[i]['STKR__Date_for_Completion__c']).toLocaleDateString('en-GB');
+                            } catch (err) {
+                                console.error('Service Report 1',err);
+                            }#
+                            <td>${VisitAssignDate}</td>
+                           
+                            #if (STKR__Actions__c[i]['STKR__Status__c']) {#
+                               <td>${STKR__Actions__c[i]['STKR__Status__c']}</td>
+                            #} else {#
+                               <td></td>
+                            #}#                            
+                        </tr>
+                    #}#
+                #}#
+            </table><br/>
+        </div>
+        
+        <div id="ActionTableCustomerComments">  
+            <table border="1" width="100%" style="border-collapse:collapse;">
+                <tr style="font-weight:bold;">
+                    <th>Customer Completion Comments</th>
+                </tr>
+                #if (STKR__Actions__c.length) {#
+                    #for (var i = 0; i < STKR__Actions__c.length; i++) {#
+                        #if (STKR__Actions__c[i]['STKR__Visit__c'] == STKR__Visit__c['Id']) {#
+                            <tr>
+                            #if (STKR__Actions__c[i]['STKR__Comments__c']) {#
+                                <td>${STKR__Actions__c[i]['STKR__Comments__c']}<br/></td>
+                            #}
+                        }
+                    }#
+                #}#
+                <tr>
+                    <td><br/></td>
+                </tr>
+            </table>
+            <br/>
+        </div>
+</script>

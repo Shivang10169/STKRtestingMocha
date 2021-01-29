@@ -1,0 +1,78 @@
+<div data-role="view" id="MapRoute" data-title="Map Details" data-show="DataShowMapAnalysis"
+    data-after-show="DASMapRoutePage">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <!--span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span-->
+        </div>
+    </header>
+    <div style="transform-origin: left top 0px;padding-top: 120px;">
+        <span>
+            <center>
+                <a onClick="RedirectToMapViewPage();">View Routes<br />
+                    <img src="img\viewRoute.png" style="height: 20;max-width: 423px;height: 185px;"></img>
+                </a>
+            </center>
+        </span>
+        <br />
+        <span>
+            <center>
+                <a onClick="RedirectsToAnalysis();">Create New Routes<br />
+                    <img src="img\createRoute.jpg"></img>
+                </a>
+            </center>
+        </span>
+    </div>
+</div>
+<script>
+    var dummy = [];
+    var AnalysisMapData = [];
+    function DataShowMapAnalysis() {
+        dummy = [];
+        for (var i = 0; i < AnalysisData.length; i++) {
+            if (newDetailValue[0].Id.indexOf(AnalysisData[i]["STKR__Visit__c"]) != -1 && AnalysisData[i].STKR__Analysis_Geolocation__Latitude__s !=null && AnalysisData[i].STKR__Analysis_Geolocation__Longitude__s !=null) {
+                var shorthandGeo = {};
+                shorthandGeo["lat"] = AnalysisData[i].STKR__Analysis_Geolocation__Latitude__s;
+                shorthandGeo["lng"] = AnalysisData[i].STKR__Analysis_Geolocation__Longitude__s;
+                dummy.push(shorthandGeo);
+            }
+        }
+    }
+
+    function DASMapRoutePage() {
+        AnalysisMapData = [];
+        for (var i = 0; i < AnalysisData.length; i++) {
+            if (newDetailValue[0].Id.indexOf(AnalysisData[i]["STKR__Visit__c"]) != -1 && AnalysisData[i].STKR__Analysis_Geolocation__Latitude__s !=null && AnalysisData[i].STKR__Analysis_Geolocation__Longitude__s !=null) {
+                var shorthandGeo = {};
+                shorthandGeo["lat"] = AnalysisData[i].STKR__Analysis_Geolocation__Latitude__s;
+                shorthandGeo["lng"] = AnalysisData[i].STKR__Analysis_Geolocation__Longitude__s;
+                shorthandGeo["Id"] = AnalysisData[i].Id;
+                shorthandGeo["RecordTypeId"] = AnalysisData[i].RecordTypeId;
+                AnalysisMapData.push(shorthandGeo);
+            }
+        }
+    }
+
+    function RedirectToMapViewPage() {
+        if (navigator.onLine) {
+            app.navigate('view/AnalysisMapViewPage.html');
+        } else {
+            app.toastMessage('Device is offline', 'long');
+
+        }
+    }
+
+    function RedirectsToAnalysis() {
+        if (navigator.onLine) {
+            app.navigate('view/CreateAnalysisNewRoutes.html');
+        }
+        else {
+            app.toastMessage('Device is offline', 'long');
+
+        }
+    }
+</script>

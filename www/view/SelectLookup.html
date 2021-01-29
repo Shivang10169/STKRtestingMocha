@@ -1,0 +1,142 @@
+<div data-role="view" data-show="DSSelectLookup" data-after-show="DASSelectLookup" data-init="DISelectLookup"
+    data-title="Select record" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="QuoteDetailMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </header>
+    <div>
+        <table style="width:100%;background:grey;">
+            <tr>
+                <td style="width:90%">
+                    <input type="text" id="SearchLookupText" style="width:80%;line-height:2em;margin:2%;" placeholder="Search..." />
+                </td>
+                <td style="width:10%">
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                        onClick="LookupSearchButtonClicked()">
+                        <i class="material-icons">search</i>
+                    </button>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+    <hr style="margin:1px;" />
+    <div data-role="listview" data-template="SearchLookupListviewTemplate" id="SearchLookupListview"></div>
+</div>
+
+<script>
+    var InputElementId = '', ObjectName = '', HiddenInputElementId = '';
+
+    function DSSelectLookup(e) {
+
+        CountNumberOfOflineItem();
+        InputElementId = '', ObjectName = '';
+        HiddenInputElementId = ''
+
+        try {
+            ObjectName = e.view.params.ObjectName;
+            InputElementId = e.view.params.InputElementId;
+            HiddenInputElementId = e.view.params.HiddenInputElementId;
+        } catch (e) {
+            alert('SelectLookup 1 : ' + e);
+        }
+        // Empty listview
+        $('#SearchLookupListview').data("kendoMobileListView").replace([]);
+        try {
+            $("[name='NewQuoteName']#STKR__Introduction__c").val('');
+            $("[name='NewQuoteName']#STKR__Site_Contact__cHidden").val('');
+            $("[name='NewQuoteName']#STKR__Site_Contact__c").val('');
+        } catch (err) {
+        }
+    }
+
+    function LookupSearchButtonClicked() {
+        var SearchText = $('#SearchLookupText').val();
+        if (!ObjectName) {
+            app.toastMessage('ObjectName is undefined', 'long');
+            return;
+        }
+        if (SearchText.length < 2) {
+            app.toastMessage('Your search term must have 2 or more characters.', 'long');
+            return;
+        }
+
+        // Use SOQL for Search 
+        app.pane.loader.show();
+
+        if (SearchText.length) {
+            if (AppIsOnline) {
+                jsconn.search("FIND {*" + SearchText + "*} IN ALL FIELDS RETURNING " + ObjectName + "(Id, Name, FirstName,LastName)",
+                    function (err, res) {
+                        if (err) {
+                            app.pane.loader.hide();
+                            return console.error(err);
+                        }
+                        console.log(res);
+                        $('#SearchLookupListview').data("kendoMobileListView").replace(res);
+                        app.pane.loader.hide();
+                    }
+                );
+            } else {
+                if (ObjectName == "Contact") {
+                    var res = [];
+                    for (var ap = 0; ap < ContactData.length; ap++) {
+                        if (ContactData[ap]["AccountId"] == newDetailValue[0]["STKR__Account_lkp__c"]  && (ContactData[ap]["Id"].indexOf('003')==0)) {
+                            res.push(ContactData[ap]);
+                        }
+                        $('#SearchLookupListview').data("kendoMobileListView").replace(res);
+                        app.pane.loader.hide();
+                    }
+                }
+            }
+        } else {
+            app.pane.loader.hide();
+            app.toastMessage('Please fill the search box', 'long');
+        }
+    }
+
+    function DASSelectLookup() {
+    }
+
+    function DISelectLookup() {
+    }
+
+    function LookupRecordSelected(FirstName,LastName, Id) {
+        console.log(InputElementId, HiddenInputElementId, FirstName,LastName, Id);
+        $('#' + InputElementId).val(FirstName+LastName);
+        $('#' + HiddenInputElementId).val(Id);
+        window.history.back();
+    }
+</script>
+
+<script type="text/x-kendo-template" id="SearchLookupListviewTemplate">
+    #console.log(data);#
+    #try {
+        if (FirstName) {#
+            <span style="font-weight:bold">${FirstName} </span>
+        #}
+       
+    
+    }catch(e1){
+        console.log(e1);
+       
+    }
+    try {
+        if (LastName) {#
+            <span style="font-weight:bold">${LastName} </span>
+        #}
+       
+    
+    }catch(e1){
+        console.log(e1);
+       
+    }#
+    <button style="float:right;" onClick="LookupRecordSelected('${FirstName}','${LastName}','${Id}');">Select</button>
+</script>

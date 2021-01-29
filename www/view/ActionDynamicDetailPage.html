@@ -1,0 +1,564 @@
+<div data-role="view" data-layout="ActionDetailPageLayout" data-show="ActionDetailPageDataShow"
+    data-after-show="ActionDetailPageDataAfterShow" id="ActionDetailPage" data-use-native-scrolling="true">
+    <div id="ActionDetailPageLayout"></div>
+    <div id="CustomSetting_PrepWasteOnAction" class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;"></div>
+    <br /><br />
+    <center>
+        <a data-role="backbutton"
+            class="CreatePrepManagementMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            style="background-color:grey;color:white;width:35%;">
+            Cancel
+        </a>
+        <a data-role="button"
+            class="CreatePrepManagementMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            style="color:white;width:35%;" onclick="UpdateActionValues(false);">
+            Update
+        </a>
+    </center>
+</div>
+<div data-id="ActionDetailPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button data-align="left" onclick="UpdateActionValues(false);"
+                class="ActionDetailPage2MDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">keyboard_backspace</i>
+            </button>
+            <span id="HeaderActionDetailPage"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right"
+                class="ActionDetailPage2MDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <button  data-align="right" style="border-color:white;padding:0px;"
+                class="ActionDetailPage2MDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                onclick="UpdateAction_OnAttachmentClick()">
+                <i class="fa  fa-paperclip" style="color:white;"></i>
+            </button>
+            <button  data-align="right" style="border-color:white;color: white;"
+                class="ActionDetailPage2MDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                onclick="UpdateData_ActionDetail()">
+                <i class="material-icons">camera_alt</i>
+            </button>
+
+        </div>
+    </header>
+</div>
+<div data-role="modalview" id="numberOfImageForActionDetail" style="height:60%;width:90%;padding:2%;">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+
+            <span id="ActionSelectPhoto">Select Number of Photos </span>
+        </div>
+    </header>
+    <center>
+        <label class="ActionDetailPage2MDLName mdl-radio mdl-js-radio mdl-js-ripple-effect"
+            for="ActionDetailPageOption1" style="margin: 0.6em;">
+            <input type="radio" name="PictureCountOfActionDynamic" id="ActionDetailPageOption1"
+                class="ActionDetailPage2MDLName mdl-radio__button" value="1">
+            <span class="ActionDetailPage2MDLName mdl-radio__label">1</span>
+        </label>
+        <br />
+        <label class="ActionDetailPage2MDLName mdl-radio mdl-js-radio mdl-js-ripple-effect"
+            for="ActionDetailPageOption2" style="margin: 0.6em;">
+            <input type="radio" name="PictureCountOfActionDynamic" id="ActionDetailPageOption2"
+                class="ActionDetailPage2MDLName mdl-radio__button" value="2">
+            <span class="ActionDetailPage2MDLName mdl-radio__label">2</span>
+        </label>
+        <br />
+        <label class="ActionDetailPage2MDLName mdl-radio mdl-js-radio mdl-js-ripple-effect"
+            for="ActionDetailPageOption3" style="margin: 0.6em;">
+            <input type="radio" name="PictureCountOfActionDynamic" id="ActionDetailPageOption3"
+                class="ActionDetailPage2MDLName mdl-radio__button" value="3">
+            <span class="ActionDetailPage2MDLName mdl-radio__label">3</span>
+        </label>
+    </center>
+    <div data-role="footer" style="background-color:white;">
+        <center>
+            <button
+                id="footerButtonCancel"
+                class="ActionDetailPage2MDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onclick=" $('#numberOfImageForActionDetail').kendoMobileModalView('close');">
+                CANCEL
+            </button>
+            <button
+                id="footerButtonDone"
+                class="ActionDetailPage2MDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onclick="">
+                DONE
+            </button>
+        </center>
+    </div>
+</div>
+<style>
+    #ActionDetailPage .km-content {
+        background: #E6E6E6;
+    }
+</style>
+<script>
+    //var pictureSource;
+    var destinationType;
+    var ActionDetailPage_RecordTypeId = '', ActionDetailPage_ActionId = '';
+    var ActionDetailPage_DataIndex = 0, ActionDetailPage_ActionData = {};
+ 
+    function ActionDetailPageDataShow(e) {
+        CountNumberOfOflineItem();
+        e.view.scroller.reset();
+        ActionDetailPage_RecordTypeId = '';
+        ActionDetailPage_ActionId = '';
+        ActionDetailPage_ActionData = {};
+        //pictureSource = navigator.camera.PictureSourceType;
+        destinationType = navigator.camera.DestinationType;
+        try {
+            ActionDetailPage_ActionId = e.view.params.ActionId;
+            console.log(ActionDetailPage_ActionId)
+        } catch (err) {
+            StoreError(err);
+            console.log(err);
+        }
+        $("#HeaderActionDetailPage").text(ActionLabel);
+        for (var i = 0; i < ActionData.length; i++) {
+            if (ActionData[i]['Id'] === ActionDetailPage_ActionId) {
+                console.log('Matched Action Data', ActionData[i]);
+                ActionDetailPage_ActionData = ActionData[i];
+                ActionDetailPage_RecordTypeId = ActionData[i]['RecordTypeId'];
+                ActionDetailPage_DataIndex = i;
+                break;
+            }
+        }
+        // Clear the DOM
+        $('#ActionDetailPageLayout').html('');
+
+        if (!ActionDetailPage_RecordTypeId) {
+            for (var j = 0; j < ActionMetadata.recordTypeInfos.length; j++) {
+                if (ActionMetadata.recordTypeInfos[j]['name'] === 'Master' && ActionMetadata.recordTypeInfos[j]['available'] === true) {
+                    ActionDetailPage_RecordTypeId = ActionMetadata.recordTypeInfos[j]['recordTypeId'];
+                    break;
+                }
+            }
+            app.toastMessage('Record Type Not Found, Using defualt record type.', 'long');
+        }
+
+        if (ActionDetailPage_RecordTypeId) {
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from ActionRecordType where recordid=?", [ActionDetailPage_RecordTypeId],
+                    function (tx, rs) {
+                        if (rs.rows.length) {
+                            var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                            console.log('Action Record Type Layout', Layoutdata);
+                            ActionDetailPageHTML = ActionDetailLayoutGenerator(Layoutdata);
+                            $('#ActionDetailPageLayout').html(ActionDetailPageHTML);
+                            $(".UniqueSelect option").val(function(idx, val) {
+                                    $(this).siblings('[value="'+ this.val +'"]').remove();
+                                    return val;
+                                   });
+                            SetActionDetailPageValues();
+                            if (device.platform == "Android") {
+                                componentHandler.upgradeElements(document.getElementsByClassName('ActionDetailPage2MDLName'));
+
+                                componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+                            }
+                            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+                            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+                            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+                        } else {
+                            app.toastMessage('This record type is not found, Please refresh data', 'long');
+                        }
+                    }, function (tx, error) {
+                        StoreError(error)
+                        console.error(error.message)
+                    });
+            });
+        } else {
+            app.toastMessage('Record Type Not Found', 'long');
+        }
+        var prepButton='';
+        if (ButtonSettings.STKR__disablePrepWasteButton__c) {
+            if (PrepWasteLabel !== 'undefined' && PrepWasteLabel !== undefined && PrepWasteLabel !== 'null' && PrepWasteLabel !== null) {
+                prepButton += '<label style="padding-top:2%;float:left;font-weight:bold;" id="PrepWasteLabelOnInspection">' + PrepWasteLabel + '</label>'
+                prepButton += '<br/><button style="width:100;margin-bottom:3%;margin-top:5%;" onclick="gotoPrepWasteMgmtAction(\'' + ActionId + '\');" data-role="button" class="InspectionDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="PrepWasteButtonOnInspection">' + "Select " + PrepWasteLabel + '</button></div>';
+            } else {
+                prepButton += '<label style="padding-top:2%;float:left;font-weight:bold;" id="PrepWasteLabelOnInspection">Prep/Waste Used</label>'
+                prepButton += '<button style="width:100;margin-bottom:3%;margin-top:5%;" onclick="gotoPrepWasteMgmtAction(\'' + ActionId + '\');" data-role="button" class="InspectionDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="PrepWasteButtonOnInspection">Select Prep/Waste Used</button></div>';
+            }
+        }
+        $("#CustomSetting_PrepWasteOnAction").html(prepButton);
+    }
+
+    function gotoPrepWasteMgmtAction(id) {
+        /*if (InspectionPageDetailData['Id'].length < 18) {
+            app.toastMessage('This is offline created Inspection, You can\'t create Prep/Waste', 'long');
+            return;
+        }*/
+        var res = UpdateActionValues(true);
+       
+            app.navigate('view/PrepWasteManagement.html?visitid=' + newDetailValue[0]['Id'] + '&Visitname=' + newDetailValue[0]['Name'] + '&actionid=' + id + '&From=Action');
+       
+
+    }
+    function SetActionDetailPageValues() {
+        var htmlComponents = $("[name='ActionDetailLayoutName']");
+        console.log(htmlComponents);
+        for (var i = 0; i < htmlComponents.length; i++) {
+            if (htmlComponents[i]['tagName'] === 'SELECT') {
+                var values = ActionDetailPage_ActionData[htmlComponents[i]['id']];
+                if (values) {
+                    $.each(values.split(";"), function (x, e) {
+                        $('[name="ActionDetailLayoutName"]' + "#" + htmlComponents[i]['id'] + " option[value='" + e + "']").prop("selected", true);
+                    });
+                }
+            } else if (htmlComponents[i]['type'] === "checkbox") {
+                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').prop('checked', ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+            } else if (htmlComponents[i]['type'] === "number") {
+                console.log(htmlComponents[i]['id'] + ':' + ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+            } else if (htmlComponents[i]['type'] === "date") {
+                if (ActionDetailPage_ActionData[htmlComponents[i]['id']]) {
+                  $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(moment(ActionDetailPage_ActionData[htmlComponents[i]['id']]).format("YYYY-MM-DD"));
+                   /*      
+                    if (device.platform === 'Android') {
+                        if (typeof (ActionDetailPage_ActionData[htmlComponents[i]['id']]) === 'string') {
+                            $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                        } else {
+                            var dateval = new Date(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                            var month;
+                            var day;
+                            if ((dateval.getMonth() + 1) < 10) {
+                                month = '0' + (dateval.getMonth() + 1)
+                            } else {
+                                month = dateval.getMonth() + 1
+                            }
+                            if (dateval.getDate() < 10) {
+                                day = '0' + dateval.getDate()
+                            } else {
+                                day = dateval.getDate()
+                            }
+                            $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day)
+                        }
+                    }
+                    if (device.platform === 'iOS') {
+                        if (STKR__Date_for_Completion__c !== null) {
+                            if (typeof (ActionDetailPage_ActionData[htmlComponents[i]['id']]) === 'Object') {
+                                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                            } else {
+                                var dateval = new Date(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                                var month;
+                                var day;
+                                if ((dateval.getMonth() + 1) < 10) {
+                                    month = '0' + (dateval.getMonth() + 1)
+                                } else {
+                                    month = dateval.getMonth() + 1
+                                }
+                                if (dateval.getDate() < 10) {
+                                    day = '0' + dateval.getDate()
+                                } else {
+                                    day = dateval.getDate()
+                                }
+                                console.log(dateval);
+                                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                            }
+                        }
+                    }
+                */
+                }
+           } else if (htmlComponents[i]['type'] === "datetime-local") {
+                if (ActionDetailPage_ActionData[htmlComponents[i]['id']]) {
+                    $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(moment(ActionDetailPage_ActionData[htmlComponents[i]['id']]).format("YYYY-MM-DDThh:mm:ss"));
+                     
+                    /* 
+                    if (device.platform === 'Android') {
+                        try {
+                            var dateval = new Date(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                            var month;
+                            var day;
+                            if ((dateval.getMonth() + 1) < 10) {
+                                month = '0' + (dateval.getMonth() + 1)
+                            } else {
+                                month = dateval.getMonth() + 1
+                            }
+                            if (dateval.getDate() < 10) {
+                                day = '0' + dateval.getDate()
+                            } else {
+                                day = dateval.getDate()
+                            }
+                            console.log(htmlComponents[i]['id'])
+                            $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                        } catch (err) {
+                            console.log('date error' + err)
+                            $('#' + htmlComponents[i]['id']).val('');
+                        }
+                    }
+                    if (device.platform === 'iOS') {
+                        if (STKR__Date_for_Completion__c !== null) {
+                            if (typeof (ActionDetailPage_ActionData[htmlComponents[i]['id']]) === 'Object') {
+                                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                            } else {
+                                var dateval = new Date(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                                var month;
+                                var day;
+                                if ((dateval.getMonth() + 1) < 10) {
+                                    month = '0' + (dateval.getMonth() + 1)
+                                } else {
+                                    month = dateval.getMonth() + 1
+                                }
+                                if (dateval.getDate() < 10) {
+                                    day = '0' + dateval.getDate()
+                                } else {
+                                    day = dateval.getDate()
+                                }
+                                console.log(dateval);
+                                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                            }
+                        }
+                    }
+                    */
+                } 
+            } else if (htmlComponents[i]['tagName'] == 'A') {
+                console.log('taggggggg22', ActionDetailPage_ActionData[htmlComponents[i]['id']],htmlComponents[i]['id'],ActionDetailPage_ActionData);
+               console.log('mayoteck', $.parseHTML(ActionDetailPage_ActionData[htmlComponents[i]['id']]));
+               
+               if($.parseHTML(ActionDetailPage_ActionData[htmlComponents[i]['id']]) != null){
+                if ($.parseHTML(ActionDetailPage_ActionData[htmlComponents[i]['id']])[0].nodeName == "A") {
+                    //$.parseHTML(newDetailValue[0].STKR__FormulaURL__c)[0].href
+                    $('#' + htmlComponents[i]['id'] + "[name='ActionDetailLayoutName']" )[0].onclick = function (abc) {
+                        console.log('hukins', abc.currentTarget.id,$.parseHTML(ActionDetailPage_ActionData[htmlComponents[i]['id']])[0].nodeName);
+
+                        window.open($.parseHTML(ActionDetailPage_ActionData[abc.currentTarget.id])[0].href, '_blank');
+                        preventDefault();
+                    }
+                } else {
+                    console.log('pikapika', $.parseHTML(ActionDetailPage_ActionData[htmlComponents[i]['id']])[0].nodeName);
+                    $('#' + htmlComponents[i]['id'] + "[name='ActionDetailLayoutName']" )[0].onclick = function (abc) {
+                        window.open(ActionDetailPage_ActionData[abc.currentTarget.id], '_blank');
+                        preventDefault();
+                   
+               }
+                }
+                }
+            } else {
+                console.log(htmlComponents[i]['id'] + ':' + ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+                $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val(ActionDetailPage_ActionData[htmlComponents[i]['id']]);
+            }
+        }
+    }
+    function UpdateActionValues(NavigateToAttachment) {
+        var datatoupload = {};
+        var htmlComponents = $("[name='ActionDetailLayoutName'][name1!='RemoveThis']");
+        //console.log('HTML COMPONENTS', htmlComponents);
+        for (var i = 0; i < htmlComponents.length; i++) {
+            var values = '';
+            if (htmlComponents[i]['tagName'] === 'SELECT') {
+                console.log($('#' + htmlComponents[i]['id']));
+                var selectedOptions = $("#" + htmlComponents[i]['id'] + "[name='ActionDetailLayoutName']")[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    console.log(selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (htmlComponents[i]['type'] === "checkbox") {
+                values = $('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').prop('checked');
+            } else if (htmlComponents[i]['type'] === "date") {
+                values = new Date($('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val());
+                if (values === '')
+                    values = null;
+            } else if (htmlComponents[i]['type'] === "datetime-local") {
+                values = new Date($('#' + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val());
+                if (values === '')
+                    values = null;
+            } else {
+                values = $("#" + htmlComponents[i]['id'] + '[name="ActionDetailLayoutName"]').val()
+            }
+            datatoupload[htmlComponents[i]['id']] = values;
+            if (htmlComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return;
+            }
+            // Update the value to null if AssignedTo is "Responsible person for site"
+            if (htmlComponents[i]['id'] === "STKR__Assigned_To__c" &&
+                values === "Responsible Person for Site") {
+                datatoupload[htmlComponents[i]['id']] = null;
+            } else {
+                datatoupload[htmlComponents[i]['id']] = values;
+            }
+        }
+        datatoupload['Id'] = ActionDetailPage_ActionData['Id'];
+        //console.log('Data to upload', datatoupload);
+        for (var property in datatoupload) {
+            ActionData[ActionDetailPage_DataIndex][property] = datatoupload[property];
+        }
+        //console.log(ActionData[ActionDetailPage_DataIndex]);
+        app.insertRecord('Action', {
+            JsonData: JSON.stringify(ActionData[ActionDetailPage_DataIndex]),
+            Updated: 'false',
+            UserId: creds.UserID,
+            ActionID: ActionData[ActionDetailPage_DataIndex]['Id']
+        });
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            //Device is online
+            jsconn.sobject("STKR__Actions__c").update(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                app.toastMessage('Action updated', 'long');
+                app.deleteRecord('DataToUpdate', ret.id);
+                if (!NavigateToAttachment) {
+                    window.history.back();
+                }
+            });
+        } else {
+            // Device is offline
+            // Store in DataToUpdate table
+            // Check if new offline record is being updated 
+            var saveInLocalDB = $.extend(true, {}, ActionData[ActionDetailPage_DataIndex]);
+            try {
+                delete saveInLocalDB['STKR__Account__c'];
+            } catch (err) {
+            }
+            try {
+                if (ActionData[ActionDetailPage_DataIndex]['STKR__Account__c']) {
+                    saveInLocalDB['stkr__account__c'] = ActionData[ActionDetailPage_DataIndex]['STKR__Account__c'];
+                } else if (ActionData[ActionDetailPage_DataIndex]['stkr__account__c']) {
+                    saveInLocalDB['stkr__account__c'] = ActionData[ActionDetailPage_DataIndex]['stkr__account__c'];
+                }
+            } catch (a) {
+            }
+            console.log('saveInLocalDB', saveInLocalDB);
+            var data = {
+                JsonData: JSON.stringify(saveInLocalDB),
+                ObjectName: 'STKR__Actions__c',
+                UserId: creds.UserID,
+                RecordId: saveInLocalDB['Id']
+            }
+
+            if (saveInLocalDB['Id'].length == 18) {
+                // Record is being updated and is already being on salesforce ...
+                data['UpdateOrInsert'] = 'update';
+                data['Updated'] = 'false';
+            } else {
+                // Record is created on mobile device and needs to be created instead of updated... 
+                data['UpdateOrInsert'] = 'insert';
+                data['Updated'] = 'newRecord';
+            }
+
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('Action changes stored offline', 'long');
+            if (!NavigateToAttachment) {
+                window.history.back();
+            }
+
+            /* @todo : Delete below code*/
+            /*try {
+                app.selectFromTable('DataToUpdate', 'recordid', saveInLocalDB['Id'], function (a, rs) {
+                    if (rs.rows.length > 0) {
+                        var updateOrInsert = rs.rows.item(0)['updated'];
+                        var data = {
+                            JsonData: JSON.stringify(saveInLocalDB),
+                            ObjectName: 'STKR__Actions__c',
+                            Updated: 'newRecord',
+                            UserId: creds.UserID,
+                            RecordId: saveInLocalDB['Id']
+                        }
+                        if (updateOrInsert === 'false') {
+                            // Record is being updated and is already being on salesforce ...
+
+                            data['UpdateOrInsert'] = 'update';
+                            data['Updated'] = 'false';
+                        } else if (updateOrInsert === 'newRecord') {
+                            // Record is created on mobile device and needs to be created instead of updated... 
+
+                            data['UpdateOrInsert'] = 'insert';
+                            data['Updated'] = 'newRecord';
+                        }
+
+                        if (saveInLocalDB['Id'].length == 18) {
+                            // Can do an update
+                            data['UpdateOrInsert'] = 'update';
+                            data['Updated'] = 'false';
+                        } else {
+                            // can't do an update..
+                            data['UpdateOrInsert'] = 'insert';
+                            data['Updated'] = 'newRecord';
+                        }
+
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Action changes stored offline', 'long');
+                        if (!NavigateToAttachment) {
+                            window.history.back();
+                        }
+                    } else {
+                        var data = {
+                            JsonData: JSON.stringify(saveInLocalDB),
+                            ObjectName: 'STKR__Actions__c',
+                            Updated: 'false',
+                            UpdateOrInsert: 'update',
+                            UserId: creds.UserID,
+                            RecordId: saveInLocalDB['Id']
+                        }
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Action changes stored offline', 'long');
+                        if (!NavigateToAttachment) {
+                            window.history.back();
+                        }
+                    }
+                });
+            } catch (err) {
+                console.log('Error catch', err);
+                var data = {
+                    JsonData: JSON.stringify(saveInLocalDB),
+                    ObjectName: 'STKR__Actions__c',
+                    Updated: 'false',
+                    UpdateOrInsert: 'update',
+                    UserId: creds.UserID,
+                    RecordId: saveInLocalDB['Id']
+                }
+
+                if (saveInLocalDB['Id'].length >= 18) {
+                    // Can do an update
+                    data['UpdateOrInsert'] = 'update';
+                    data['Updated'] = 'false';
+                } else {
+                    // can't do an update..
+                    data['UpdateOrInsert'] = 'insert';
+                    data['Updated'] = 'newRecord';
+                }
+
+                app.insertRecord('DataToUpdate', data);
+                app.toastMessage('Action changes stored offline', 'long');
+                if (!NavigateToAttachment) {
+                    window.history.back();
+                }
+            }*/
+        }
+    }
+
+    function UpdateData_ActionDetail() {
+
+        /* if (ActionDetailPage_ActionData['Id'].length < 18) {
+            app.toastMessage('This is offline created action, You can\'t Upload Photo', 'long');
+            return;
+        } */
+
+        var PageURL = "view/ShowImage.html?ImageComingFrom=Action";
+
+        if (ActionData[ActionDetailPage_DataIndex]['Id']) {
+            PageURL += "&actionId=" + ActionData[ActionDetailPage_DataIndex]['Id'];
+        }
+
+        if (ActionData[ActionDetailPage_DataIndex]['Id'] &&
+            ActionData[ActionDetailPage_DataIndex]['Id'].length < 18 &&
+            ActionData[ActionDetailPage_DataIndex]['STKR__Mobile_Unique_Id__c']) {
+            PageURL += "&actionExternalId=" + ActionData[ActionDetailPage_DataIndex]['STKR__Mobile_Unique_Id__c'];
+        }
+
+        app.navigate(PageURL);
+        UpdateActionValues(true);
+    }
+
+
+    function UpdateAction_OnAttachmentClick() {
+        app.navigate('view/AttachmentFolder.html?accountid=' + newDetailValue[0]['STKR__Account_lkp__c'] + '&visitid=' + newDetailValue[0]['Id'] + '&From=DetailPage');
+        UpdateActionValues(true);
+    }
+</script>

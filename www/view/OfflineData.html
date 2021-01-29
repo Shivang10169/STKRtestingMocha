@@ -1,0 +1,663 @@
+<div data-role="view" id="OfflineDataPage" data-layout="OfflineDataPageLayout" data-show="DSOfflineData"
+    data-after-show="DAFOfflineData" data-use-native-scrolling="true">
+
+    <ul data-role="listview" id="OfflineDataListview" data-style="inset" data-template="OfflineDataListviewTemplate">
+    </ul>
+
+</div>
+
+<div data-id="OfflineDataPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" style="padding-bottom:5px;" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()"
+                class="OfflineDataMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <a data-align="right" data-role="button" data-icon="action" class="headerIconStyleForAll" style="border-color: white;" onclick="EmailSqliteDatabase()"></a>
+            <a data-align="right" data-role="button" data-icon="downloads" class="headerIconStyleForAll" style="border-color: white;" onclick="RestoreDatabase()"></a>
+            <a data-align="right" data-role="button" data-icon="recents" class="headerIconStyleForAll" style="border-color: white;"
+                onclick="app.navigate('view/SQLiteHistory.html')"></a>
+            <span data-role="view-title"></span>
+
+        </div>
+    </header>
+</div>
+
+<script>
+    var OfflineDataList = [];
+
+    function DSOfflineData() {
+        OfflineDataList = [];
+        app.selectAllRecords('DataToUpdate', function (tx, rs) {
+            //Success
+            for (var i = 0; i < rs.rows.length; i++) {
+                var data = [];
+                data['ObjectName'] = rs.rows.item(i)['objectname'];
+                //data['JSON'] = JSON.parse(rs.rows.item(i)['jsondata']);
+                data['RecordId'] = rs.rows.item(i)['recordid'];
+                var parse = JSON.parse(rs.rows.item(i)['jsondata']);
+                try {
+                    data['Name'] = parse.Name;
+                } catch (err) {
+                    data['Name'] = ' ';
+                }
+                if (!data['Name']) {
+                    data['Name'] = ' ';
+                }
+                OfflineDataList.push(data);
+            }
+            console.log('OfflineDataList', OfflineDataList);
+            if (OfflineDataList)
+                $("#OfflineDataListview").data("kendoMobileListView").replace(OfflineDataList);
+        }, function (tx, err) {
+            //Error
+            console.log(tx, err);
+        });
+    }
+    function DAFOfflineData() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('OfflineDataMDL'));
+    }
+    function GotoOfflineDetailPage(ObjectName, RecordId) {
+        app.navigate('view/OfflineDataDetailPage.html?ObjectName=' + ObjectName + '&RecordId=' + RecordId);
+    }
+
+    function RemoveFromDataToUpdateTable(RecordId) {
+        app.db.transaction(function (tx) {
+            tx.executeSql("DELETE FROM DataToUpdate WHERE recordid = ?", [RecordId],
+                function (r, s) {
+                    console.log('deleted the record');
+                    // Remove reference from variable, if any
+                    // No reference found ..
+
+                    app.toastMessage('Please Refresh All Data to remove any conflicts', 'long');
+                    DSOfflineData();
+                }, function (err) {
+                });
+        });
+    }
+
+    function UploadOfflineDataIndividual(oName, RecordId) {
+
+        if (AppIsOnline) {
+            app.db.transaction(function (tx) {
+                tx.executeSql("SELECT * FROM DataToUpdate WHERE recordid =?", [RecordId],
+                    function (a, res) {
+                        if (res.rows.length > 0) {
+                            var datatoUpload = JSON.parse(res.rows.item(0)['jsondata']);
+                            var ObjectName = res.rows.item(0)['objectname'];
+                            console.log(datatoUpload);
+                            var NotUpdateableFields = [];
+                            var AllFields = [];
+                            switch (ObjectName) {
+                                case 'STKR__Inspection__c':
+                                    try {
+                                        for (var i = 0; i < InspectionMetadata['fields'].length; i++) {
+                                            if (!InspectionMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(InspectionMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(InspectionMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Vehicle_checks__c':
+                                    try {
+                                        for (var i = 0; i < vehicleMetaData['fields'].length; i++) {
+                                            if (!vehicleMetaData['fields'][i]['updateable'] && vehicleMetaData['fields'][i]['name'] != "STKR__Vehicle__c") {
+                                                NotUpdateableFields.push(vehicleMetaData['fields'][i]['name']);
+                                            }
+                                            AllFields.push(vehicleMetaData['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Resource__c':
+                                    try {
+                                        for (var i = 0; i < ResourceMetadata['fields'].length; i++) {
+                                            if (!ResourceMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(ResourceMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(ResourceMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Visit__c':
+                                    try {
+                                        for (var i = 0; i < VisitMetadata['fields'].length; i++) {
+                                            console.log(VisitMetadata['fields'][i]['name']);
+
+                                            if (!VisitMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(VisitMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(VisitMetadata['fields'][i]['name']);
+                                        }
+                                        NotUpdateableFields.push('AttachmentThumbnail');
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Actions__c':
+                                    console.log('Action Metadata', ActionMetadata);
+                                    // Need to create a ActionMetadata variable
+                                    try {
+                                        for (var i = 0; i < ActionMetadata['fields'].length; i++) {
+                                            if (!ActionMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(ActionMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(ActionMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                        try {
+                                            for (var i = 0; i < ActionMetadata[0]['fields'].length; i++) {
+                                                if (!ActionMetadata[0]['fields'][i]['updateable']) {
+                                                    NotUpdateableFields.push(ActionMetadata[0]['fields'][i]['name']);
+                                                }
+                                                AllFields.push(ActionMetadata[0]['fields'][i]['name']);
+                                            }
+                                        } catch (err2) {
+                                        }
+                                    }
+                                    break;
+                                case 'STKR__Chlorination_Results__c':
+                                    try {
+                                        // For Analysis;AnalysisMeta object
+                                        for (var i = 0; i < AnalysisMetadata['fields'].length; i++) {
+                                            if (!AnalysisMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(AnalysisMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(AnalysisMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                        try {
+                                            for (var i = 0; i < AnalysisMetadata[0]['fields'].length; i++) {
+                                                if (!AnalysisMetadata[0]['fields'][i]['updateable']) {
+                                                    NotUpdateableFields.push(AnalysisMetadata[0]['fields'][i]['name']);
+                                                }
+                                                AllFields.push(AnalysisMetadata[0]['fields'][i]['name']);
+                                            }
+                                        } catch (err2) {
+                                        }
+                                    }
+                                    break;
+                                case 'STKR__Service_Item__c':
+                                    try {
+                                        // Inspection Item; Need to crate InspectionItemMetadata
+                                        for (var i = 0; i < InspectionItemMetadata['fields'].length; i++) {
+                                            if (!InspectionItemMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(InspectionItemMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(InspectionItemMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Prep_Waste__c':
+                                    try {
+                                        for (var i = 0; i < PrepWasteMetadata['fields'].length; i++) {
+                                            if (!PrepWasteMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(PrepWasteMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(PrepWasteMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Prep_Waste_Management__c':
+                                    try {
+                                        for (var i = 0; i < PrepWasteManagementMetadata['fields'].length; i++) {
+                                            if (!PrepWasteManagementMetadata['fields'][i]['updateable'] ) {
+                                                NotUpdateableFields.push(PrepWasteManagementMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(PrepWasteManagementMetadata['fields'][i]['name']);
+
+                                        }
+                                    } catch (err) {
+                                        try {
+                                            for (var i = 0; i < PrepWasteManagementMetadata[0]['fields'].length; i++) {
+                                                if (!PrepWasteManagementMetadata[0]['fields'][i]['updateable']) {
+                                                    NotUpdateableFields.push(PrepWasteManagementMetadata[0]['fields'][i]['name']);
+                                                }
+                                                AllFields.push(PrepWasteManagementMetadata[0]['fields'][i]['name']);
+
+                                            }
+                                        } catch (err2) {
+                                        }
+                                    }
+                                    break;
+                                case 'STKR__Service__c':
+                                    try {
+                                        // Schedule
+                                        for (var i = 0; i < ScheduleMetadata['fields'].length; i++) {
+                                            if (!ScheduleMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(ScheduleMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(ScheduleMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Schedule_Items__c':
+                                    try {
+                                        // Schedule Item   
+                                        for (var i = 0; i < ScheduleItemMetadata['fields'].length; i++) {
+                                            if (!ScheduleItemMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(ScheduleItemMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(ScheduleItemMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'Event':
+                                    try {
+                                        // Event   
+                                        for (var i = 0; i < EventsMetadata['fields'].length; i++) {
+                                            if (!EventsMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(EventsMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(EventsMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                case 'STKR__Billing__c':
+                                    try {
+                                        // Event   
+                                        for (var i = 0; i < BillingMetadata['fields'].length; i++) {
+                                            if (!BillingMetadata['fields'][i]['updateable']) {
+                                                NotUpdateableFields.push(BillingMetadata['fields'][i]['name']);
+                                            }
+                                            AllFields.push(BillingMetadata['fields'][i]['name']);
+                                        }
+                                    } catch (err) {
+                                    }
+                                    break;
+                                    case 'Account':
+                                    AllFields.push("Id");
+                                    AllFields.push("STKR__Location__Latitude__s");
+                                    AllFields.push("STKR__Location__Longitude__s");
+                                    break;
+                            }
+
+                            //Update the record
+                            if (res.rows.item(0)['updateorinsert'] === 'update' && res.rows.item(0)['updated'] !== 'newRecord') {
+                              
+                                for (var property in datatoUpload) {
+                                    try {
+                                        if (property !== 'Id' && NotUpdateableFields.indexOf(property) > -1) {
+                                            delete datatoUpload[property];
+                                        }
+                                    } catch (err) {
+                                        //break;
+                                    }
+                                    // Delete all fields that is not on server
+                                    try {
+                                        if (AllFields.indexOf(property) === -1) {
+                                            delete datatoUpload[property];
+                                        }
+                                    } catch (err) {
+                                    }
+                                }
+                                if (ObjectName === 'STKR__Visit__c') {
+                                    // Remove the isOverdue field...
+                                    try {
+                                        delete datatoUpload['isOverdue'];
+                                    } catch (err) {
+                                    }
+                                    // Remove the AttachmentThumbnail field
+                                    try {
+                                        delete datatoUpload['AttachmentThumbnail'];
+                                    } catch (err) { }
+
+                                }
+                                if (ObjectName === 'STKR__Chlorination_Results__c') {
+                                    try {
+                                        if (datatoUpload['STKR__Inspection__c'].length < 18) {
+                                            datatoUpload['STKR__Inspection__c'] = null;
+                                        }
+                                    } catch (err) {
+                                    }
+                                }
+
+                                try {
+                                    if (ObjectName === 'STKR__Actions__c') {
+                                        delete datatoUpload['stkr__account__c'];
+                                    }
+                                } catch (a) {
+                                }
+                                jsconn.sobject(ObjectName).update(datatoUpload, function (err, ret) {
+                                    if (err || !ret.success) {
+                                        alert(err);
+                                        return console.error(err, ret);
+                                    }
+                                    console.log("Created record id : " + ret.id);
+                                    // Remove from the table DataToUpdate
+                                    RemoveFromDataToUpdateTable(RecordId);
+                                });
+                            } else if (res.rows.item(0)['updateorinsert'] === 'insert' || res.rows.item(0)['updated'] === 'newRecord') {
+                                try {
+                                    delete datatoUpload['Id'];
+
+                                    for (var property in datatoUpload) {
+                                        if (ObjectName === 'STKR__Service_Item__c' && property === 'RecordType') {
+                                            if (datatoUpload['RecordTypeId'])
+                                                delete datatoUpload['RecordType'];
+                                        }
+                                        if (ObjectName === 'STKR__Inspection__c' && (property === 'STKR__Visit__c' || property === 'STKR__Service_Item__c')) {
+                                            if (datatoUpload['STKR__Service_Item__c'].length < 18) {
+                                                datatoUpload['STKR__Service_Item__c'] = null;
+                                            }
+                                        }
+                                        if (ObjectName === 'STKR__Visit__c' && (property === 'isOverdue')) {
+                                            delete datatoUpload['isOverdue'];
+                                            delete datatoUpload['dayNumber'];
+                                        }
+
+                                        if (ObjectName === 'STKR__Visit__c' && NotUpdateableFields.indexOf(property) > -1) {
+                                            delete datatoUpload[property];
+                                        }
+                                    }
+                                } catch (aer) {
+                                    console.log(aer);
+                                }
+                                if (ObjectName === 'STKR__Alerts__c') {
+                                    // Remove the isOverdue field...
+                                    try {
+                                        if (datatoUpload['STKR__Contact__c'].length < 18)
+                                            datatoUpload['STKR__Contact__c'] = null;
+                                    } catch (err) {
+                                    }
+                                }
+                                if (ObjectName === 'STKR__Chlorination_Results__c') {
+                                    try {
+                                        if (datatoUpload['STKR__Inspection__c'].length < 18) {
+                                            datatoUpload['STKR__Inspection__c'] = null;
+                                        }
+                                    } catch (err) {
+                                    }
+                                }
+                                if (ObjectName === 'STKR__Prep_Waste_Management__c') {
+                                    console.log('deleted action offline on prep')
+                                    try {
+                                        if (datatoUpload['STKR__Action__c'].length < 18) {
+                                            datatoUpload['STKR__Action__c'] = null;
+                                        }
+                                    } catch (err) {
+                                    }
+                                }
+
+                                if (ObjectName === 'STKR__Billing__c') {
+                                    try {
+                                        delete datatoUpload['Name'];
+                                    } catch (err) {
+                                    }
+                                }
+
+                                //Fetch base64 of attachment before sending to server
+                                if (ObjectName === 'Attachment') {
+                                    fetchBase64(datatoUpload['Body'], function (iData) {
+                                        datatoUpload['Body'] = iData;
+                                        console.log("3:datatoUpload", datatoUpload)
+                                        jsconn.sobject(ObjectName).create(datatoUpload, function (err, ret) {
+                                            if (err || !ret.success) {
+                                                alert(err);
+                                                return console.error(err, ret);
+                                            }
+                                            console.log("Created record id : " + ret.id);
+                                            // Remove from the table DataToUpdate
+                                            RemoveFromDataToUpdateTable(RecordId);
+                                        });
+                                    }, "image/jpeg");
+                                } else {
+                                    jsconn.sobject(ObjectName).create(datatoUpload, function (err, ret) {
+                                        if (err || !ret.success) {
+                                            alert(err);
+                                            return console.error(err, ret);
+                                        }
+                                        console.log("Created record id : " + ret.id);
+                                        // Remove from the table DataToUpdate
+                                        RemoveFromDataToUpdateTable(RecordId);
+                                    });
+                                }
+                            }
+                        }
+                    },
+                    function (e, r) {
+                        console.log('Pending Data error', e, r);
+                    });
+            });
+        } else {
+            var networkState = navigator.connection.type;
+            if (networkState === 'wifi' || networkState === '3g' || networkState === '4g' || networkState === 'cellular') {
+                console.log('Checking connection with salesforce .... ');
+                // Check if device can download record from salesforce
+                jsconn.query("SELECT Id FROM Account LIMIT 1", function (err, result) {
+                    if (err) {
+                        err = err.toString();
+                        if (err === "invalid_grant: expired access/refresh token") {
+                            app.toastMessage("Session is expired, Please login", "long");
+                            Login();
+                        } else if (err.toLowerCase().indexOf('request_limit_exceeded') > -1) {
+                            app.toastMessage('API Limit is exceeded. Please work in offline mode', 'long');
+                        } else {
+                            app.toastMessage('App is unable to connect server', 'long');
+                            AppIsOnline = false;
+                            //isAppStartedInOfflineMode = true;
+                        }
+                        isNetworkPopShowing = false;
+
+                        AppIsOnline = false;
+                        app.toastMessage("App is offline, Please continue working", "long");
+                        InternetStatusFooter = "ServiceTracker is offline. Data is stored for upload when online";
+                        $('#InternetStatusFooter').html(InternetStatusFooter);
+                        $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+                        $('#MyVisitsFooter').css("color", "#ff6666");
+                        app.toastMessage('App is offline, Please start the app in online mode', 'long');
+                        return console.log(err);
+                    }
+                    // Device have internet and valid token
+                    isNetworkPopShowing = false;
+                    // Check if device can download record from salesforce
+                    AppIsOnline = true;
+                    //isAppStartedInOfflineMode = false;
+                    InternetStatusFooter = "Network is ONLINE- good data signal is assumed - <span style='color:green;font-size:125%;'>" + networkState.toUpperCase() + "</span>";
+                    $('#InternetStatusFooter').html(InternetStatusFooter);
+                    $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+                    $('#MyVisitsFooter').css("color", "#39B7CD");
+                    UploadOfflineDataIndividual(oName, RecordId);
+                });
+            }
+        }
+    }
+
+    function DeleteOfflineDataIndividual(oName, RecordId) {
+        // if (CountNumberOfVisitOfAccount > 0) {
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'title': 'Are you sure, You want to delete this record ?',
+            'buttonLabels': ['Yes'],
+            'addCancelButtonWithLabel': 'Cancel',
+            'androidEnableCancelButton': true
+        };
+        window.plugins.actionsheet.show(options, function (buttonIndex) {
+            if (buttonIndex === 1) {
+                app.db.transaction(function (tx) {
+                    tx.executeSql("DELETE FROM DataToUpdate WHERE recordid = ?", [RecordId],
+                        function (r, s) {
+                            console.log('deleted the record');
+                            DSOfflineData();
+                        }, function (err) {
+                            alert('error :' + err);
+                        });
+                    console.log("in the delete record");
+                });
+            } else {
+                return;
+            }
+        });
+    }
+    function EmailSqliteDatabase() {
+        if (device.platform === 'Android') {
+            app.db.close(function (r) {
+                if (r == "OK") {
+                    window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory, function (dir) {
+                        dir.getFile("databases/ServiceTracker.db", {}, function (file) {
+                            try {
+                                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (mdir) {
+                                    file.copyTo(mdir, "ServiceTracker.db", function (success) {
+                                        try {
+                                            cordova.plugins.email.open({
+                                                to: ['support@servicetracker.uk.com'], // email addresses for TO field
+                                                cc: null, // email addresses for CC field
+                                                bcc: null, // email addresses for BCC field
+                                                attachments: [mdir.nativeURL + 'ServiceTracker.db'],
+                                                subject: 'Dynamic Mobile App Database', // subject of the email
+                                                body: 'Dynamic Mobile App database as on ' + new Date().toString() + '\n\n' + 'Username : ' + OrgInfo.username + '\nOrg Id : ' + OrgInfo.organization_id + '\nApp Version : ' + AppVersionNumber, // email body (for HTML, set isHtml to true)
+                                                isHtml: false, // indicats if the body is HTML or plain text
+                                            }, function (a) {
+                                                app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                                            });
+                                        } catch (err) {
+                                            app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                                            alert('Error while sending the db : \n' + JSON.stringify(err));
+                                        }
+                                    });
+                                });
+                            } catch (e) {
+                                alert("Error" + e);
+                                app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                            }
+                        }, function (err) {
+                            app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                            alert(JSON.stringify(err));
+                        });
+                    });
+                } else {
+                    app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                }
+            }, function (r, a) {
+                console.log('2:', r, a);
+                window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory, function (dir) {
+                    dir.getFile("databases/ServiceTracker.db", {}, function (file) {
+                        try {
+                            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (mdir) {
+                                file.copyTo(mdir, "ServiceTracker.db", function (success) {
+                                    try {
+                                        cordova.plugins.email.open({
+                                            to: ['support@servicetracker.uk.com'], // email addresses for TO field
+                                            cc: null, // email addresses for CC field
+                                            bcc: null, // email addresses for BCC field
+                                            attachments: [mdir.nativeURL + 'ServiceTracker.db'],
+                                            subject: 'Dynamic Mobile App Database', // subject of the email
+                                            body: 'Dynamic Mobile App database as on ' + new Date().toString() + '\n\n' + 'Username : ' + OrgInfo.username + '\nOrg Id : ' + OrgInfo.organization_id + '\nApp Version : ' + AppVersionNumber, // email body (for HTML, set isHtml to true)
+                                            isHtml: false, // indicats if the body is HTML or plain text
+                                        }, function (a) { });
+                                    } catch (err) {
+                                        alert('Error while sending the db : \n' + JSON.stringify(err));
+                                    }
+                                });
+                            });
+                        } catch (e) {
+                            alert("Error" + e);
+                        }
+                    }, function (err) {
+                        alert(JSON.stringify(err));
+                    });
+                });
+            });
+        } else if (device.platform === 'iOS') {
+            window.resolveLocalFileSystemURL(cordova.file.documentsDirectory, function (dir) {
+                dir.getFile("ServiceTracker.db", {}, function (file) {
+                    try {
+                        cordova.plugins.email.open({
+                            to: ['support@servicetracker.uk.com'], // email addresses for TO field
+                            cc: null, // email addresses for CC field
+                            bcc: null, // email addresses for BCC field
+                            attachments: file.nativeURL,
+                            subject: 'Dynamic Mobile App Database', // subject of the email
+                            body: 'Dynamic Mobile App database as on ' + new Date().toString() + '\n\n' + 'Username : ' + OrgInfo.username + '\nOrg Id : ' + OrgInfo.organization_id + '\nApp Version : ' + AppVersionNumber, // email body (for HTML, set isHtml to true)
+                            isHtml: false, // indicats if the body is HTML or plain text
+                        }, function (a) { });
+                    } catch (e) {
+                        alert("Error" + e);
+                    }
+                }, function (err) {
+                    alert(JSON.stringify(err));
+                });
+            });
+        }
+    }
+
+    function RestoreDatabase() {
+        // Add Confirmation..
+        if (device.platform === 'Android') {
+            app.db.close(function (r) {
+                if (r == "OK") {
+                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dDir) {
+                        dDir.getFile("ServiceTracker.db", {}, function (file) {
+                            window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory, function (mdir) {
+                                file.moveTo(mdir, "/databases/ServiceTracker.db", function (success) {
+                                    app.toastMessage("DB restored, Please reopen the app", "long");
+                                    app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                                }, function (err1) {
+                                    alert(JSON.stringify(err1));
+                                    app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                                });
+                            }, function (error) {
+                                alert(JSON.stringify(error));
+                                app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                            });
+                        }, function (err) {
+                            alert(JSON.stringify(err));
+                            app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                        });
+                    });
+                } else {
+                    app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                }
+            }, function (r, a) {
+                console.log('1:', r, a);
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dDir) {
+                    dDir.getFile("ServiceTracker.db", {}, function (file) {
+                        window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory, function (mdir) {
+                            file.moveTo(mdir, "/databases/ServiceTracker.db", function (success) {
+                                app.toastMessage("DB restored, Please reopen the app", "long");
+                                app.db = window.sqlitePlugin.openDatabase("ServiceTracker.db", DatabaseVersion.toString() + ".0");
+                            }, function (err1) {
+                                alert(JSON.stringify(err1));
+                            });
+                        }, function (error) {
+                            alert(JSON.stringify(error));
+                        });
+                    }, function (err) {
+                        alert(JSON.stringify(err));
+                    });
+                });
+
+            });
+        }
+    }
+
+</script>
+
+<script type="text/x-kendo-template" id="OfflineDataListviewTemplate">
+    #try {#
+        <button style="float:right;"  
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button"
+                onclick="DeleteOfflineDataIndividual('${ObjectName}','${RecordId}');event.cancelBubble=true;">
+            <i class="fa fa-trash"></i>
+        </button>
+        <button style="float:right;" 
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onclick="UploadOfflineDataIndividual('${ObjectName}','${RecordId}');event.cancelBubble=true;">
+            Sync
+        </button>
+        <div onClick="GotoOfflineDetailPage('${ObjectName}','${RecordId}');">
+            <span style="font-weight:bold;">Object : ${ObjectName}</span><br/>
+            <span>Name : ${Name}</span>
+        </div>
+    #}catch (err) {
+        alert(err);
+    }#   
+</script>

@@ -1,0 +1,402 @@
+<div data-role="view" id="optimizeVisits" data-show="DataShowoptimizeVisits" data-hide="onHide" data-use-native-scrolling="true">
+
+
+
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()"
+                class=" mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+           
+        </div>
+    </header>
+    <div id="map">
+    </div>
+
+    <script>
+
+        var mapDetails = {};
+        var mapDetailstemp;
+        var mappingJson = '';
+        var fixedLocation = '';
+        var markerSize = { 'sm': [28, 35], 'md': [35, 44], 'lg': [42, 53] };
+        var markerAnchor = { 'sm': [14, 35], 'md': [17, 44], 'lg': [21, 53] };
+        var markerPopupAnchor = { 'sm': [1, -35], 'md': [1, -44], 'lg': [2, -53] };
+        var resourceMap, dir;
+        var iconArray  =['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+        var optimiseOrder = new Set();
+        var optimiseLocOrder = [];
+        var accountVisitMap = [];
+        var visitArrayofObject = {};
+        var smallMarker = L.icon({
+            iconUrl: 'https://assets.mapquestapi.com/icon/v2/marker-sm.png',
+            iconRetinaUrl: 'https://assets.mapquestapi.com/icon/v2/marker-sm@2x.png',
+            iconSize: markerSize.sm,
+            iconAnchor: markerAnchor.sm,
+            popupAnchor: markerPopupAnchor.sm
+        });
+
+        function onHide() {
+               console.log('maaaaaaap', map);
+                /*if (map != undefined || map != null)
+                    map.remove();
+                $("#map").html(""); */
+            }
+
+        function DataShowoptimizeVisits() {
+             console.log('VisitArraytoOptimizeRoute page',VisitArraytoOptimizeRoute);
+             currentResourceData = {};
+            for (var i = 0; i < ResourceData.length; i++) {
+                if (ResourceData[i]["STKR__User__c"] == creds.UserID) {
+                    currentResourceData = ResourceData[i];
+                    console.log('currentresourcedata', ResourceData[i]);
+                    break;
+                }
+            }
+            if(currentResourceData.STKR__Fixed_Location__c == null){
+                alert('Please add a fixed location for user');
+                return;
+            }
+             if(resourceMap != undefined || resourceMap != null)
+                 resourceMap.remove();
+            $("#map").height($(document.body).height()) - $("header").height();
+
+            /*    var mapLayer = MQ.mapLayer(), map;
+    
+                map = L.map('map', {
+                    layers: mapLayer,
+                    center: [28.5330457, 77.3728002],
+                    zoom: 12
+                });
+                */
+                resourceMap = L.map('map', {
+                    layers: MQ.mapLayer(),
+                    center:  [currentResourceData.STKR__Fixed_Location__Latitude__s, currentResourceData.STKR__Fixed_Location__Longitude__s],
+                    zoom: 10
+                });
+                mapDetails = {};
+            accountVisitMap = {};
+
+            try {
+                if (VisitArraytoOptimizeRoute.length) {
+                    let promise = new Promise(function (resolve, reject) {
+
+                        app.db.transaction(function (tx) {
+                            for (var i = 0; i < VisitArraytoOptimizeRoute.length; i++) {
+                                if (VisitArraytoOptimizeRoute[i].STKR__Account_lkp__c && !accountVisitMap[VisitArraytoOptimizeRoute[i].STKR__Account_lkp__c]) {
+                                    accountVisitMap[VisitArraytoOptimizeRoute[i].STKR__Account_lkp__c] = [];
+                                }
+                                accountVisitMap[VisitArraytoOptimizeRoute[i].STKR__Account_lkp__c].push(VisitArraytoOptimizeRoute[i]);
+                    
+                                if (VisitArraytoOptimizeRoute[i]['STKR__Account_lkp__c'] && !(mapDetails.hasOwnProperty(VisitArraytoOptimizeRoute[i]['STKR__Account_lkp__c']))) {
+                                    tx.executeSql("SELECT * FROM Account WHERE accountid= ?", [VisitArraytoOptimizeRoute[i]['STKR__Account_lkp__c']],
+                                        function (tx, rs) {
+                                            var a = [];
+                    
+                                            var datafromtable = JSON.parse(rs.rows.item(0)['jsondata']);
+                                            if (datafromtable.STKR__location__Latitude__s && datafromtable.STKR__location__Longitude__s) {
+                                                a.push(datafromtable.STKR__location__Latitude__s);
+                                                a.push(datafromtable.STKR__location__Longitude__s);
+                                                console.log('geo cordinates', a);
+                                                mapDetails[datafromtable.Id] = (a.join(","));
+                                               
+                                            } else {
+                                                var b = '';
+                                                if (datafromtable.ShippingStreet)
+                                                    b = b + datafromtable.ShippingStreet;
+                    
+                                                if (datafromtable.ShippingCity)
+                                                    b = b + datafromtable.ShippingCity;
+                    
+                                                if (datafromtable.ShippingState)
+                                                    b = b + datafromtable.ShippingState;
+                    
+                                                if (datafromtable.ShippingPostalCode)
+                                                    b = b + datafromtable.ShippingPostalCode;
+                    
+                                                if (datafromtable.ShippingCountry)
+                                                    b = b + datafromtable.ShippingCountry;
+                    
+                                                console.log('value of address', b);
+                    
+                                                mapDetails[datafromtable.Id] = b;
+                                               
+                                            }
+                    
+                    
+                                            console.log('hola', mapDetails);
+                                            resolve();
+                                        },
+                                        function (a, err) {
+                                            reject()
+                    
+                                        });
+                                }
+                            }
+                        });
+                    }
+                    ).then(function(){
+                    DAFoptimizeVisits();
+                    })
+                    //
+                } else {
+                    app.toastMessage('This list is empty', 'long');
+
+                    //ShowMap();
+                }
+            } catch (e) {
+            }
+
+
+        }
+
+     
+        var currentResourceData = {};
+        function DAFoptimizeVisits() {
+              console.log('in second function')
+            var mappingJson = {
+                locations: null
+            };
+
+       
+           
+            console.log('current resource location',currentResourceData.STKR__Fixed_Location__c)
+            mapDetailstemp = Object.values(mapDetails);
+            mapDetailstemp.unshift(Object.values(currentResourceData.STKR__Fixed_Location__c).join(","));
+            mapDetailstemp.push(Object.values(currentResourceData.STKR__Fixed_Location__c).join(","));
+            mapDetailstemp.join(",");
+            mappingJson.locations = mapDetailstemp;
+
+            console.log('mapdetailstemp', mapDetailstemp, typeof (mapDetailstemp));
+            console.log('mappingjsonbeforecall', JSON.stringify(mappingJson))
+            // debugger;
+            if (mappingJson.locations && mappingJson.locations.length > 2) {
+                app.pane.loader.show();
+                $.ajax({
+                    url: "https://www.mapquestapi.com/directions/v2/optimizedroute?key=GsAuxhsaYy1lT0TtNnlONmRCtsDTbtKV",
+                    type: "POST",
+                    contentType: 'application/json',
+                    data: JSON.stringify(mappingJson),
+                    success: function (data) {
+                        console.log('runrun', data, data.info.messages[0]);
+                        if (data.info.statuscode == 0){
+                            renderoptimizeMap(data, currentResourceData);
+                        } else{
+                            app.pane.loader.hide();
+                            app.toastMessage(data.info.messages[0], 'long');
+                        }
+                            
+                    },
+                    error: function (data) {
+                        app.pane.loader.hide();
+                        console.log('error occurred - ' + mappingJson + ' - ' + data)
+                    }
+                });
+            }
+        }
+        function renderoptimizeMap(data, currentResourceData) {
+            console.log('mydata', data, data.route.locations);
+            var updatedVisits = [];
+
+            var locSeq = data.route.locationSequence;
+            var mapDetails_AccountId = [];
+            var travelTimeInseconds = 0;
+            var k = 0;
+            for (var i = 1; i < locSeq.length - 1; i++) {
+                var visits = accountVisitMap[Object.keys(mapDetails)[locSeq[i] - 1]];
+                 console.log('visits99', visits);
+                travelTimeInseconds = data.route.legs[k]['time'];
+                k++;
+                if (visits.length) {
+                    for (var j = 0; j < visits.length; j++) {
+                        var visit = Object.assign({}, visits[j]);
+
+                        if (updatedVisits.length == 0) {
+                            //First Visit
+                            var currentDateTime = new Date();
+                            
+                            var StartDueDateUTC = new Date();
+                            if(currentTab == 'This Week'){
+                                StartDueDateUTC = new Date(visits[j]['STKR__Due_Date__c']); 
+                            }
+                            if (!currentResourceData.STKR__StartOfDay__c) {
+                                app.pane.loader.hide();
+                                return alert('Please choose start of the day for current resource');
+                            }
+
+                            StartDueDateUTC.setUTCHours(currentResourceData.STKR__StartOfDay__c.split(':')[0]);
+                            StartDueDateUTC.setUTCMinutes(currentResourceData.STKR__StartOfDay__c.split(':')[1]);
+                            // do not add the travel time from resource location to first site
+                           // StartDueDateUTC.setUTCSeconds(travelTimeInseconds);
+
+                            visit["STKR__Due_Date__c"] = StartDueDateUTC;
+                            if (visit.STKR__Time_Allocation__c) {
+                                //new date so that i doesn't mutate..
+                                var finishDate = new Date(visit["STKR__Due_Date__c"]);
+                                finishDate.setUTCMinutes(finishDate.getUTCMinutes() + visit.STKR__Time_Allocation__c)
+                                visit["STKR__Due_Finish__c"] = finishDate;
+                            } else {
+                                app.pane.loader.hide();
+                                return alert('Please fill time allocation on schedule.');
+                            }
+                        } else if (j == 0) {
+                           console.log('visit on new site');
+                            var startDate = new Date(updatedVisits[updatedVisits.length - 1]["STKR__Due_Finish__c"]);
+                            //TODO : Check if startDate is of date object type..
+                            console.log('start date for visit on new site before travel',startDate,travelTimeInseconds);
+                            startDate.setUTCSeconds(startDate.getUTCSeconds() + travelTimeInseconds);
+                            console.log('start date for visit on new site after travel',startDate);
+                            visit["STKR__Due_Date__c"] = startDate;
+                            var finishDate = new Date(visit["STKR__Due_Date__c"]);
+                            finishDate.setUTCMinutes(finishDate.getUTCMinutes() + visit.STKR__Time_Allocation__c)
+                            visit["STKR__Due_Finish__c"] = finishDate;
+
+                        } else {
+                            console.log('updatedvisit array for visit on same account',updatedVisits);
+                            console.log('inelse part0987');
+                            visit["STKR__Due_Date__c"] = new Date(updatedVisits[updatedVisits.length - 1]["STKR__Due_Finish__c"]);
+                            var finishDate = new Date(visit["STKR__Due_Date__c"]);
+                            finishDate.setUTCMinutes(finishDate.getUTCMinutes() + visit.STKR__Time_Allocation__c)
+                            visit["STKR__Due_Finish__c"] = finishDate;
+                        }
+                        updatedVisits.push(visit);
+                    }
+                }
+            }
+
+            console.log("updatedVisits", updatedVisits);
+
+            if(currentTab == 'Today'){
+                VisitToday = updatedVisits.slice();
+              //  VisitToday = Object.assign({}, updatedVisits);
+            }
+            else if(currentTab == 'This Week'){
+              for(var i=0; i<VisitThisWeek.length ;i++){
+                  for(var j=0; j <updatedVisits.length; j++){
+                      if( VisitThisWeek[i]['Id'] == updatedVisits[j]['Id']){
+                          console.log('updatedvisit in this week',VisitThisWeek[i],i);
+                        VisitThisWeek[i] = updatedVisits[j];
+                      }
+                  }
+              }
+              VisitThisWeek = VisitThisWeek.sort((a, b) => a.STKR__Due_Date__c - b.STKR__Due_Date__c)
+              console.log('visit this week 8765',VisitThisWeek)
+            }
+           
+
+            var tempUpdate = [];
+            for (var i = 0; i < updatedVisits.length; i++) {
+                tempUpdate.push({
+                    Id: updatedVisits[i]["Id"],
+                    STKR__Due_Date__c: updatedVisits[i].STKR__Due_Date__c,
+                    STKR__Due_Finish__c: updatedVisits[i].STKR__Due_Finish__c,
+                    attributes : {"type" : "STKR__Visit__c"},
+                });
+            }
+
+            $.ajax({
+                url: jsconn.instanceUrl + "/services/data/v42.0/composite/sobjects",
+                type: "PATCH",
+                data: JSON.stringify({
+                    records: tempUpdate,
+                    allOrNone: true // roll back all transactions .. if any of record has error
+                }),
+                contentType: "application/json",
+                success: function (data) { console.log("Updated!!", data); },
+                error: function (err) { console.error(err);  },
+                headers: {
+                    authorization: "Bearer " + jsconn.accessToken
+                }
+            });
+
+       
+
+            optimiseLocOrder = data.route.locations.slice();
+
+            console.log('ssss', data.route.locations, optimiseLocOrder);
+
+            dir = MQ.routing.directions();
+            dir.optimizedRoute({
+                locations: data.route.locations
+            });
+
+            var locSeq = data.route.locationSequence;
+            CustomRouteLayer = MQ.Routing.RouteLayer.extend({
+                createStopMarker: function (location, stopNumber) {
+                    custom_icon = L.icon({
+                        iconUrl: 'https://api.mqcdn.com/icons/multi-pin-' + iconArray[stopNumber - 1] + '.png',
+                        iconSize: [20, 29],
+                        iconAnchor: [10, 29],
+                        popupAnchor: [0, -29],
+                        html: '<span class="notification">' + stopNumber + '</span>'
+                    }); 
+                    
+                    custom_icon1 = L.icon({
+                        iconUrl: './img/homeRoute1.png',
+                        iconSize: [30, 35],
+                        iconAnchor: [10, 29],
+                        popupAnchor: [0, -29],
+                        html: '<span class="notification">' + stopNumber + '</span>'
+                    });
+                /*    for (const [key, value] of Object.entries(mapDetails)) {
+                        console.log(key,value);
+                         var aa= value.split(',')[0].substr(0,8);
+                         var bb = value.split(',')[1].substr(0,8);
+                      console.log(aa,bb)
+                       if(aa == location.latLng.lat.toString().substr(0,8) && bb== location.latLng.lng.toString().substr(0,8)){
+                          console.log('found the account', key)
+                      }
+                      } */
+
+                    if (locSeq[stopNumber-1] == 0 || locSeq[stopNumber-1] == locSeq.length-1) {
+                        marker = L.marker(location.latLng, { icon: custom_icon1 }).bindPopup(currentResourceData.Name + ' Starting Location').openPopup().addTo(resourceMap);
+                         console.log('in', stopNumber, location.latLng);
+                        return marker;
+                    } else {
+                        console.log('location', stopNumber, location, location.latLng, locSeq, locSeq[stopNumber],locSeq[stopNumber-1]-1);
+                        var visits = accountVisitMap[Object.keys(mapDetails)[locSeq[stopNumber-1]-1]];
+                        console.log('vvvvvvvvvvvvvvvv', visits);
+                        var contentString = '';
+                        if (visits.length) {
+                            contentString = '';
+                            if (visits.length > 3) {
+                                contentString = contentString + '<div style="height:372px; overflow-y: auto;">';
+                            }
+                            for (var i = 0; i < visits.length; i++) {
+                                contentString = contentString +
+                                    '<div id="bodyContent" style="background-color:' + visits[i].STKR__Resource_Colour__c + '">' +
+                                    '<h4 id="firstHeading" >' + visits[i]['Name'] + ' for' + visits[i]['STKR__Account__c'] + '</h4>' +
+                                    '<p><b>Address: </b>' + visits[i]['STKR__Address__c'] +
+                                    '</div>';
+                            }
+                            if (visits.length > 3) {
+                                contentString = contentString + '</div>';
+                            }
+
+                        }
+                        marker = L.marker(location.latLng, { icon: custom_icon }).bindPopup(contentString).openPopup().addTo(resourceMap);
+
+                        return marker;
+                    }
+                }
+
+            });
+
+
+            resourceMap.addLayer(new CustomRouteLayer({
+                directions: dir,
+                fitBounds: true
+            }));
+
+
+        app.pane.loader.hide();
+
+            //To update Due Date field 
+         //   optimiseLocOrder.shift();
+          //  optimiseLocOrder.pop();
+
+        }
+
+    </script>

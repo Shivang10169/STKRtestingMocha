@@ -1,0 +1,317 @@
+<div data-role="view" id="SearchInspectionItem" data-init="DI_SearchInspectionItem"
+    data-show="DataShowSearchInspectionItem" data-after-show="DataAfterShowSearchInspectionItem"
+    data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();"
+                class="SearchInspectionItemListMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <span>Inspection Item Search</span>
+            <button style="float:right;margin-top:2%;border-style:none;"
+                class="SearchInspectionMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                id="button_createMultipleInspectionsForSearch" onclick="CreateMultipleInspectionsForSearch()">
+                <i class="material-icons">done_all</i>
+            </button>
+        </div>
+    </header>
+    <div data-role="header" style="background:grey;">
+        <center>
+            <input type="text" id="term_InspectionItem"
+                style="width:60%;margin:2%;line-height:2em;background-color:white;" placeholder="Enter Character" />
+            <button
+                class="SearchInspectionItemMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="SearchInspectionItem()">
+                Search
+            </button>
+        </center>
+    </div>
+    <div>
+        <div class="MainBodySearchInspectionItem" id="MessageOfSearchInspectionItem">
+        </div>
+        <ul data-role="listview" id="ListViewForSearchInspectionItem" data-template="ItemListtemplate"
+            data-style="inset">
+        </ul>
+    </div>
+</div>
+
+<div data-role="modalview" id="modalview-filterInspectionItem" style="width:100%;height:60%;">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Inspection Item Filter</span>
+        </div>
+    </div>
+    <div data-role="footer" style="background-color:grey;">
+        <center>
+            <button onClick="FilterInspectionItem()" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CHOOSE</button>
+            <button data-click="closeFilterInspectionItem" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CANCEL</button>
+        </center>
+    </div>
+    <br />
+</div>
+
+<script>
+    var SearchInspectionItemTerm = '';
+    var SearchInspectionItemResult = [];
+
+    function DI_SearchInspectionItem() {
+        //get html content using primary compact layout
+        var htmlcontent = compactLayout_dynamicTemplate(InspectionItemCompactLayout, 'STKR__Service_Item__c');
+        $("#ListViewForSearchInspectionItem").kendoMobileListView({
+            template: htmlcontent,
+            dataSource: []
+        });
+    }
+
+    function DataAfterShowSearchInspectionItem() {
+        try {
+            if (device.platform == "Android")
+                componentHandler.upgradeElements(document.getElementsByClassName('SearchInspectionItemMDLClass'));
+            var SearchInspectionItemPlaceholder = $('<p>').text("No Inspection Item found please amend your search criteria or refresh all data if you believe the Inspection Item should be on your device.");
+            SearchInspectionItemPlaceholder.css('color', 'grey');
+            SearchInspectionItemPlaceholder.css('position', 'absolute');
+            SearchInspectionItemPlaceholder.css('top', '50%');
+            $('#MessageOfSearchInspectionItem').html(SearchInspectionItemPlaceholder);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    function DataShowSearchInspectionItem() {
+        CountNumberOfOflineItem();
+        TempCurrentTab = currentTab;
+        currentTab = 'Search Inspection Item';
+        currentLocation = '';
+        count_AssociatedVisit = 0;
+        try {
+            $('#term_InspectionItem').val(SearchInspectionItemTerm);
+        } catch (err) {
+        }
+    }
+
+    function SearchInspectionItem() {
+        $('#MessageOfSearchInspectionItem').hide();
+        app.pane.loader.show();
+        SearchInspectionItemResult = [];
+        SearchInspectionItemTerm = $('#term_InspectionItem').val();
+        if (SearchInspectionItemTerm) {
+            for (var i = 0; i < ItemListOnSite.length; i++) {
+                // if (ItemListOnSite[i]['Name'])
+                //     if ((ItemListOnSite[i]['Name'].toLowerCase()).match(SearchInspectionItemTerm.toLowerCase())) {
+                //         SearchInspectionItemResult.push(ItemListOnSite[i]);
+                //         continue;
+                //     }
+                // if (ItemListOnSite[i]['STKR__Inspection_Frequency__c'])
+                //     if ((ItemListOnSite[i]['STKR__Inspection_Frequency__c'].toLowerCase()).match(SearchInspectionItemTerm.toLowerCase())) {
+                //         SearchInspectionItemResult.push(ItemListOnSite[i]);
+                //         continue;
+                //     }
+                // if (ItemListOnSite[i]['STKR__Item_Type__c'])
+                //     if ((ItemListOnSite[i]['STKR__Item_Type__c'].toLowerCase()).match(SearchInspectionItemTerm.toLowerCase())) {
+                //         SearchInspectionItemResult.push(ItemListOnSite[i]);
+                //         continue;
+                //     }
+                // if (ItemListOnSite[i]['STKR__Location__c'])
+                //     if ((ItemListOnSite[i]['STKR__Location__c'].toLowerCase()).match(SearchInspectionItemTerm.toLowerCase())) {
+                //         SearchInspectionItemResult.push(ItemListOnSite[i]);
+                //         continue;
+                //     }
+                // if (ItemListOnSite[i]['STKR__Type__c'])
+                //     if ((ItemListOnSite[i]['STKR__Type__c'].toLowerCase()).match(SearchInspectionItemTerm.toLowerCase())) {
+                //         SearchInspectionItemResult.push(ItemListOnSite[i]);
+                //         continue;
+                //     }
+                
+                for(j=0;j<InspectionItemMetadata["fields"].length;j++){
+                    if (ItemListOnSite[i][InspectionItemMetadata["fields"][j]["name"]]){
+                        var s=InspectionItemMetadata["fields"][j]["name"]
+                      //console.log(ItemListOnSite[i].s)
+                        if ((String(ItemListOnSite[i][s]).toLowerCase()).match(SearchInspectionItemTerm.toLowerCase())) {
+                            SearchInspectionItemResult.push(ItemListOnSite[i]);
+                                console.log("swed",String(ItemListOnSite[i][s]))
+                            break;
+                        }
+                    }
+                } 
+
+            }
+            try {
+                if (SearchInspectionItemResult.length) {
+                    app.pane.loader.hide();
+                    $("#ListViewForSearchInspectionItem").data("kendoMobileListView").replace(SearchInspectionItemResult);
+                } else {
+                    $('#MessageOfSearchInspectionItem').show();
+                }
+            } catch (e) { }
+        } else {
+            app.toastMessage('Please Enter Something', 'long');
+        }
+    }
+
+
+    
+    var Number_of_Inspections_to_CreateForSearch = 0, Number_of_Inspections_to_CreatedForSearch = 0;
+    function CreateMultipleInspectionsForSearch() {
+        Number_of_Inspections_to_CreateForSearch = 0, Number_of_Inspections_to_CreatedForSearch = 0;
+
+        for (var i = 0; i < SearchInspectionItemResult.length; i++) {
+            if ($("#ListViewForSearchInspectionItem #ItemsOnSiteCheckbox" + SearchInspectionItemResult[i]['Id']).is(':checked')) {
+                console.log("insidecheckbox");
+                Number_of_Inspections_to_CreateForSearch++;
+                var Id = SearchInspectionItemResult[i]['Id'];
+                var RecordTypeName = SearchInspectionItemResult[i]['RecordType']['Name'];
+                var RecordTypeId = SearchInspectionItemResult[i]['RecordTypeId'];
+                //  $("#button_createMultipleInspectionsForSearch").attr("disabled", true);
+                CreateInspectionOnItemForSearch(Id, RecordTypeName, RecordTypeId);
+            }
+        }
+    }
+
+    function CreateInspectionOnItemForSearch(InspectionItemId, InspectionItemRecordTypeName, InspectionItemRecordTypeId) {
+
+        // store new Inspection data if device is online
+        if (navigator.onLine && AppIsOnline) {
+            for (var i = 0; i < SearchInspectionItemResult.length; i++) {
+                if (SearchInspectionItemResult[i]['Id'] === InspectionItemId) {
+                    function asyncdata(data) {
+                        var available = false;
+                        for (var m = 0; m < InspectionItemData.length; m++) {
+                            if (InspectionItemData[m]['Id'] === data.Id) {
+                                available = true;
+                                break;
+                            }
+                        }
+                        if (!available)
+                            InspectionItemData.push(data);
+                        app.insertRecord('InspectionItem', {
+                            JsonData: JSON.stringify(data),
+                            Updated: 'false',
+                            UserId: creds.UserID,
+                            AccountID: data['STKR__Account__c'],
+                            InspectionItemID: data['Id']
+                        }, function () {
+                            console.log('Record Inserted into InspectionItem table');
+                        });
+                    }
+                    asyncdata(SearchInspectionItemResult[i]);
+                    break;
+                }
+            }
+        }
+        // end
+        console.log(InspectionItemId, InspectionItemRecordTypeName, InspectionItemRecordTypeId);
+        var datatoupload = {};
+        //datatoupload['RecordType'] = {};
+        if (InspectionItemId.length < 18) {
+            // To see inspection item values on Inspection Detail Page..
+            datatoupload['STKR__Service_Item__c'] = InspectionItemId;
+            for (var i = 0; i < InspectionItemData.length; i++) {
+                if (InspectionItemData[i]['Id'] === InspectionItemId) {
+                    datatoupload['STKR__UniqueId__c'] = InspectionItemId + ';Mobile;' + InspectionItemData[i]['STKR__Type__c'];
+                    break;
+                }
+            }
+        } else {
+            //@TODO:Change it to unique external id and handle in offline
+            datatoupload['STKR__Service_Item__c'] = InspectionItemId;
+            datatoupload['STKR__UniqueId__c'] = '';
+        }
+        datatoupload['STKR__Status__c'] = 'Pending';
+        datatoupload['STKR__Visit__c'] = newDetailValue[0]['Id'];
+        // Assign RecordTypeId to Inspection
+        // Inspection Item have Same name for Record Type and Different Id
+        for (var i = 0; i < InspectionMetadata['recordTypeInfos'].length; i++) {
+            if (InspectionMetadata['recordTypeInfos'][i]['name'] === InspectionItemRecordTypeName) {
+                datatoupload['RecordTypeId'] = InspectionMetadata['recordTypeInfos'][i]['recordTypeId'];
+                break;
+            }
+        }
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            datatoupload['STKR__UniqueId__c'] = newDetailValue[0]['Id'] + '_' + InspectionItemId;
+            jsconn.sobject("STKR__Inspection__c").create(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    alert(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Created Successfully : ' + ret.id);
+                datatoupload['Id'] = ret.id;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                InspectionData.push(datatoupload);
+                app.insertRecord('Inspection', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    InspectionID: datatoupload['Id'],
+                    VisitID: newDetailValue[0]['Id']
+                });
+                app.toastMessage('New Inspection created', 'long');
+                // Update Visit table to increment item to inspect value..
+                app.db.transaction(function (tx) {
+                    newDetailValue[0]['STKR__Items_to_inspect__c']++;
+                    console.log('After creating new inspection ', newDetailValue[0]);
+                    tx.executeSql("Update Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(newDetailValue[0]), newDetailValue[0]['Id']], function (a, b) {
+                        console.log(a, b);
+                    }, function (error) {
+                        console.log('error', error);
+                    });
+                });
+                Number_of_Inspections_to_CreatedForSearch++;
+
+                if (Number_of_Inspections_to_CreatedForSearch == Number_of_Inspections_to_CreateForSearch) {
+                    window.history.back();
+                }
+            });
+        } else {
+            var timestamp = (new Date().getTime()).toString();
+            datatoupload['Id'] = timestamp;
+
+            if (InspectionItemId.length < 18) {
+                datatoupload['STKR__UniqueId__c'] = InspectionItemId + ';Mobile;' + InspectionItemData[i]['STKR__Type__c'];
+            } else {
+                datatoupload['STKR__Service_Item__c'] = InspectionItemId;
+                datatoupload['STKR__UniqueId__c'] = newDetailValue[0]['Id'] + '_' + timestamp;
+            }
+            alert("STKR__UniqueId__c :" + InspectionItemId + ';Mobile;' + InspectionItemData[i]['STKR__Type__c']);
+
+
+            InspectionData.push(datatoupload);
+            app.insertRecord('Inspection', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                InspectionID: timestamp,
+                VisitID: newDetailValue[0]['Id']
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'STKR__Inspection__c',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            // Update Visit table to increment item to inspect value..
+            app.db.transaction(function (tx) {
+                newDetailValue[0]['STKR__Items_to_inspect__c']++;
+                tx.executeSql("Update Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(newDetailValue[0]), newDetailValue[0]['Id']], function (a, b) {
+                    console.log(a, b);
+                }, function (error) {
+                    console.log('error', error);
+                });
+            });
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('New Inspection stored offline', 'long');
+            Number_of_Inspections_to_CreatedForSearch++;
+            if (Number_of_Inspections_to_CreatedForSearch == Number_of_Inspections_to_CreateForSearch) {
+                window.history.back();
+            }
+
+        }
+    }
+
+</script>

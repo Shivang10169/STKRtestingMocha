@@ -1,0 +1,1059 @@
+<div data-role="view" id="overduevisits_oldestsort" data-after-show="DataAfterShowMyVisit_oldestsort"
+    data-layout="MyVisitLayout" data-show="DataShowOverdueVisit_oldestsort" data-use-native-scrolling="true"
+    data-init="DataInitOverdueVisit_oldestsort">
+    <div id="touch-overdue_oldestsort" data-role="touch" data-enable-swipe="1" data-swipe="OverdueTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitOverdue_oldestsort"></div>
+        <ul data-role="listview" id="ListViewForVisitOverdue_oldestsort" data-template="ListViewForVisitTemplate"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="overduevisits_newestsort" data-after-show="DataAfterShowMyVisit_newestsort"
+    data-layout="MyVisitLayout" data-show="DataShowOverdueVisit_newestsort" data-use-native-scrolling="true"
+    data-init="DataInitOverdueVisit_newestsort">
+    <div id="touch-overdue_newestsort" data-role="touch" data-enable-swipe="1" data-swipe="OverdueTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitOverdue_newestsort"></div>
+        <ul data-role="listview" id="ListViewForVisitOverdue_newestsort" data-template="ListViewForVisitTemplate"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="todayvisits" data-layout="MyVisitLayout" data-show="DataShowTodayVisit"
+    data-after-show="DAFTodayVisit" data-use-native-scrolling="true">
+    <div id="touch-today" data-role="touch" data-enable-swipe="1" data-swipe="myTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitToday"></div>
+        <ul data-role="listview" id="ListViewForVisitToday" data-template="ListViewForVisitTemplateToday"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="thisweekvisits" data-layout="MyVisitLayout" data-show="DataShowThisWeekVisit"
+    data-after-show="DAFThisWeek" data-use-native-scrolling="true" data-hide="DataHideThisWeekVisit">
+    <div id="touch-thisweek" data-role="touch" data-enable-swipe="1" data-swipe="myTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitThisWeek"></div>
+        <ul data-role="listview" id="ListViewForVisitThisWeek" data-template="ListViewForVisitTemplate"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="within45daysvisits" data-layout="MyVisitLayout" data-show="DataShowWithin45Visit"
+    data-after-show="DASWithin45" data-use-native-scrolling="true">
+    <div id="touch-with45days" data-role="touch" data-enable-swipe="1" data-swipe="myTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitWithin45Days"></div>
+        <ul data-role="listview" id="ListViewForVisitWithin45Days" data-template="ListViewForVisitTemplate"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="completevisits" data-layout="MyVisitLayout" data-show="DataShowCompleteVisit"
+    data-after-show="DASCompletedVisit" data-use-native-scrolling="true">
+    <div id="touch-complete" data-role="touch" data-enable-swipe="1" data-swipe="myTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitComplete"></div>
+        <ul data-role="listview" id="ListViewForVisitComplete" data-template="ListViewForVisitCompletetab"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="nearbyvisit" data-layout="MyVisitLayout" data-show="DataShowNearbyVisit"
+    data-after-show="DAFNearby" data-use-native-scrolling="true">
+    <div id="touch-nearby" data-role="touch" data-enable-swipe="1" data-swipe="NearbyTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitNearby"></div>
+        <ul data-role="listview" id="ListViewForVisitNearby" data-template="ListViewForVisitTemplate"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="nearbyvisit_otherusers" data-layout="MyVisitLayout" data-show="DataShowNearbyVisit_otherusers"
+    data-after-show="DAFNearby_otherusers" data-use-native-scrolling="true">
+    <div id="touch-nearby_otherusers" data-role="touch" data-enable-swipe="1" data-swipe="NearbyTouch.swipe">
+        <div class="mainBody" id="MessageOfVisitNearby_otherusers"></div>
+        <ul data-role="listview" id="ListViewForVisitNearby_otherusers" data-template="ListViewForVisitTemplate"
+            data-style="inset"></ul>
+    </div>
+</div>
+
+<div data-role="layout" data-id="MyVisitLayout">
+    <header data-role="header">
+        <div data-role="navbar" id="normal">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon" href="#MyVisitsdrawer">
+                <b class="OfflineDataItemCount badge badge-notify"></b>
+            </a>
+            <span data-role="view-title" data-align="left" style="font-weight:bold;color:white;"></span>
+            <div style="margin-right:5%;float:right">
+                <button name="Optimizevisitsroute" onclick="navigatetoOptimizedRoutepage();"
+                class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" style="visibility:hidden;">
+                <i class="material-icons">call_split</i>
+            </button>
+                <button name="locatenearbyvisits" onclick="openprompt()"
+                    class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" style="visibility:hidden;">
+                    <i class="material-icons">location_searching</i>
+                </button>
+                <button onclick="app.navigate('view/HomePage.html');"
+                    class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                    <i class="material-icons">home</i>
+                </button>
+                <button onclick="GotoShowVisitsmap();" class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                    <i class="material-icons">place</i>
+                </button>
+                <button class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                    onClick="app.navigate('view/Searchvisits.html');">
+                    <i class="material-icons">search</i>
+                </button>
+                <button class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                    onClick="showFilterVisitModalView()">
+                    <i class="fa fa-filter"></i>
+                </button>
+                <button class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" onClick="movetoLoadAllData()">
+                    <i class="material-icons">sync</i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <header data-role="header">
+        <div data-role="tabstrip" id="VisitTabStripHeader">
+            <a href="#overduevisits_oldestsort" id="tabstripoverduevisits">OVERDUE</a>
+            <a href="#todayvisits" id="tabstriptodayvisits">TODAY</a>
+            <a href="#thisweekvisits" id="tabstripthisweekvisits">7 DAYS</a>
+            <a href="#within45daysvisits" id="tabstripwithin45daysvisits">46 DAYS</a>
+            <a href="#nearbyvisit" id="tabstripnearbyvisits">NEARBY</a>
+            <a href="#completevisits" id="tabstripcompletevisits">COMPLETED</a>
+        </div>
+    </header>
+
+    <header data-role="header">
+        <div data-role="tabstrip" data-selected-index="0" id="tabstrip_nearby">
+            <a id="tabstripnearby_myvisits" onclick="window.location.replace('#nearbyvisit')"
+                style="color:#d1d1d1;font-size:130%;">
+                My Visits
+            </a>
+            <a id="tabstripnearby_otherusers" onclick="window.location.replace('#nearbyvisit_otherusers')"
+                style="color:#d1d1d1;font-size:130%;">
+                Other Visits
+            </a>
+        </div>
+    </header>
+
+    <header data-role="header">
+        <div data-role="tabstrip" data-selected-index="0" id="tabstrip_overdue">
+            <a id="tabstripoverdue_oldestsort" onclick="window.location.replace('#overduevisits_oldestsort')"
+                style="font-size:130%;">
+                Oldest First
+            </a>
+            <a id="tabstripoverdue_newestsort" onclick="window.location.replace('#overduevisits_newestsort')"
+                style="font-size:130%;">
+                Nearest First
+            </a>
+        </div>
+    </header>
+
+    <!--ul data-role="actionsheet" id="MoreActions" data-popup='{"direction": "left"}'>
+        <li>
+            <a data-action="showFilterVisitModalView">Filter</a>
+        </li>
+        <li>
+            <a data-action="ShowSortVisitModalView">Sort</a>
+        </li>
+    </ul-->
+</div>
+
+<div data-role="modalview" id="modalview-filter" style="width:100%;height:95%">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Visit list Filter</span>
+        </div>
+    </div>
+
+    <ul data-role="listview">
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioNoFilter" checked="checked"
+                value="No Filter" />
+            <label class="km-radio-label km-label" for="ModelViewRadioNoFilter">No Filter</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioRoutines" value="Routines" />
+            <label class="km-radio-label km-label" for="ModelViewRadioRoutines">Routines</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioJobs" value="Job Visit" />
+            <label class="km-radio-label km-label" for="ModelViewRadioJobs">Job Visit</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioCallouts" value="Call Out" />
+            <label class="km-radio-label km-label" for="ModelViewRadioCallouts">Call Out</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioFollowUps" value="Follow-Up" />
+            <label class="km-radio-label km-label" for="ModelViewRadioFollowUps">Follow-Up</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioInProgress" value="In Progress" />
+            <label class="km-radio-label km-label" for="ModelViewRadioInProgress">In Progress</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioFixedVisit" value="Fixed Visit" />
+            <label class="km-radio-label km-label" for="ModelViewRadioFixedVisit">Fixed Visit</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioEvents" value="Events" />
+            <label class="km-radio-label km-label" for="ModelViewRadioEvents">Events</label>
+        </li>
+        <li id="ModelViewLiServieTerritory">
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioserviceterritory" value="Service Territory" />
+            <label class="km-radio-label km-label" for="ModelViewRadioserviceterritory">ServiceTerritory</label> <br/>
+            <input type="text" name="filter" id="ModelViewTextserviceterritory" value="" style="height: 45px;border: solid"/>
+        </li>
+    </ul>
+
+    <div data-role="footer" style="background-color:grey;">
+        <center>
+            <button onClick="FilterVisits()" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CHOOSE</button>
+            <button data-click="closeModalViewFilter" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CANCEL</button>
+        </center>
+    </div>
+    <br />
+</div>
+
+<!--div data-role="modalview" id="modalview-sort" style="width:90%;height:60%;" data-modal="false">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Sort Visit List</span>
+        </div>
+    </div>
+
+    <ul data-role="listview">
+        <li>
+            <a data-role="button" onClick="SortVisits('NewestDueDate')" class="km-large"> Oldest due date</a>
+        </li>
+        <li>
+            <a data-role="button" onClick="SortVisits('OldestDueDate')"> Newest due date</a>
+        </li>
+        <li>
+            <a data-role="button" onClick="SortVisits('VisitNumberDes')"> (visit Number) Descending</a>
+        </li>
+        <li>
+            <a data-role="button" onClick="SortVisits('VisitNumberAsc')"> (visit Number) Ascending</a>
+        </li>
+        <li>
+            <center>
+                <button data-role="button" onClick="$('#modalview-sort').kendoMobileModalView('close')" class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    Close</button>
+            </center>
+        </li>
+    </ul>
+</div-->
+
+<div data-role="modalview" id="ChangeStatusOfVisits_List" style="margin:2%;">
+    <div id="ChangeDynamicStatusOfVisits_List">
+    </div>
+</div>
+
+<script>
+    var newVisitData = [];
+    var myVisitsScheduleData = {};
+    var TempCurrentTab = '';
+    var visitDataForBack;
+    var StoreCurrentCardState = {};
+    var VisitName;
+    var accountid;
+    var SingleVisit;
+    var NewVisitOverdue_OldestSort = [];
+    var RestVisitOverdue_OldestSort = [];
+    var FilterVisitOverdue_OldestSort = [];
+    var VisitOverdue_Nearest = [];
+
+    //Visit Id, Account Id, currentTab
+
+    function DataShowOverdueVisit_oldestsort() {
+        CountNumberOfOflineItem();
+        try {
+            navigator.splashscreen.hide();
+        } catch (err) {
+        }
+        currentTab = 'Overdue';
+        currentLocation = '';
+        NewVisitOverdue_OldestSort = [];
+        RestVisitOverdue_OldestSort = [];
+        FilterVisitOverdue_OldestSort = [];
+        visitDataForBack = null;
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').show();
+        $("button[name='locatenearbyvisits']").css('visibility', 'hidden');
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        $('#InternetStatusFooter').html(InternetStatusFooter);
+        $("#tabstriptodayvisits").removeClass("km-state-active");
+        $("#tabstripthisweekvisits").removeClass("km-state-active");
+        $("#tabstripwithin45daysvisits").removeClass("km-state-active");
+        $("#tabstripnearbyvisits").removeClass("km-state-active");
+        $("#tabstripcompletevisits").removeClass("km-state-active");
+        $("#tabstripoverduevisits").addClass("km-button km-state-active");
+        $('#MessageOfVisitOverdue_oldestsort').empty();
+        $('#tabstrip_nearby').hide();
+        $('#tabstrip_overdue').show();
+        $("#tabstripoverdue_newestsort").removeClass("km-state-active");
+        $("#tabstripoverdue_oldestsort").addClass("km-button km-state-active");
+
+
+
+
+        /* if (VisitOverdue[i]['STKR__Visit_Type__c'] === 'Call Out' ||
+        VisitOverdue[i]['STKR__Visit_Type__c'] === 'FIXED VISIT - Call Out' ||
+        VisitOverdue[i]['STKR__Visit_Type__c'] === 'Job Visit' ||
+        VisitOverdue[i]['STKR__Visit_Type__c'] === 'FIXED VISIT - Job Visit' ||
+        VisitOverdue[i]['STKR__Visit_Type__c'] === 'Follow-Up' ||
+        VisitOverdue[i]['STKR__Visit_Type__c'] === 'FIXED VISIT - Follow-Up')  */
+
+        try {
+            for (var i = 0; i < VisitOverdue.length; i++) {
+                if (VisitOverdue[i]['STKR__Visit_Type__c'].includes('Call Out') ||
+                    VisitOverdue[i]['STKR__Visit_Type__c'].includes('Job Visit') ||
+                    VisitOverdue[i]['STKR__Visit_Type__c'].includes('Follow-Up')) {
+                    VisitOverdue[i]['ToSort'] = new Date(VisitOverdue[i]['STKR__Due_Date__c']).getTime();
+                    FilterVisitOverdue_OldestSort.push(VisitOverdue[i]);
+                    FilterVisitOverdue_OldestSort.sort(function (a, b) { return a.ToSort - b.ToSort });
+                    //FilterVisitOverdue_OldestSort.sort(compare);
+                } else {
+                    VisitOverdue[i]['ToSort'] = new Date(VisitOverdue[i]['STKR__Due_Date__c']).getTime();
+                    RestVisitOverdue_OldestSort.push(VisitOverdue[i]);
+                    RestVisitOverdue_OldestSort.sort(function (a, b) { return a.ToSort - b.ToSort });
+                    //RestVisitOverdue_OldestSort.sort(compare);
+                }
+            }
+            NewVisitOverdue_OldestSort = FilterVisitOverdue_OldestSort.concat(RestVisitOverdue_OldestSort);
+            for (var i = 0; i < NewVisitOverdue_OldestSort.length; i++) {
+                delete NewVisitOverdue_OldestSort[i]['ToSort'];
+            }
+            $("#ListViewForVisitOverdue_oldestsort").data("kendoMobileListView").replace(NewVisitOverdue_OldestSort);
+            //$("#ListViewForVisitOverdue_oldestsort").data("kendoMobileListView").replace(combineVisitandEvent(NewVisitOverdue, EventsOverdue));
+            if (VisitOverdue.length === 0) {
+                var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu")
+                ShowPlaceholder.css('color', 'grey');
+                ShowPlaceholder.css('position', 'absolute');
+                ShowPlaceholder.css('top', '50%');
+                $('#MessageOfVisitOverdue_oldestsort').html(ShowPlaceholder)
+            }
+            //document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+            alert('MyVisit 1 : ' + e);
+        }
+
+        app.db.transaction(function (tx) {
+            function fetchDtails(index) {
+                tx.executeSql("SELECT * FROM Schedule WHERE scheduleid=?", [AllVisits[index]['STKR__Service__c']],
+                    function (a, b) {
+                        var parsedScheduleValue = JSON.parse(b.rows.item(0)['jsondata']);
+                        MapScheduleToVisitId[AllVisits[index]['Id']] = parsedScheduleValue;
+                        if (device.platform.toLowerCase() === 'ios') {
+                            try {
+                                var lastvisitdate = '';
+                                if (typeof (parsedScheduleValue['STKR__Last_Visit__c']) == "object") {
+                                    lastvisitdate = parsedScheduleValue['STKR__Last_Visit__c'].toLocaleDateString();
+                                } else {
+                                    lastvisitdate = new Date(parsedScheduleValue['STKR__Last_Visit__c'].split('+')[0]).toLocaleDateString();
+                                }
+                                if (lastvisitdate)
+                                    $('#LastVisit' + AllVisits[index]['Id']).html("(" + lastvisitdate + ")");
+                            } catch (err) {
+                                //console.error(err);
+                            }
+                        } else {
+                            try {
+                                var lastvisitdate = new Date(parsedScheduleValue['STKR__Last_Visit__c']).toLocaleDateString();
+                                if (lastvisitdate)
+                                    $('#LastVisit' + AllVisits[index]['Id']).html("(" + lastvisitdate + ")");
+                            } catch (err) {
+                                //console.error(err);
+                            }
+                        }
+                    },
+                    function (tx, err) {
+                        // StoreError(err);
+                        alert(err.message);
+                    }
+                );
+            }
+            for (var i = 0; i < AllVisits.length; i++) {
+                fetchDtails(i);
+            }
+        });
+    }
+
+    function DataShowOverdueVisit_newestsort() {
+        CountNumberOfOflineItem();
+        $('[id="ModelViewLiServieTerritory"]').show();
+        app.pane.loader.show();
+        try {
+            navigator.splashscreen.hide();
+        } catch (err) {
+        }
+        currentTab = 'Overdue_NewestSort';
+        currentLocation = '';
+        visitDataForBack = null;
+        count_AssociatedVisit = 0;
+        VisitOverdue_Nearest = [];
+        $("#ListViewForVisitOverdue_newestsort").data("kendoMobileListView").replace([]);
+
+        $("button[name='locatenearbyvisits']").css('visibility', 'hidden');
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        $('#InternetStatusFooter').html(InternetStatusFooter);
+        $("#tabstriptodayvisits").removeClass("km-state-active");
+        $("#tabstripthisweekvisits").removeClass("km-state-active");
+        $("#tabstripwithin45daysvisits").removeClass("km-state-active");
+        $("#tabstripnearbyvisits").removeClass("km-state-active");
+        $("#tabstripcompletevisits").removeClass("km-state-active");
+        $("#tabstripoverduevisits").addClass("km-button km-state-active");
+        $('#tabstrip_nearby').hide();
+        $('#tabstrip_overdue').show();
+        $("#tabstripoverdue_oldestsort").removeClass("km-state-active");
+        $("#tabstripoverdue_newestsort").addClass("km-button km-state-active");
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showNearestOverdueVisits);
+        } else {
+            app.toastMessage("Geolocation is not supported by this browser.");
+            app.pane.loader.hide();
+        }
+        //$("#ListViewForVisitOverdue_newestsort").data("kendoMobileListView").replace(VisitOverdue_Nearest);
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+        setTimeout(function () {
+            app.pane.loader.hide();
+        }, 10000);
+    }
+
+
+    function DataAfterShowMyVisit_oldestsort() {
+        if (device.platform == "Android")
+          {  componentHandler.upgradeElements(document.getElementsByClassName('MyVisitMDLIcon'));
+           }
+        changeVisitColor();
+    }
+
+    function DataInitOverdueVisit_oldestsort() {
+    }
+
+    function DataAfterShowMyVisit_newestsort() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('MyVisitMDLIcon'));
+        changeVisitColor();
+    }
+
+    function DataInitOverdueVisit_newestsort() {
+    }
+
+    function DataShowTodayVisit() {
+        CountNumberOfOflineItem();
+        currentTab = 'Today';
+        visitDataForBack = null;
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').hide();
+       $("button[name='Optimizevisitsroute']").css('visibility', 'visible');
+        $("button[name='locatenearbyvisits']").css('visibility', 'hidden');
+        $("button[name='locatenearbyvisits']").css('display', 'none');
+        //$("#ListViewForVisitToday").data("kendoMobileListView").replace(VisitToday);
+        $("#ListViewForVisitToday").data("kendoMobileListView").replace(combineVisitandEvent(VisitToday, EventsToday));
+        manuallySortTheTodayList(null, null, true);
+        $('#MessageOfVisitToday').empty();
+        $('#tabstrip_nearby').hide();
+        $('#tabstrip_overdue').hide();
+        if (VisitToday.length === 0 && EventsToday.length === 0) {
+            //option 1 to show the message when Visit Today is empty
+            var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu")
+            ShowPlaceholder.css('color', 'grey');
+            ShowPlaceholder.css('position', 'absolute');
+            ShowPlaceholder.css('top', '50%');
+            $('#MessageOfVisitToday').html(ShowPlaceholder)
+            //option 2 to show the message when Visit Today is empty
+            /* $("MessageOfVisitToday").addClass("ShowPlaceholder");*/
+        }
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+
+    }
+
+    function DAFTodayVisit() {
+        changeVisitColor();
+    }
+
+    function DataHideThisWeekVisit() {
+        // Hide sort options
+        $("#SortModalView_VisitDesc").show();
+        $("#SortModalView_VisitAsc").show();
+    }
+    
+    function navigatetoOptimizedRoutepage(thisweekData){
+        if(!AppIsOnline){
+            app.toastMessage('You are offline');
+            return;
+        }
+        
+        console.log('passeddata44',thisweekData);
+        VisitArraytoOptimizeRoute =[];
+        var fixedVisitCount =0;
+        console.log('cuurent tab to optimize', currentTab);
+        if(currentTab == 'Today'){
+            //VisitArraytoOptimizeRoute = Object.assign({}, VisitToday);
+            VisitArraytoOptimizeRoute = _.map(VisitToday, _.clone)
+            console.log('copied array VisitArraytoOptimizeRoute', VisitArraytoOptimizeRoute);
+        }
+        else if(currentTab == 'This Week'){
+         console.log('in this week success' ,thisweekData);
+         var dayno = thisweekData;
+            var tempWeekDaysSeq = returnWeekDays();
+            var WeekDaysSeq = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            console.log(tempWeekDaysSeq);
+            for (var i = 0; i < VisitThisWeek.length; i++) {
+                console.log(i);
+                var currday = new Date(VisitThisWeek[i]['STKR__Due_Date__c']).getDay();
+                if (tempWeekDaysSeq[dayno] == WeekDaysSeq[currday]) {
+                    console.log('onlythese visit will be added', VisitThisWeek[i]);
+                    VisitArraytoOptimizeRoute.push(VisitThisWeek[i]);
+                } else {
+                    console.log(i, currday);
+                }
+        
+            }
+
+        }
+
+        for(var i=0;i< VisitArraytoOptimizeRoute.length;i++){
+            if(VisitArraytoOptimizeRoute[i]['STKR__Fixed_Visit__c'] == true){
+                fixedVisitCount++;
+            }
+        }
+
+        if(fixedVisitCount>0){
+         app.toastMessage('Optimizing these visit will change the fixed visit','long');
+         return;
+        }
+        else{
+            app.navigate('view/mapOptimize.html');
+        }
+    }
+    // Global so that header template can access it
+    var tempWeekDaysSeq = [];
+
+    function DataShowThisWeekVisit() {
+        CountNumberOfOflineItem();
+        currentTab = 'This Week';
+        visitDataForBack = null;
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').hide();
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        $("button[name='locatenearbyvisits']").css('visibility', 'hidden');
+
+        // Disable sort options
+        $("#SortModalView_VisitDesc").hide();
+        $("#SortModalView_VisitAsc").hide();
+        $('#tabstrip_nearby').hide();
+        $('#tabstrip_overdue').hide();
+
+        tempWeekDaysSeq = returnWeekDays();
+        $("#ListViewForVisitThisWeek").kendoMobileListView({
+            dataSource: {
+                data: combineVisitandEvent(VisitThisWeek, EventsThisWeek),
+                schema: {
+                    parse: function (data) {
+                        // Make today dayNumber = 0 , tomorrow = 1 and so on
+                        if (device.platform === "Android") {
+                            for (var i = 0; i < data.length; i++) {
+                                var curDay = new Date(data[i]['STKR__Due_Date__c']).getDay();
+                                curDay = curDay - new Date().getDay();
+                                if (curDay < 0) {
+                                    data[i].dayNumber = curDay + 7;
+                                } else {
+                                    data[i].dayNumber = curDay;
+                                }
+                            }
+                        } else if (device.platform === "iOS") {
+                            for (var i = 0; i < data.length; i++) {
+                                var curDay_ios;
+                                if (typeof (data[i]['STKR__Due_Date__c']) == "object") {
+                                    curDay_ios = data[i]['STKR__Due_Date__c'].getDay();
+                                } else {
+                                    curDay_ios = new Date(data[i]['STKR__Due_Date__c'].split('+')[0]).getDay();
+                                }
+                                curDay_ios = curDay_ios - new Date().getDay();
+                                if (curDay_ios < 0) {
+                                    data[i].dayNumber = curDay_ios + 7;
+                                } else {
+                                    data[i].dayNumber = curDay_ios;
+                                }
+                            }
+                        }
+                        return data;
+                    }
+                },
+                group: { field: "dayNumber" }
+            },
+            template: $('#ListViewForVisitTemplate').text(),
+            headerTemplate: '#:tempWeekDaysSeq[value]#  <i class="material-icons" style="float:right;" onclick="navigatetoOptimizedRoutepage(\'#:value#\');">call_split</i>',
+            fixedHeaders: true
+        });
+         //onclick="navigatetoOptimizedRoutepage(\'#:value#\');"
+        $('#MessageOfVisitThisWeek').empty();
+        if (VisitThisWeek.length === 0 && EventsThisWeek.length === 0) {
+            var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu")
+            ShowPlaceholder.css('color', 'grey');
+            ShowPlaceholder.css('position', 'absolute');
+            ShowPlaceholder.css('top', '50%');
+
+            $('#MessageOfVisitThisWeek').html(ShowPlaceholder)
+        }else{
+            $("#MessageOfVisitThisWeek").css({ "position": "relative"});
+        }
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+    }
+    function holabola(){
+        console.log('grouped template called');
+    }
+
+    function DAFThisWeek() {
+        changeVisitColor();
+    }
+
+    var tempWeekDaysSeq_45days = [];
+
+    var WCMondays = {};
+
+    function DataShowWithin45Visit() {
+        CountNumberOfOflineItem();
+        visitDataForBack = null;
+        currentTab = 'Within 45';
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').hide();
+        $("button[name='locatenearbyvisits']").css('visibility', 'hidden');
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        //$("#ListViewForVisitWithin45Days").data("kendoMobileListView").replace(VisitWithin45);
+        // $("#ListViewForVisitWithin45Days").data("kendoMobileListView").replace(combineVisitandEvent(VisitWithin45, EventsWithin45));
+        $('#tabstrip_nearby').hide();
+        $('#tabstrip_overdue').hide();
+
+        tempWeekDaysSeq_45days = returnWeekDays_45days();
+
+        $("#ListViewForVisitWithin45Days").kendoMobileListView({
+            dataSource: {
+                data: combineVisitandEvent(VisitWithin45, EventsWithin45),
+                sort: { field: "STKR__Due_Date__c", dir: "asc" },
+                schema: {
+                    parse: function (data) {
+                        WCMondays = {};
+                        // Group by week not day
+                        if (device.platform === "Android") {
+                            for (var i = 0; i < data.length; i++) {
+                                var tempdate = new Date(data[i]['STKR__Due_Date__c']);
+                                var WeekNumber = tempdate.getWeek();
+                                data[i]['date'] = WeekNumber;
+                                var MondayDate = getMonday(tempdate);
+                                WCMondays[WeekNumber] = MondayDate.getDate() + '/' +
+                                    (MondayDate.getMonth() + 1) + '/' +
+                                    MondayDate.getFullYear();
+                            }
+                        } else if (device.platform === "iOS") {
+                            for (var i = 0; i < data.length; i++) {
+                                var tempdate;
+                                if (typeof (data[i]['STKR__Due_Date__c']) == "object") {
+                                    tempdate = data[i]['STKR__Due_Date__c'];
+                                } else {
+                                    tempdate = new Date(data[i]['STKR__Due_Date__c'].split('+')[0]);
+                                }
+                                var WeekNumber = tempdate.getWeek();
+                                data[i].date = WeekNumber;
+                                var MondayDate = getMonday(tempdate);
+                                WCMondays[WeekNumber] = MondayDate.getDate() + '/' +
+                                    (MondayDate.getMonth() + 1) + '/' +
+                                    MondayDate.getFullYear();
+                            }
+                        }
+                        return data;
+                    }
+                },
+                group: { field: "date" }
+            },
+            template: $('#ListViewForVisitTemplate').text(),
+            headerTemplate: "W/C Monday #:WCMondays[value]#",
+            fixedHeaders: true
+        });
+
+        $('#MessageOfVisitWithin45Days').empty();
+        if (VisitWithin45.length === 0 && EventsWithin45.length === 0) {
+            var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu")
+            ShowPlaceholder.css('color', 'grey');
+            ShowPlaceholder.css('position', 'absolute');
+            ShowPlaceholder.css('top', '50%');
+            $('#MessageOfVisitWithin45Days').html(ShowPlaceholder)
+        }
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+    }
+
+    function DASWithin45() {
+        changeVisitColor();
+    }
+
+    function DataShowCompleteVisit() {
+        CountNumberOfOflineItem();
+        currentTab = 'Complete';
+        visitDataForBack = null;
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').hide();
+        $("button[name='locatenearbyvisits']").css('visibility', 'hidden');
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        try {
+            $('#MessageOfVisitComplete').empty();
+            $('#tabstrip_nearby').hide();
+            $('#tabstrip_overdue').hide();
+
+        } catch (err) {
+            alert('MyVisit 4 : ' + err);
+        }
+        try {
+            if (VisitCompleted.length === 0) {
+                var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu")
+                ShowPlaceholder.css('color', 'grey');
+                ShowPlaceholder.css('position', 'absolute');
+                ShowPlaceholder.css('top', '50%');
+                $('#MessageOfVisitComplete').html(ShowPlaceholder)
+            } else {
+                try {
+                    VisitCompleted.sort(function (a, b) {
+                        // Turn your strings into dates, and then subtract them
+                        // to get a value that is either negative, positive, or zero.
+                        return new Date(b.STKR__Completion_Time__c) - new Date(a.STKR__Completion_Time__c);
+                    });
+                } catch (serror) {
+                    console.log(serror);
+                }
+                //VisitCompleted.sort(compare);
+                $("#ListViewForVisitComplete").data("kendoMobileListView").replace(VisitCompleted);
+            }
+        } catch (err) {
+            alert('MyVisit 5 : ' + err);
+        }
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+    }
+
+    function DASCompletedVisit() {
+        changeVisitColor();
+    }
+
+    function DataShowNearbyVisit() {
+        CountNumberOfOflineItem();
+        app.pane.loader.show();
+        visitDataForBack = null;
+        VisitNearby = [];
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').hide();
+        $("#tabstripnearby_otherusers").removeClass("km-state-active");
+        $("#tabstripnearby_myvisits").addClass("km-button km-state-active");
+        $("button[name='locatenearbyvisits']").css('visibility', 'visible');
+        $("button[name='locatenearbyvisits']").css('display', 'initial');
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        try {
+            $("#ListViewForVisitNearby").data("kendoMobileListView").replace(VisitNearby);
+        } catch (err) { }
+        $('#tabstrip_nearby').show();
+        $('#tabstrip_overdue').hide();
+
+        // document.addEventListener("click",Hideloader())
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            app.toastMessage("Geolocation is not supported by this browser.");
+            app.pane.loader.hide();
+        }
+        TempCurrentTab = currentTab;
+        currentTab = 'Nearby';
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+        setTimeout(function () {
+            app.pane.loader.hide();
+        }, 10000);
+    }
+
+    function DataShowNearbyVisit_otherusers() {
+        CountNumberOfOflineItem();
+        app.pane.loader.show();
+        visitDataForBack = null;
+        VisitNearby = [];
+        count_AssociatedVisit = 0;
+        $('[id="ModelViewLiServieTerritory"]').hide()
+        $("#tabstripnearby_myvisits").removeClass("km-state-active");
+        $("#tabstripnearby_otherusers").addClass("km-button km-state-active");
+        $("button[name='locatenearbyvisits']").css('visibility', 'visible');
+        $("button[name='Optimizevisitsroute']").css('visibility', 'hidden');
+        $("#ListViewForVisitNearby_otherusers").data("kendoMobileListView").replace(NearbyVisitDataNotOwned);
+        $('#tabstrip_nearby').show();
+        $('#tabstrip_overdue').hide();
+
+        // document.addEventListener("click",Hideloader())
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            app.toastMessage("Geolocation is not supported by this browser.");
+            app.pane.loader.hide();
+        }
+        TempCurrentTab = currentTab;
+        currentTab = 'Nearby_OtherUsers';
+        try {
+            document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+        setTimeout(function () {
+            app.pane.loader.hide();
+        }, 10000);
+    }
+
+    function DAFNearby() {
+        changeVisitColor();
+    }
+
+    function DAFNearby_otherusers() {
+        changeVisitColor();
+    }
+
+    window.myTouch = {
+        swipe: function (e) {
+            var commingFrom = window.location.href.split("#")[1];
+            switch (commingFrom) {
+                case 'view/myvisits.html':
+                case 'overduevisits':
+                    if (e.direction === "left") {
+                        window.location.href = "#todayvisits";
+                        document.getElementById("tabstriptodayvisits").click();
+                    }
+                    if (e.direction === "right") {
+                    }
+                    break;
+                case 'todayvisits':
+                    if (e.direction === "left") {
+                        window.location.href = "#thisweekvisits";
+                        document.getElementById("tabstripthisweekvisits").click();
+                    }
+                    if (e.direction === "right") {
+                        window.location.href = "#overduevisits_oldestsort";
+                        document.getElementById("tabstripoverduevisits").click();
+                        //$("#tabstriptodayvisits").removeClass("km-state-active");
+                        //$("#tabstripoverduevisits").addClass("km-button km-state-active");
+                        //app.navigate('view/myvisits.html');
+                        //var tabstrip = $("#VisitTabStripHeader").kendoTabStrip().data("kendoTabStrip");
+                        //tabstrip.select(0);
+                    }
+                    break;
+                case 'thisweekvisits':
+                    if (e.direction === "left") {
+                        window.location.href = "#within45daysvisits";
+                        document.getElementById("tabstripwithin45daysvisits").click();
+                    }
+                    if (e.direction === "right") {
+                        window.location.href = "#todayvisits";
+                        document.getElementById("tabstriptodayvisits").click();
+                    }
+                    break;
+                case 'within45daysvisits':
+                    if (e.direction === "left") {
+                        window.location.href = "#nearbyvisit";
+                        document.getElementById("tabstripnearbyvisits").click();
+                    }
+                    if (e.direction === "right") {
+                        window.location.href = "#thisweekvisits";
+                        document.getElementById("tabstripthisweekvisits").click();
+                    }
+                    break;
+                case 'nearbyvisit':
+                    try {
+                        app.pane.loader.hide();
+                    } catch (err) {
+                    }
+                    if (e.direction === "left") {
+                        window.location.href = "#completevisits";
+                        document.getElementById("tabstripcompletevisits").click();
+                    }
+                    if (e.direction === "right") {
+                        window.location.href = "#within45daysvisits";
+                        document.getElementById("tabstripwithin45daysvisits").click();
+                    }
+                    break;
+                case 'completevisits':
+                    if (e.direction === "left") {
+                    }
+                    if (e.direction === "right") {
+                        window.location.href = "#nearbyvisit";
+                        document.getElementById("tabstripnearbyvisits").click();
+                    }
+                    break;
+            }
+        }
+    }
+
+    window.NearbyTouch = {
+        swipe: function (e) {
+            var commingFrom = window.location.href.split("#")[1];
+            if (e.direction === "left") {
+                // document.getElementById("tabstripiteminspected").click();  
+                $("#tabstripnearby_myvisits").removeClass("km-state-active");
+                $("#tabstripnearby_otherusers").addClass("km-button km-state-active");
+                window.location.replace("#nearbyvisit_otherusers");
+            }
+            if (e.direction === "right") {
+                $("#tabstripnearby_otherusers").removeClass("km-state-active");
+                $("#tabstripnearby_myvisits").addClass("km-button km-state-active");
+                window.location.replace("#nearbyvisit");
+            }
+        }
+    }
+
+    window.OverdueTouch = {
+        swipe: function (e) {
+            var commingFrom = window.location.href.split("#")[1];
+            if (e.direction === "left") {
+                // document.getElementById("tabstripiteminspected").click();  
+                $("#tabstripoverdue_oldestsort").removeClass("km-state-active");
+                $("#tabstripoverdue_newestsort").addClass("km-button km-state-active");
+                window.location.replace("#overduevisits_newestsort");
+            }
+            if (e.direction === "right") {
+                $("#tabstripoverdue_newestsort").removeClass("km-state-active");
+                $("#tabstripoverdue_oldestsort").addClass("km-button km-state-active");
+                window.location.replace("#overduevisits_oldestsort");
+            }
+        }
+    }
+
+    function openprompt() {
+        getRadius = window.localStorage.getItem('radius');
+        if (getRadius === null || getRadius === '' || !getRadius) {
+            getRadius = 16;
+        }
+        navigator.notification.prompt("Please enter the radius", function (results) {
+            if (results.buttonIndex === 1) {
+                if (parseInt(results.input1)) {
+                    getRadius = parseInt(results.input1);
+                    app.toastMessage('Radius set to ' + getRadius, 'long');
+                    window.localStorage.setItem('radius', getRadius);
+                    DataShowNearbyVisit();
+                } else {
+                    app.toastMessage('Please enter valid value', 'long');
+                }
+            }
+        }, 'ServiceTracker', ["OK", "Cancel"], getRadius.toString())
+    }
+
+    function manuallySortTheTodayList(recordId, action, firstRun) {
+        var TodayViewOrder, TodayViewOrderRecords = [], indexOfVisit;
+        try {
+            TodayViewOrder = window.localStorage.getItem("TodayViewOrder");
+
+        } catch (err) { console.error(err); }
+
+        var combineVisitandEventRecords = combineVisitandEvent(VisitToday, EventsToday);
+
+        if (firstRun) {
+            if (TodayViewOrder) {
+                TodayViewOrderRecords = TodayViewOrder.split(',');
+
+                //Check if new visits has been added
+                if (TodayViewOrderRecords.length != combineVisitandEventRecords.length) {
+                    for (var m = 0; m < combineVisitandEventRecords.length; m++) {
+                        if (TodayViewOrderRecords.indexOf(combineVisitandEventRecords[m]['Id']) == -1) {
+                            TodayViewOrderRecords.push(combineVisitandEventRecords[m]['Id']);
+                        }
+                    }
+                    window.localStorage.setItem("TodayViewOrder", TodayViewOrderRecords);
+                }
+
+                var listviewArray = [];
+                for (var i = 0; i < TodayViewOrderRecords.length; i++) {
+                    for (var j = 0; j < combineVisitandEventRecords.length; j++) {
+                        if (combineVisitandEventRecords[j]['Id'] == TodayViewOrderRecords[i]) {
+                            listviewArray.push(combineVisitandEventRecords[j]);
+                            break;
+                        }
+                    }
+                }
+                // somehow combine events :: combineVisitandEvent(VisitToday, EventsToday)
+                $("#ListViewForVisitToday").data("kendoMobileListView").replace(listviewArray);
+                changeVisitColor();
+            }
+            return;
+        }
+
+        if (TodayViewOrder) {
+            TodayViewOrderRecords = TodayViewOrder.split(',');
+            //Finding the recordId in this array
+            indexOfVisit = TodayViewOrderRecords.indexOf(recordId);
+        } else {
+            for (var i = 0; i < combineVisitandEventRecords.length; i++) {
+                TodayViewOrderRecords.push(combineVisitandEventRecords[i]['Id']);
+                if (combineVisitandEventRecords[i]['Id'] == recordId) {
+                    indexOfVisit = i;
+                }
+            }
+            window.localStorage.setItem("TodayViewOrder", TodayViewOrderRecords);
+        }
+        if (indexOfVisit > -1) {
+            // No up operation if visit is at top, i.e. index = 0
+            // No down operation if visit is at the bottom, i.e. TodayViewOrderRecords.length-1
+
+            if ((action == "up" && indexOfVisit == 0) || (action == "down" && indexOfVisit == TodayViewOrderRecords.length - 1)) {
+                return;
+            }
+
+            if (action == "up" && indexOfVisit != 0) {
+                //["1","2","3","4"]
+                var tempValue = TodayViewOrderRecords[indexOfVisit - 1];
+                TodayViewOrderRecords[indexOfVisit - 1] = recordId;
+                TodayViewOrderRecords[indexOfVisit] = tempValue;
+
+            } else if (action == "down" && indexOfVisit != TodayViewOrderRecords.length - 1) {
+                var tempValue = TodayViewOrderRecords[indexOfVisit + 1];
+                TodayViewOrderRecords[indexOfVisit + 1] = recordId;
+                TodayViewOrderRecords[indexOfVisit] = tempValue;
+            }
+            window.localStorage.setItem("TodayViewOrder", TodayViewOrderRecords);
+            // Order real array and Refresh the list 
+            var listviewArray = [];
+            for (var i = 0; i < TodayViewOrderRecords.length; i++) {
+                for (var j = 0; j < combineVisitandEventRecords.length; j++) {
+                    if (combineVisitandEventRecords[j]['Id'] == TodayViewOrderRecords[i]) {
+                        listviewArray.push(combineVisitandEventRecords[j]);
+                        break;
+                    }
+                }
+            }
+            // somehow combine events :: combineVisitandEvent(VisitToday, EventsToday)
+            $("#ListViewForVisitToday").data("kendoMobileListView").replace(listviewArray);
+            changeVisitColor();
+        } else {
+            alert('Error : ' + recordId + ' is not found on list');
+        }
+    } 
+</script>
+<style>
+    #ListViewForVisitThisWeek .km-group-title {
+        background-color: #003F5E;
+        color: white;
+        font-weight: bold;
+    }
+
+    #ListViewForVisitWithin45Days .km-group-title {
+        background-color: #003F5E;
+        color: white;
+        font-weight: bold;
+    }
+</style>

@@ -1,0 +1,699 @@
+<div data-role="view" data-show="DS_HomePage" data-after-show="DAS_HomePage" data-use-native-scrolling="true"
+    data-title="ServiceTracker V3.0.1" id="HomePage" data-init="DI_HomePage">
+    <header data-role="header">
+        <div data-role="navbar">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon"
+                data-click="OpenHomePageDrawer"></a>
+            <span data-role="view-title" style="font-weight:bold;color:white;">ServiceTracker V3.0.1</span>
+        </div>
+        <div id="HomePage_NumberOfOfflineRecords" onClick="HomePageNavigate('OfflinePage')"></div>
+    </header>
+
+    <table class="HomePageTable">
+        <tr>
+            <td>
+                <a id="CreateStartEndEvent" onClick="CreateEvents('Start');">
+                    <center>
+                        <i class="fa fa-check-square fa-5x HomePageIconColor" style="color:#0A7CB2"></i>
+                        <br />
+                        <br /> Start Work
+                    </center>
+                </a>
+            </td>
+            <td>
+                <a id="searchVisit" onClick="HomePageNavigate('Search')">
+                    <center>
+                        <i class="fa fa-search fa-5x HomePageIconColor"></i>
+                        <br />
+                        <br /> Search
+                    </center>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a id="MyvisitList" onClick="HomePageNavigate('MyVisits')">
+                    <center>
+                        <i class="fa fa-list fa-5x HomePageIconColor"></i>
+                        <br />
+                        <br /> My Visits
+                    </center>
+                </a>
+            </td>
+            <td>
+                <a id="createevent" onClick="HomePageNavigate('Events')">
+                    <center>
+                        <i class="fa fa-coffee fa-5x HomePageIconColor"></i>
+                        <br />
+                        <br /> Events
+                    </center>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a id="portfolio" onClick="HomePageNavigate('Portfolio')">
+                    <center>
+                        <i class="fa fa-briefcase fa-5x HomePageIconColor"></i>
+                        <br />
+                        <br /> View Portfolio
+                    </center>
+                </a>
+            </td>
+            <td>
+                <center>
+                    <a id="Doccreate" onClick="HomePageNavigate('Documents')">
+                        <i class="fa fa-archive fa-5x HomePageIconColor"></i>
+                        <br />
+                        <br /> Documents
+                    </a>
+                </center>
+            </td>
+        </tr>
+    </table>
+</div>
+<script>
+
+    var permissions = cordova.plugins.permissions;
+    var askPermissions = {
+        camera: function () {
+            // Camera
+            permissions.checkPermission(permissions.CAMERA, function (status) {
+                if (status.hasPermission) {
+                    askPermissions.location();
+                }
+                else {
+                    permissions.requestPermission(permissions.CAMERA, function () {
+                        askPermissions.location();
+                    }, function () {
+                        askPermissions.location();
+                    });
+                }
+            });
+
+        },
+        location: function () { //Location
+            permissions.checkPermission(permissions.ACCESS_FINE_LOCATION, function (status) {
+                if (status.hasPermission) {
+                    askPermissions.external_read();
+                }
+                else {
+                    permissions.requestPermission(permissions.ACCESS_FINE_LOCATION, function () {
+                        askPermissions.external_read();
+                    }, function () {
+                        askPermissions.external_read();
+                    });
+                }
+            });
+        },
+
+        external_read: function () {
+            permissions.checkPermission(permissions.READ_EXTERNAL_STORAGE, function (status) {
+                if (status.hasPermission) {
+                    askPermissions.external_write();
+                }
+                else {
+                    permissions.requestPermission(permissions.READ_EXTERNAL_STORAGE, function () {
+                        askPermissions.external_write();
+                    }, function () {
+                        askPermissions.external_write();
+                    });
+                }
+            });
+        },
+        external_write: function () {
+            permissions.checkPermission(permissions.WRITE_EXTERNAL_STORAGE, function (status) {
+                if (status.hasPermission) {
+                }
+                else {
+                    permissions.requestPermission(permissions.WRITE_EXTERNAL_STORAGE, null, null);
+                }
+            });
+        }
+    }
+    checkGeolocationPermissions();
+    function DI_HomePage() {
+
+        //End work if user clicked on notification
+        if (cordova.plugins.notification.local.launchDetails) {
+            if (confirm('Are you sure you want to end the work?')) {
+                cordova.plugins.notification.local.cancelAll();
+                CreateEvents('End');
+            }
+        }
+        TrackUserLocation();
+        askPermissions.camera();
+        //Update app version number on salesforce user object
+        if (AppIsOnline) {
+            jsconn.sobject("User").update({
+                Id: creds.UserID,
+                STKR__Mobile_App_Version__c: AppVersionNumber
+            }, function (err, ret) {
+                if (err || !ret.success) {
+                    return console.error(err);
+                }
+            });
+        }
+
+        app.db.transaction(function (tx) {
+            function fetchDtails(index) {
+                tx.executeSql("SELECT * FROM Schedule WHERE scheduleid=?", [AllVisits[index]['STKR__Service__c']],
+                    function (a, b) {
+
+                        var parsedScheduleValue = JSON.parse(b.rows.item(0)['jsondata']);
+                        MapScheduleToVisitId[AllVisits[index]['Id']] = parsedScheduleValue;
+                    },
+                    function (tx, err) {
+                        alert(err.message);
+                    }
+                );
+            }
+            for (var i = 0; i < AllVisits.length; i++) {
+                fetchDtails(i);
+            }
+        });
+    }
+
+    function DS_HomePage() {
+        CountNumberOfOflineItem();
+        try {
+            if (OrgInfo.first_name || OrgInfo.last_name)
+                document.getElementById("getusername").innerHTML = OrgInfo.first_name + " " + OrgInfo.last_name;
+            else if (OrgInfo[0].first_name || OrgInfo[0].last_name)
+                document.getElementById("getusername").innerHTML = OrgInfo[0].first_name + " " + OrgInfo[0].last_name;
+        } catch (err) { }
+        try {
+            app.pane.loader.hide();
+            navigator.splashscreen.hide();
+        } catch (error) {
+        }
+        $("#HomePage_NumberOfOfflineRecords").hide();
+        cordova.getAppVersion.getVersionNumber().then(function (version) {
+            AppVersionNumber = version;
+            try {
+
+                var navbar = app.view()
+                    .header
+                    .find(".km-navbar")
+                    .data("kendoMobileNavBar");
+
+                navbar.title("ServiceTracker V" + AppVersionNumber);
+                $('#DrawerVersionNumber').html("Version " + AppVersionNumber);
+
+                currentLocation = document.getElementById("HomePage").id;
+            } catch (err) {
+                alert('error' + err);
+            }
+        });
+
+
+        // Get no of records on datatoupdate table
+        try {
+            app.db.transaction(function (tx) {
+                tx.executeSql("SELECT * From DataToUpdate", [], function (er, res) {
+                    if (res.rows.length > 0) {
+                        $("#HomePage_NumberOfOfflineRecords").html("You have " + res.rows.length + " item that have not uploaded. \n Please click here to sync all offline items and report any issues to ServiceTracker support");
+                        $("#HomePage_NumberOfOfflineRecords").show();
+                    } else {
+                        $("#HomePage_NumberOfOfflineRecords").hide();
+                    }
+
+                    var elements = $(".OfflineDataItemCount");
+                    if (res.rows.length) {
+                        elements.show();
+                        elements.html(res.rows.length);
+                    } else {
+                        elements.hide();
+                    }
+
+                }, function (err) {
+                    console.log(err);
+                });
+            });
+        } catch (err) {
+            alert(err);
+        }
+
+        //  Check event date
+        var localStartDate, StoredEventId;
+        try {
+            localStartDate = new Date(window.localStorage.getItem('StartDateTime').split('"')[1]);
+            StoredEventId = window.localStorage.getItem('Eventid');
+
+            if (Math.abs((new Date() - new Date(localStartDate)) / (1000 * 60 * 60 * 24)) >= 14) {
+                var Eventid = window.localStorage.getItem('Eventid');
+                if (navigator.onLine && AppIsOnline && StoredEventId.length == 18) {
+                    jsconn.sobject("Event").update({
+                        Id: StoredEventId,
+                        EndDateTime: new Date(localStartDate.setDate(localStartDate.getDate() + 13)),
+                        Subject: "Working Time"
+                    }, function (err, ret) {
+                        if (err || !ret.success) {
+                            app.pane.loader.hide();
+                            return console.error(err, ret);
+                        }
+                        window.localStorage.setItem("Eventid", '');
+                        window.localStorage.setItem("StartDateTime", '');
+                        window.localStorage.setItem("EventType", "Start");
+                        app.pane.loader.hide();
+                        app.toastMessage('Created End of the day', 'long');
+                        $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'Start\')');
+                        $('#CreateStartEndEvent').html('<center><i class="fa fa-check-square fa-5x HomePageIconColor" style=""></i><br/><br/>Start Work</center>');
+                    });
+
+                } else {
+                    var timestamp = new Date().getTime();
+                    var data = {
+                        ObjectName: 'Event',
+                        UserId: creds.UserID
+                    }
+                    var DataToUpdate = {
+                        Subject: 'Working Time',
+                        Id: StoredEventId,
+                        EndDateTime: new Date(localStartDate.setDate(localStartDate.getDate() + 13))
+                    };
+                    if (DataToUpdate.Id && DataToUpdate.Id.length === 18) {
+                        // If event is created onlnine and want to close offline
+                        data['Updated'] = 'false';
+                        data['UpdateOrInsert'] = 'update';
+                        data['RecordId'] = DataToUpdate.Id;
+                        data['Id'] = DataToUpdate.Id;
+                        data['JsonData'] = JSON.stringify(DataToUpdate);
+                    } else if (DataToUpdate.Id && DataToUpdate.Id.length < 18) {
+                        // If event is created offline and want to close offline
+                        DataToUpdate["StartDateTime"] = localStartDate;
+                        data['Updated'] = 'false';
+                        data['UpdateOrInsert'] = 'insert';
+                        data['RecordId'] = DataToUpdate.Id;
+                        data['Id'] = DataToUpdate.Id;
+                        data['JsonData'] = JSON.stringify(DataToUpdate);
+                    }
+                    app.pane.loader.hide();
+
+                    window.localStorage.setItem("Eventid", '');
+                    window.localStorage.setItem("StartDateTime", '');
+                    window.localStorage.setItem("EventType", "Start");
+                    app.toastMessage('Created End of the day', 'long');
+                    $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'Start\')');
+                    $('#CreateStartEndEvent').html('<center><i class="fa fa-check-square fa-5x HomePageIconColor" style="color:#0A7CB2"></i><br/><br/>Start Work</center>');
+
+                    app.insertRecord('DataToUpdate', data);
+                    app.toastMessage('Event Successfully Stored Offline', 'long');
+                }
+            }
+        } catch (err) { }
+
+
+    }
+
+    function DAS_HomePage() {
+        try {
+            if (window.localStorage.getItem("EventType") && window.localStorage.getItem("EventType") === 'End') {
+                try {
+                    $('#CreateStartEndEvent').attr("onClick", "CreateEvents('End')");
+                    $('#CreateStartEndEvent').html('<center><i class="fa fa-times-circle fa-5x HomePageIconColor" style="/*color:red;*/"></i><br/><br/>Finish Work</center>');
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+          /*  const TodayCheck = new Date();
+            const day1 = TodayCheck.getDay();
+            if (vehicleData.length == 0 && day1 == 1) {
+                var options = {
+                    'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                    'buttonLabels': ['OK', 'Cancel'],
+                    'title': 'Vehicle is not assigned to this user'
+                };
+                window.plugins.actionsheet.show(options, function(buttonIndex) {
+                    if (buttonIndex === 1) {
+
+                    } else {
+
+
+                    }
+                });
+            } */
+        } catch (err) {
+            console.error('No Key Found', err);
+        }
+    }
+
+    function CreateEvents(Event) {
+        var StartDateTime = new Date();
+        var EndDateTime = new Date();
+        var relatedtoId;
+        app.pane.loader.show();
+        if (Event === 'Start') {
+            window.localStorage.setItem("EventType", "Start");
+            if (vehicleData.length > 0) {
+                var options = {
+                    'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                    'buttonLabels': ['OK', 'Cancel'],
+                    'title': 'Do you want to complete a Vehicle check?'
+                };
+                window.plugins.actionsheet.show(options, function(buttonIndex) {
+                    if (buttonIndex === 1) {
+                        app.navigate("view/CreateVehicle.html")
+                    } else if (buttonIndex === 2) {}
+                });
+            }
+        } else if (Event === 'End') {
+            window.localStorage.setItem("EventType", "End");
+        }
+        for (var i = 0; i < ResourceData.length; i++) {
+            if (ResourceData[i]['STKR__User__c'] === creds.UserID) {
+                relatedtoId = ResourceData[i]['Id'];
+                break;
+            }
+        }
+        var DataToSend = {
+            StartDateTime: StartDateTime,
+            EndDateTime: EndDateTime,
+            Subject: 'Start Work',
+            WhatId: relatedtoId
+        };
+
+        var DataToUpdate = {};
+
+        try {
+            DataToUpdate = {
+                StartDateTime: new Date(JSON.parse(window.localStorage.getItem('StartDateTime'))),
+                EndDateTime: EndDateTime,
+                Subject: 'Working Time',
+                WhatId: relatedtoId,
+                Id: window.localStorage.getItem("Eventid")
+            };
+        } catch (e) {
+        }
+
+        if (navigator.onLine && AppIsOnline) {
+            if (Event === 'Start') {
+                jsconn.sobject("Event").create(DataToSend, function (err, ret) {
+                    if (err || !ret.success) {
+                        app.pane.loader.hide();
+                        return console.error(err, ret);
+                    }
+                    window.localStorage.setItem("Eventid", ret.id);
+                    window.localStorage.setItem("StartDateTime", JSON.stringify(DataToSend.StartDateTime));
+                    window.localStorage.setItem("EventType", "End");
+                    app.pane.loader.hide();
+                    AddLocalNotification();
+                    app.toastMessage('Created Start of the day', 'long');
+                  
+                    $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'End\')');
+                    $('#CreateStartEndEvent').html('<center><i class="fa fa-times-circle fa-5x HomePageIconColor" style="/*color:red;*/"></i><br/><br/>Finish Work</center>');
+                   /* if (vehicleData.length) {
+                        var options = {
+                            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                            'buttonLabels': ['OK', 'Cancel'],
+                            'title': 'Do you want to complete a Vehicle check?'
+                        };
+                        window.plugins.actionsheet.show(options, function (buttonIndex) {
+                            if (buttonIndex === 1) {
+                                app.navigate("view/CreateVehicle.html")
+                            } else if (buttonIndex === 2) { }
+                        });
+                    } */
+                });
+            }
+
+            if (Event === 'End') {
+                console.log('End');
+                //If Event is created Offline then create new record instead of updating it.
+                if ((DataToUpdate.Id) && DataToUpdate.Id.length < 18) {
+                    console.log('Offline Created Event');
+                    delete DataToUpdate['Id'];
+                    jsconn.sobject("Event").create(DataToUpdate, function (err, ret) {
+                        if (err || !ret.success) {
+                            app.pane.loader.hide();
+                            return console.error(err, ret);
+                        }
+                        window.localStorage.setItem("Eventid", '');
+                        window.localStorage.setItem("StartDateTime", '');
+                        window.localStorage.setItem("EventType", "Start");
+                        app.pane.loader.hide();
+                        RemoveLocalNotification();
+                        app.toastMessage('Created End of the day', 'long');
+                        $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'Start\')');
+                        $('#CreateStartEndEvent').html('<center><i class="fa fa-times-circle fa-5x HomePageIconColor" style="/*color:red;*/"></i><br/><br/>Start Work</center>');
+                    });
+                } else if (DataToUpdate.Id && DataToUpdate.Id.length === 18) {
+                    console.log('Online Created Event');
+                    jsconn.sobject("Event").update(DataToUpdate, function (err, ret) {
+                        if (err || !ret.success) {
+                            app.pane.loader.hide();
+                            return console.error(err, ret);
+                        }
+                        console.log('Updated successfully' + ret.id);
+                        app.pane.loader.hide();
+                        RemoveLocalNotification();
+                        window.localStorage.setItem("EventType", "Start");
+                        window.localStorage.setItem("Eventid", '');
+                        window.localStorage.setItem("StartDateTime", '');
+                        app.toastMessage('Created End of the day', 'long');
+                        $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'Start\')');
+                        $('#CreateStartEndEvent').html('<center><i class="fa fa-check-square fa-5x HomePageIconColor" style="color:#0A7CB2"></i><br/><br/>Start Work</center>');
+                    });
+                }
+            }
+        } else {
+            var timestamp = new Date().getTime();
+            var data = {
+                ObjectName: 'Event',
+                UserId: creds.UserID
+            }
+            if (Event === 'Start') {
+                data['Updated'] = 'false';
+                data['UpdateOrInsert'] = 'insert';
+                data['RecordId'] = timestamp;
+                DataToSend['Id'] = timestamp;
+                data['JsonData'] = JSON.stringify(DataToSend);
+                window.localStorage.setItem("EventType", "End");
+                window.localStorage.setItem("Eventid", DataToSend['Id']);
+                window.localStorage.setItem("StartDateTime", JSON.stringify(DataToSend.StartDateTime));
+                app.pane.loader.hide();
+                AddLocalNotification();
+                app.toastMessage('Created Start of the day', 'long');
+
+                $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'End\')');
+                $('#CreateStartEndEvent').html('<center><i class="fa fa-times-circle fa-5x HomePageIconColor" style="/*color:red;*/"></i><br/><br/>Finish Work</center>');
+                if (vehicleData.length) {
+                    var options = {
+                        'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                        'buttonLabels': ['OK', 'Cancel'],
+                        'title': 'Do you want to complete a Vehicle check?'
+                    };
+                    window.plugins.actionsheet.show(options, function (buttonIndex) {
+                        if (buttonIndex === 1) {
+                            app.navigate("view/CreateVehicle.html")
+                        } else if (buttonIndex === 2) { }
+                    });
+                }
+            } else if (Event === 'End') {
+                if (DataToUpdate.Id && DataToUpdate.Id.length === 18) {
+                    // If event is created onlnine and want to close offline
+                    data['Updated'] = 'false';
+                    data['UpdateOrInsert'] = 'update';
+                    data['RecordId'] = DataToUpdate.Id;
+                    data['Id'] = DataToUpdate.Id;
+                    data['JsonData'] = JSON.stringify(DataToUpdate);
+                } else if (DataToUpdate.Id && DataToUpdate.Id.length < 18) {
+                    // If event is created offline and want to close offline
+                    data['Updated'] = 'false';
+                    data['UpdateOrInsert'] = 'insert';
+                    data['RecordId'] = DataToUpdate.Id;
+                    data['Id'] = DataToUpdate.Id;
+                    data['JsonData'] = JSON.stringify(DataToUpdate);
+                }
+                app.pane.loader.hide();
+                RemoveLocalNotification();
+                window.localStorage.setItem("EventType", "Start");
+                app.toastMessage('Created End of the day', 'long');
+                $('#CreateStartEndEvent').attr('onClick', 'CreateEvents(\'Start\')');
+                $('#CreateStartEndEvent').html('<center><i class="fa fa-check-square fa-5x HomePageIconColor" style="color:#0A7CB2"></i><br/><br/>Start Work</center>');
+            }
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('Event Successfully Stored Offline', 'long');
+        }
+    }
+
+    function OpenHomePageDrawer() {
+        try {
+            $("#MyVisitsdrawer").data("kendoMobileDrawer").show();
+        } catch (Error) {
+            $("#MyVisitsdrawer").data("kendoMobileDrawer").show();
+        }
+        if (AppIsOnline === true) {
+            $("#SetNetworkStatus").text('Go Offline');
+        } else {
+            $("#SetNetworkStatus").text('Go Online');
+        }
+    }
+
+    var HomePageNavigate = function (toPage) {
+        /*try {
+        // If Start work is enabled ...
+        if (window.localStorage.getItem("EventType")==="" || window.localStorage.getItem("EventType") ===null || window.localStorage.getItem("EventType") === 'Start') {
+        app.toastMessage('Please click on Start Work first', 'long');
+        return;
+        }else {
+        }
+        }catch (Error) {
+        console.log(Error);
+        }*/
+
+ if (!UserCurrentLocation_WatchId) {
+            app.toastMessage('GPS is off, please enable it to move forward', 'long');
+            return;
+        }
+        switch (toPage) {
+            case 'Search':
+                app.navigate('view/Searchvisits.html');
+                break;
+            case 'MyVisits':
+                app.navigate('view/myvisits.html');
+                break;
+            case 'Events':
+                app.navigate('view/EventList.html');
+                //app.toastMessage('Under Construction', 'long');
+                break;
+            case 'Portfolio':
+                app.navigate('view/Schedules.html');
+                break;
+            case 'Documents':
+                if (navigator.onLine) {
+                    app.navigate('view/Document.html');
+                } else {
+                    app.toastMessage('Internet Connection is required', 'long');
+                }
+                break;
+            case 'OfflinePage':
+                app.navigate('view/OfflineData.html');
+                break;
+        }
+    }
+
+    function EndWorkNotificationCallback(notification, eopts) {
+        if (confirm('Are you sure you want to end the work?')) {
+            cordova.plugins.notification.local.cancelAll();
+            CreateEvents('End');
+        }
+    }
+
+    cordova.plugins.notification.local.on('click', EndWorkNotificationCallback, this);
+
+    function AddLocalNotification() {
+        for (var i = 0; i < ResourceData.length; i++) {
+            if (ResourceData[i]["STKR__User__c"] == creds.UserID && ResourceData[i]["STKR__Working_Hours__c"]) {
+                currentResourceData = ResourceData[i];
+                var hr = parseInt(ResourceData[i]["STKR__Working_Hours__c"]);
+                // Show notification after STKR__Working_Hours__c hours
+                cordova.plugins.notification.local.schedule({
+                    id: 1,
+                    title: 'Have you finished work for the day?',
+                    trigger: { in: hr, unit: 'hour' },
+                    text: 'Please click OK to Finish Work'
+                });
+
+                var repeatAt = new Date();
+                repeatAt.setHours(repeatAt.getHours() + hr + 1);
+
+                cordova.plugins.notification.local.schedule({
+                    id: 2,
+                    title: 'Have you finished work for the day?',
+                    trigger: { every: 'hour', firstAt: repeatAt },
+                    text: 'Please click OK to Finish Work'
+                });
+                break;
+            }
+        }
+    }
+
+    function RemoveLocalNotification() {
+        cordova.plugins.notification.local.cancelAll();
+    }
+
+    var rs_data;
+    //Get current resource
+    for (var i = 0; i < ResourceData.length; i++) {
+        if (ResourceData[i]['STKR__User__c'] === creds.UserID) {
+            rs_data = ResourceData[i];
+            break;
+        }
+    }
+
+    function TrackUserLocation() {
+        if (rs_data && rs_data['STKR__Ping_Frequency__c']) {
+            var inMilliSecs = parseInt(rs_data['STKR__Ping_Frequency__c']) * 60 * 1000;
+
+            setInterval(function () {
+                var options = {
+                    enableHighAccuracy: true,
+                }
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var record_data = {
+                        STKR__Resource__c: rs_data.Id,
+                        STKR__Time__c: new Date(),
+                    };
+
+                    if (window.location.hash.indexOf('visitdetail.html') > -1) {
+                        record_data['STKR__Visit__c'] = newDetailValue[0]['Id'];
+                        record_data['STKR__Visit_Status__c'] = newDetailValue[0]['STKR__Status__c'];
+                    }
+
+                    record_data['STKR__Location__Latitude__s'] = position.coords.latitude;
+                    record_data['STKR__Location__Longitude__s'] = position.coords.longitude;
+                    //Online
+                    if (AppIsOnline) {
+                        jsconn.sobject("STKR__Resource_Geolocation__c").create(record_data, function (err, ret) {
+                            if (err || !ret.success) { return console.error(err, ret); }
+                            console.log("Created record id : " + ret.id);
+                        });
+                    } else {
+                        var timestamp = new Date().getTime();
+                        record_data['Id'] = timestamp;
+
+                        var data = {
+                            JsonData: JSON.stringify(record_data),
+                            ObjectName: 'STKR__Resource_Geolocation__c',
+                            Updated: 'newRecord',
+                            UpdateOrInsert: 'insert',
+                            UserId: creds.UserID,
+                            RecordId: timestamp /* For Insertion */
+                        }
+                        app.insertRecord('DataToUpdate', data);
+                    }
+                }, function (error) {
+                    alert('code: ' + error.code + '\n' + 'message: ' + error.message + '\n');
+                }, options);
+
+            }, inMilliSecs);
+        }
+    }
+</script>
+<style>
+    .HomePageIconColor {
+        color: #0A7CB2;
+    }
+
+    .HomePageTable {
+        position: fixed;
+        top: 5%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background-color: aliceblue;
+    }
+
+    #HomePage_NumberOfOfflineRecords {
+        background-color: red;
+        color: white;
+        font-weight: bold;
+        padding: 2px;
+    }
+</style>

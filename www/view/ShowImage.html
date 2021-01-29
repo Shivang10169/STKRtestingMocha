@@ -1,0 +1,664 @@
+<div data-role="view" id="showimage" data-use-native-scrolling="true" data-show="ShowImageDataShow"
+    data-after-show="ShowImageDataAfterShow">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span>Upload Photos to ST</span>
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="ShowImage_BackButton()"
+                class="ShowImageMLDBUttons mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right"
+                style="border-style:none;margin-top:2%;" class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+    <center>
+        <br />
+        <button
+            class="ShowImageMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onClick="app.navigate('view/ImagefromLibrary.html');" style="color:black;width:90%;">
+            Select Photos to Upload
+        </button>
+    </center>
+    <center id="imagecenter">
+    </center>
+    <br />
+    <br />
+    <br />
+    <br />
+    <div style="bottom:0;position:fixed;left:20%;right:20%;margin-bottom:5px;">
+        <center>
+            <select id="myDropDown" onchange="tagPhoto(this.value)"
+                style="position:sticky;top:0;border-color:transparent;background-color:transparent;outline:none;display:none;">
+                <optgroup label="Choose a tag for this Photo">
+                    <option value="Service Report">Service Report</option>
+                    <option value="Before photo">Before Photo</option>
+                    <option value="After Photo">After Photo</option>
+                    <option value="Internal Photo">Internal Photo</option>
+                    <option value="External Photo">External Photo</option>
+                    <option value="Proofing">Proofing</option>
+                    <option value="Hygiene">Hygiene</option>
+                    <option value="High Risk">High Risk</option>
+                    <option value="Medium Risk">Medium Risk</option>
+                </optgroup>
+            </select>
+        </center>
+        <center>
+            <button
+                class="ShowImageMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent importantElement"
+                onClick="cancelUploadingImages();" style="width:35%;float: left;margin: 5%;padding:0;">
+                Cancel
+            </button>
+            <button
+                class="ShowImageMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent importantElement"
+                onClick="uploadImages()" style="width:35%;float: right;margin: 5%;padding:0;">
+                Upload
+            </button>
+        </center>
+    </div>
+</div>
+
+<script>
+    var imgId;
+    var ImageData = [];
+    var data = {};
+    var VisitId;
+    var tag = [];
+    var Body = [];
+    var InspectionName = '';
+    var fromImagefromLibraryPage = false;
+    var ComingFrom;
+    var FromWhichPage;
+    var StoreUrls = [];
+    var showImage_VisitNumber;
+    var ShowImage_ActionExternalId = '', ShowImage_ActionId;
+    var ShowImage_VehicleExternalId = '', ShowImage_VehicleId;
+    function ShowImageDataShow(e) {
+      try{
+        showImage_VisitNumber = newDetailValue[0]["Id"];
+       }catch(e){console.log(e)}
+        CountNumberOfOflineItem();
+        ShowImage_ActionExternalId = '', ShowImage_ActionId = '';
+        ShowImage_VehicleExternalId = '', ShowImage_VehicleId = '';
+        var DisplayImagesHTML = '';
+       
+        try {
+            e.view.scroller.reset();
+        } catch (err) {
+            console.log(err);
+        }
+        InspectionName = '';
+        try {
+            ComingFrom = e.view.params.ImageComingFrom;
+            FromWhichPage = e.view.params.FromPage;
+        } catch (err) {
+        }
+        try {
+            ShowImage_ActionId = e.view.params.actionId;
+            ShowImage_ActionExternalId = e.view.params.actionExternalId;
+
+            if(e.view.params.vehicleId)
+            ShowImage_VehicleId = e.view.params.vehicleId;
+
+            if(e.view.params.vehicleExternalId)
+            ShowImage_VehicleExternalId = e.view.params.vehicleExternalId;
+
+        } catch (err) {
+        }
+
+        try {
+            VisitId = e.view.params.VisitId;
+            if (e.view.params.InspectionName) {
+                InspectionName = e.view.params.InspectionName;
+            }
+        } catch (err) {
+        }
+
+        try {
+            DisplayImagesHTML = '<br/>';
+            if (StoreImages.length) {
+                for (var i = 0; i < StoreImages.length; i++) {
+                    DisplayImagesHTML += '<div id="DivImage' + i + '">'
+                    DisplayImagesHTML += '<img style="width:200px;height:200px;display:block;margin:2%;" id="Image' + i + '" src="' + StoreImages[i] + '" onclick="opentagOption(this.id)"/>'
+                    DisplayImagesHTML += '<input type="text" maxlength="200" id="textOfImage' + i + '" placeholder="Tap on Image to tag"/>'
+                    DisplayImagesHTML += '</div>';
+                    DisplayImagesHTML += '<br/><br/>';
+                }
+            }
+            $('#imagecenter').html(DisplayImagesHTML);
+        } catch (err) {
+        }
+
+        tag = [];
+        try {
+            if (fromImagefromLibraryPage) {
+                $('#imagecenter').show();
+            } else {
+                $('#imagecenter').hide();
+            }
+            fromImagefromLibraryPage = false;
+        } catch (err) {
+            StoreError(err);
+        }
+    }
+
+    function ShowImageDataAfterShow() {
+        if (device.platform.toLowerCase() == 'android') {
+            componentHandler.upgradeElements(document.getElementsByClassName('ShowImageMLDBUttons'));
+        }
+    }
+
+    function opentagOption(e) {
+        imgId = e;
+        $('#myDropDown').show();
+        $('#myDropDown').prop("selectedIndex", -1);
+        $("select").simulate('mousedown');
+        document.getElementById(imgId).scrollIntoView()
+    }
+
+    function tagPhoto(value) {
+
+        $('#textOf' + imgId).val(value);
+        $('#myDropDown').hide();
+    }
+    function uploadImages() {
+        ImageData = [];
+        StoreUrls = [];
+        tag = [];
+       //debugger;
+        for (var i = 0; i < StoreImages.length; i++) {
+            if (InspectionName && ($('#textOfImage' + i).val())) {
+                if (ComingFrom === 'Action') {
+                    tag.push($("#textOfImage" + i).val() + " for Action.jpg");
+                } else if (FromWhichPage === 'CreateAction') {
+                    tag.push($("#textOfImage" + i).val() + " ;Mobile;" + saveaction.STKR__Mobile_Unique_Id__c + ";Mobile;" + saveaction.RecordTypeId + ".jpg");
+                } else {
+                    tag.push($("#textOfImage" + i).val() + " for " + InspectionName + ".jpg");
+                }
+            } else {
+                if (ComingFrom === 'Action') {
+                    tag.push($("#textOfImage" + i).val() + " for Action.jpg");
+                } else if (FromWhichPage === 'CreateAction') {
+                    tag.push($("#textOfImage" + i).val() + " ;Mobile;" + saveaction.STKR__Mobile_Unique_Id__c + ";Mobile;" + saveaction.RecordTypeId + ".jpg");
+                } else if(ComingFrom === 'Vehicle'){
+                    tag.push($("#textOfImage" + i).val() + " for Vehicle.jpg");
+                } else if ($('#textOfImage' + i).val()) {
+                    tag.push($("#textOfImage" + i).val() + ".jpg");
+                }
+            }
+        }
+
+        if (tag.length === StoreImages.length) {
+            if (flag_capture === 1) {
+                for (var i = 0; i < StoreImages.length; i++) {
+                    var data = {};
+                    data['FileName'] = tag[i];
+                    data['Body'] = StoreImages[i];
+                    ImageData.push(data);
+
+                    if ((ImageData[i]['FileName']).indexOf('for Action') >= 0) {
+                        function SynImageAction(i) {
+                            if (navigator.onLine && AppIsOnline && !isCurrentVisitInProgress) {
+                                fetchBase64(ImageData[i]['Body'], function (iData) {
+                                    app.toastMessage('Images are uploading in backgound', 'long');
+                                    jsconn.sobject("Attachment").create({
+                                        ParentId: ActionDetailPage_ActionData['Id'],
+                                        Name: ImageData[i]['FileName'],
+                                        Body: iData,
+                                        //ContentType: 'data:image/jpeg;base64'
+                                        ContentType: 'image/jpeg'
+                                    },
+                                        function (err, ret) {
+                                            if (err || !ret.success) {
+                                                StoreError(err);
+                                                alert(err);
+                                                return console.error(err, ret);
+                                            }
+                                            LastAttachmentId = ret.id;
+                                            // Store Files locally for the Thumbnail ... 
+                                            base64ToThumbnail(ImageData[i]['Body'], ret.id + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                            /*window.resolveLocalFileSystemURL(ImageData[i]['Body'], function (cachedFile) {
+                                                cachedFile.remove(function () {
+                                                }, function () {
+                                                    console.error('file don\'t exists');
+                                                });
+                                            });*/
+                                            app.toastMessage('Image uploaded to salesforce', 'long');
+                                        });
+                                });
+                            } else {
+                                var Offlinedata = {
+                                    ParentId: showImage_VisitNumber,
+                                    Name: ImageData[i]['FileName'],
+                                    Body: ImageData[i]['Body'],
+                                    //ContentType: 'data:image/jpeg;base64'
+                                    ContentType: 'image/jpeg',
+                                }
+                                if (ShowImage_ActionExternalId && ShowImage_ActionId.length != 18) {
+                                    Offlinedata['Description'] = newDetailValue[0]['STKR__Account_lkp__c'] + ';OfflineMobileAction;' + ShowImage_ActionExternalId;
+                                }
+
+                                if (ShowImage_ActionId && ShowImage_ActionId.length == 18) {
+                                    Offlinedata['ParentId'] = ShowImage_ActionId;
+                                }
+
+                                var timeStamp = new Date().getTime();
+                                var datatoupload = {
+                                    JsonData: JSON.stringify(Offlinedata),
+                                    ObjectName: 'Attachment',
+                                    Updated: 'false',
+                                    UpdateOrInsert: 'insert',
+                                    UserId: creds.UserID,
+                                    RecordId: timeStamp
+                                }
+                                LastAttachmentId = timeStamp;
+                                if (datatoupload.JsonData.length > 2047152) {
+
+                                    app.toastMessage('Image should not be larger than 2MB', 'long');
+                                    return;
+                                }
+                                base64ToThumbnail(ImageData[i]['Body'], timeStamp + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                app.insertRecord('DataToUpdate', datatoupload);
+                            }
+                        }
+                        SynImageAction(i);
+                    } else if((ImageData[i]['FileName']).indexOf('for Vehicle') >= 0){
+                        function SynImageVehicle(i) {
+                            if (navigator.onLine && AppIsOnline && ShowImage_VehicleId.length == 18) {
+                                fetchBase64(ImageData[i]['Body'], function (iData) {
+                                    app.toastMessage('Images are uploading in backgound', 'long');
+                                    jsconn.sobject("Attachment").create({
+                                        ParentId: ShowImage_VehicleId,
+                                        Name: ImageData[i]['FileName'],
+                                        Body: iData,
+                                        //ContentType: 'data:image/jpeg;base64'
+                                        ContentType: 'image/jpeg'
+                                    },
+                                        function (err, ret) {
+                                            if (err || !ret.success) {
+                                                StoreError(err);
+                                                alert(err);
+                                                return console.error(err, ret);
+                                            }
+                                           // LastAttachmentId = ret.id;
+                                            // Store Files locally for the Thumbnail ... but not for vehicle
+                                           // base64ToThumbnail(ImageData[i]['Body'], ret.id + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                            /*window.resolveLocalFileSystemURL(ImageData[i]['Body'], function (cachedFile) {
+                                                cachedFile.remove(function () {
+                                                }, function () {
+                                                    console.error('file don\'t exists');
+                                                });
+                                            });*/
+                                            app.toastMessage('Image uploaded to salesforce', 'long');
+                                        });
+                                });
+                            } else {
+                                
+                                var Offlinedata = {
+                                   
+                                    Name: ImageData[i]['FileName'],
+                                    Body: ImageData[i]['Body'],
+                                    //ContentType: 'data:image/jpeg;base64'
+                                    ContentType: 'image/jpeg',
+                                }
+                                
+                               
+                                if (ShowImage_VehicleExternalId && ShowImage_VehicleId.length != 18) {
+                                    Offlinedata['Description'] = ';OfflineMobileVehicle;' + ShowImage_VehicleExternalId;
+                                }
+
+                                if (ShowImage_VehicleId && ShowImage_VehicleId.length == 18) {
+                                    Offlinedata['ParentId'] = ShowImage_VehicleId;
+                                }
+
+                                var timeStamp = new Date().getTime();
+                                var datatoupload = {
+                                    JsonData: JSON.stringify(Offlinedata),
+                                    ObjectName: 'Attachment',
+                                    Updated: 'false',
+                                    UpdateOrInsert: 'insert',
+                                    UserId: creds.UserID,
+                                    RecordId: timeStamp
+                                }
+                               // LastAttachmentId = timeStamp;
+                                if (datatoupload.JsonData.length > 2047152) {
+
+                                    app.toastMessage('Image should not be larger than 2MB', 'long');
+                                    return;
+                                }
+                              //  base64ToThumbnail(ImageData[i]['Body'], timeStamp + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                app.insertRecord('DataToUpdate', datatoupload);
+                            }
+                        }
+                        SynImageVehicle(i);
+                    }else {
+                        function SynImage(i) {
+                            if (navigator.onLine && AppIsOnline && !isCurrentVisitInProgress) {
+                                fetchBase64(ImageData[i]['Body'], function (iData) {
+                                    app.toastMessage('Images are uploading in backgound', 'long');
+                                    jsconn.sobject("Attachment").create({
+                                        ParentId: showImage_VisitNumber,
+                                        Name: ImageData[i]['FileName'],
+                                        Body: iData,
+                                        //ContentType: 'data:image/jpeg;base64'
+                                        ContentType: 'image/jpeg'
+                                    }, function (err, ret) {
+                                        if (err || !ret.success) {
+                                            StoreError(err);
+                                            return console.error(err, ret);
+                                        }
+                                        LastAttachmentId = ret.id;
+                                        base64ToThumbnail(ImageData[i]['Body'], ret.id + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                        /* window.resolveLocalFileSystemURL(ImageData[i]['Body'], function (cachedFile) {
+                                             cachedFile.remove(function () {
+                                                 //clean the thumbnail object...
+                                             }, function () {
+                                                 console.error('file don\'t exists');
+                                             });
+                                         });*/
+                                        app.toastMessage('Image uploaded to salesforce', 'long');
+                                    });
+                                });
+                            } else {
+                                var Offlinedata = {
+                                    ParentId: showImage_VisitNumber,
+                                    Name: ImageData[i]['FileName'],
+                                    Body: ImageData[i]['Body'],
+                                    //ContentType: 'data:image/jpeg;base64'
+                                    ContentType: 'image/jpeg'
+                                }
+                                var timeStamp = new Date().getTime();
+                                var datatoupload = {
+                                    JsonData: JSON.stringify(Offlinedata),
+                                    ObjectName: 'Attachment',
+                                    Updated: 'false',
+                                    UpdateOrInsert: 'insert',
+                                    UserId: creds.UserID,
+                                    RecordId: timeStamp
+                                }
+                                LastAttachmentId = timeStamp;
+                                //~2MB
+                                if (datatoupload.JsonData.length > 2047152) {
+                                    app.toastMessage('Image should not be larger than 2MB', 'long');
+                                    return;
+                                }
+                                base64ToThumbnail(ImageData[i]['Body'], timeStamp + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                app.insertRecord('DataToUpdate', datatoupload);
+                            }
+                        }
+                        SynImage(i);
+                    }
+                }
+                  console.log('why to navigate?');
+                //TODO: Why below line???
+                app.navigate('view/ImagefromLibrary.html');
+
+                var options = {
+                    'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                    'buttonLabels': ['Yes', 'No'],
+                    'title': 'Do you want to take another Photo ?'
+                };
+                window.plugins.actionsheet.show(options, function (buttonIndex) {
+                    if (buttonIndex === 1) {
+                        CaptureMultiplePhotos();
+                    } else if (buttonIndex === 2) {
+                        console.log('2 times back');
+                        if (ComingFrom === 'Vehicle') {
+                            window.history.go(-3);
+                        } else{
+                            window.history.go(-2);
+                        }
+                        
+                    }
+                });
+            } else {
+
+                for (let i = 0; i < StoreImages.length; i++) {
+                    StoreUrls.push({ body: StoreImages[i], tag: tag[i] });
+                }
+                SendImageDataToUpload(StoreUrls, tag);
+            }
+        } else {
+            app.toastMessage('Tag all the photos', 'long');
+        }
+    }
+
+    function toDataUrl(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            var reader = new FileReader();
+            reader.onloadend = function () {
+                callback(reader.result);
+            }
+            reader.readAsDataURL(xhr.response);
+        };
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.send();
+    }
+
+    function SendImageDataToUpload(StoreUrls, tag) {
+          
+        for (var i = 0; i < StoreImages.length; i++) {
+            data = {};
+            data['FileName'] = StoreUrls[i]['tag'];
+            data['Body'] = StoreUrls[i]['body'];
+            ImageData.push(data);
+
+            if ((ImageData[i]['FileName']).indexOf('for Action') >= 0) {
+                function SynImageAction(i) {
+                    if (navigator.onLine && AppIsOnline && !isCurrentVisitInProgress) {
+                        fetchBase64(ImageData[i]['Body'], function (iData) {
+                            app.toastMessage('Images are uploading in backgound', 'long');
+                            jsconn.sobject("Attachment").create({
+                                ParentId: ActionDetailPage_ActionData['Id'],
+                                Name: ImageData[i]['FileName'],
+                                Body: /*ImageData[i]['Body']*/iData,
+                                //ContentType: 'data:image/jpeg;base64'
+                                ContentType: 'image/jpeg'
+                            }, function (err, ret) {
+                                if (err || !ret.success) {
+                                    StoreError(err);
+                                    alert(err);
+                                    return console.error(err, ret);
+                                }
+                                LastAttachmentId = ret.id;
+                                // Store Files locally for the Thumbnail ... 
+                                base64ToThumbnail(ImageData[i]['Body'], ret.id + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+
+                                /* window.resolveLocalFileSystemURL(ImageData[i]['Body'], function (cachedFile) {
+                                     cachedFile.remove(function () {
+                                     }, function () {
+                                         console.error('file don\'t exists');
+                                     });
+                                 });*/
+                                app.toastMessage('Image uploaded to salesforce', 'long');
+                            });
+                        });
+                    } else {
+                        var Offlinedata = {
+                            ParentId: showImage_VisitNumber,
+                            Name: ImageData[i]['FileName'],
+                            Body: ImageData[i]['Body'],
+                            //ContentType: 'data:image/jpeg;base64'
+                            ContentType: 'image/jpeg',
+                        }
+                        if (ShowImage_ActionExternalId && ShowImage_ActionId && ShowImage_ActionId.length != 18) {
+                            Offlinedata['Description'] = newDetailValue[0]['STKR__Account_lkp__c'] + ';OfflineMobileAction;' + ShowImage_ActionExternalId;
+                        }
+
+
+                        if (ShowImage_ActionId && ShowImage_ActionId.length == 18) {
+                            Offlinedata['ParentId'] = ShowImage_ActionId;
+                        }
+
+                        var timeStamp = new Date().getTime();
+                        var datatoupload = {
+                            JsonData: JSON.stringify(Offlinedata),
+                            ObjectName: 'Attachment',
+                            Updated: 'false',
+                            UpdateOrInsert: 'insert',
+                            UserId: creds.UserID,
+                            RecordId: timeStamp
+                        }
+                        LastAttachmentId = timeStamp;
+                        if (datatoupload.JsonData.length > 2047152) {
+                            app.toastMessage('Image should not be larger than 2MB', 'long');
+                            return;
+                        }
+                        base64ToThumbnail(ImageData[i]['Body'], timeStamp + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                        app.insertRecord('DataToUpdate', datatoupload);
+                    }
+                }
+                SynImageAction(i);
+            } else if((ImageData[i]['FileName']).indexOf('for Vehicle') >= 0){
+                function SynImageVehicle(i) {
+                            if (navigator.onLine && AppIsOnline && ShowImage_VehicleId.length == 18) {
+                                fetchBase64(ImageData[i]['Body'], function (iData) {
+                                    app.toastMessage('Images are uploading in backgound', 'long');
+                                    jsconn.sobject("Attachment").create({
+                                        ParentId: ShowImage_VehicleId,
+                                        Name: ImageData[i]['FileName'],
+                                        Body: iData,
+                                        //ContentType: 'data:image/jpeg;base64'
+                                        ContentType: 'image/jpeg'
+                                    },
+                                        function (err, ret) {
+                                            if (err || !ret.success) {
+                                                StoreError(err);
+                                                alert(err);
+                                                return console.error(err, ret);
+                                            }
+                                           // LastAttachmentId = ret.id;
+                                            // Store Files locally for the Thumbnail ... but not for vehicle
+                                           // base64ToThumbnail(ImageData[i]['Body'], ret.id + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                            /*window.resolveLocalFileSystemURL(ImageData[i]['Body'], function (cachedFile) {
+                                                cachedFile.remove(function () {
+                                                }, function () {
+                                                    console.error('file don\'t exists');
+                                                });
+                                            });*/
+                                            app.toastMessage('Image uploaded to salesforce', 'long');
+                                        });
+                                });
+                            } else {
+                                
+                                var Offlinedata = {
+                                   
+                                    Name: ImageData[i]['FileName'],
+                                    Body: ImageData[i]['Body'],
+                                    //ContentType: 'data:image/jpeg;base64'
+                                    ContentType: 'image/jpeg',
+                                }
+                                
+                               
+                                if (ShowImage_VehicleExternalId && ShowImage_VehicleId.length != 18) {
+                                    Offlinedata['Description'] = ';OfflineMobileVehicle;' + ShowImage_VehicleExternalId;
+                                }
+
+                                if (ShowImage_VehicleId && ShowImage_VehicleId.length == 18) {
+                                    Offlinedata['ParentId'] = ShowImage_VehicleId;
+                                }
+
+                                var timeStamp = new Date().getTime();
+                                var datatoupload = {
+                                    JsonData: JSON.stringify(Offlinedata),
+                                    ObjectName: 'Attachment',
+                                    Updated: 'false',
+                                    UpdateOrInsert: 'insert',
+                                    UserId: creds.UserID,
+                                    RecordId: timeStamp
+                                }
+                               // LastAttachmentId = timeStamp;
+                                if (datatoupload.JsonData.length > 2047152) {
+
+                                    app.toastMessage('Image should not be larger than 2MB', 'long');
+                                    return;
+                                }
+                              //  base64ToThumbnail(ImageData[i]['Body'], timeStamp + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                                app.insertRecord('DataToUpdate', datatoupload);
+                            }
+                        }
+                        SynImageVehicle(i);
+            }else {
+                function SynImage(i) {
+                    if (navigator.onLine && AppIsOnline && !isCurrentVisitInProgress) {
+                        fetchBase64(ImageData[i]['Body'], function (iData) {
+                            app.toastMessage('Images are uploading in backgound', 'long');
+                            jsconn.sobject("Attachment").create({
+                                ParentId: showImage_VisitNumber,
+                                Name: ImageData[i]['FileName'],
+                                Body: /*ImageData[i]['Body']*/iData,
+                                //ContentType: 'data:image/jpeg;base64'
+                                ContentType: 'image/jpeg'
+                            },
+                                function (err, ret) {
+                                    if (err || !ret.success) {
+                                        StoreError(err);
+                                        return console.error(err, ret);
+                                    }
+                                    LastAttachmentId = ret.id;
+                                    base64ToThumbnail(ImageData[i]['Body'], ret.id + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+
+                                    /*window.resolveLocalFileSystemURL(ImageData[i]['Body'], function (cachedFile) {
+                                        cachedFile.remove(function () {
+                                        }, function () {
+                                            console.error('file don\'t exists');
+                                        });
+                                    });*/
+                                    app.toastMessage('Image uploaded to salesforce', 'long');
+                                });
+                        });
+
+                    } else {
+                        var Offlinedata = {
+                            ParentId: showImage_VisitNumber,
+                            Name: ImageData[i]['FileName'],
+                            Body: ImageData[i]['Body'],
+                            //ContentType: 'data:image/jpeg;base64'
+                            ContentType: 'image/jpeg'
+                        }
+                        var timeStamp = new Date().getTime();
+                        var datatoupload = {
+                            JsonData: JSON.stringify(Offlinedata),
+                            ObjectName: 'Attachment',
+                            Updated: 'false',
+                            UpdateOrInsert: 'insert',
+                            UserId: creds.UserID,
+                            RecordId: timeStamp
+                        }
+                        LastAttachmentId = timeStamp;
+                        //~2MB
+                        if (datatoupload.JsonData.length > 2047152) {
+
+                            app.toastMessage('Image should not be larger than 2MB', 'long');
+                            return;
+                        }
+                        base64ToThumbnail(ImageData[i]['Body'], timeStamp + '_' + ImageData[i]['FileName'], showImage_VisitNumber, false, newDetailValue[0]['Name']);
+                        app.insertRecord('DataToUpdate', datatoupload);
+                    }
+                }
+                SynImage(i);
+            }
+        }
+        console.log('sendimagedatatoupload back');
+        if(ComingFrom === 'Vehicle'){
+            window.history.go(-2);
+        }
+        else{
+            window.history.back();
+        }
+       
+    }
+
+    function cancelUploadingImages() {
+        window.history.back();
+    }
+
+    function ShowImage_BackButton() {
+        window.history.back();
+    }
+</script>

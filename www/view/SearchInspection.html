@@ -1,0 +1,279 @@
+<div data-role="view" id="SearchInspection" data-show="DataShowSearchInspection"
+    data-after-show="DataAfterShowSearchInspection" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();"
+                class="SearchInspectionListMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button style="float:right;margin-top:2%;border-style:none;" id="toggleInspections"
+                class="SearchInspectionListMDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="fa fa-check-circle-o"></i>
+            </button>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="SearchInspectionListMDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <span>Inspection Search</span>
+        </div>
+    </header>
+    <div data-role="header" style="background:grey;">
+        <center>
+            <input type="text" id="term_Inspection" style="width:60%;margin:2%;line-height:2em;background-color:white;"
+                placeholder="Enter Character" />
+            <button
+                class="SearchInspectionMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="getInspection()">
+                Search
+            </button>
+        </center>
+    </div>
+    <div>
+        <div class="MainBodyInspectionSearch" id="MessaageOfInspectionSearch">
+        </div>
+        <ul data-role="listview" id="ListViewForSearchInspection" data-template="SearchInspectionTemplate"
+            data-style="inset">
+        </ul>
+    </div>
+</div>
+<script>
+    var SearchInspectionTerm = '';
+    var SearchInspectionResult = [];
+    var InspectionId = '';
+    var OpenSearchedInspection = [];
+    var CompletedSearchedInspection = [];
+    var flag_search = 0;
+
+    function DataAfterShowSearchInspection() {
+        try {
+            if (device.platform == "Android")
+                componentHandler.upgradeElements(document.getElementsByClassName('SearchInspectionMDLClass'));
+            var SearchInspectionPlaceholder = $('<p>').text("No Inspections found please amend your search criteria or refresh all data if you believe the Inspection should be on your device.");
+            SearchInspectionPlaceholder.css('color', 'grey');
+            SearchInspectionPlaceholder.css('position', 'absolute');
+            SearchInspectionPlaceholder.css('top', '50%');
+            $('#MessaageOfInspectionSearch').html(SearchInspectionPlaceholder);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    function DataShowSearchInspection() {
+        CountNumberOfOflineItem();
+        try {
+            $('#term_Inspection').val(SearchInspectionTerm);
+            getInspection();
+            if (flag_search === 1) {
+                $("#ListViewForSearchInspection").data("kendoMobileListView").replace(CompletedSearchedInspection);
+                $('#ListViewForSearchInspection li:nth-child(odd)').css('background-color', 'lightblue');
+            }
+        } catch (err) {
+        }
+        var count = 0;
+        $("#toggleInspections").click(function () {
+            count++;
+            var isEven = function (someNumber) {
+                return (someNumber % 2 === 0) ? true : false;
+            };
+            if (isEven(count) === false) {
+                flag_search = 1;
+                $("#ListViewForSearchInspection").data("kendoMobileListView").replace(CompletedSearchedInspection);
+                $('#ListViewForSearchInspection li:nth-child(odd)').css('background-color', 'lightblue');
+            } else if (isEven(count) === true) {
+                flag_search = 0;
+                $("#ListViewForSearchInspection").data("kendoMobileListView").replace(OpenSearchedInspection);
+                $('#ListViewForSearchInspection li:nth-child(odd)').css('background-color', 'lightblue');
+            }
+        });
+    }
+
+    function getInspection() {
+        SearchInspectionResult = [];
+        OpenSearchedInspection = [];
+        CompletedSearchedInspection = [];
+        $('#MessaageOfInspectionSearch').hide();
+        SearchInspectionTerm = $('#term_Inspection').val();
+        if (SearchInspectionTerm) {
+            for (var i = 0; i < InspectionData.length; i++) {
+                var test = {};
+                if (InspectionData[i]['STKR__Visit__c'] === newDetailValue[0]['Id']) {
+                    for (var j = 0; j < InspectionItemData.length; j++) {
+                        if (InspectionItemData[j]['Id'] === InspectionData[i]['STKR__Service_Item__c']) {
+                            if (InspectionData[i]['STKR__Item_Detail__c']) {
+                                if ((InspectionData[i]['STKR__Item_Detail__c'].toLowerCase()).match(SearchInspectionTerm.toLowerCase())) {
+                                    test = {};
+                                    test = {
+                                        Item_Type: InspectionItemData[j]['STKR__Item_Type__c'],
+                                        Inspection_Interval: InspectionItemData[j]['STKR__Inspection_Interval__c'],
+                                        Inspection_Frequency: InspectionItemData[j]['STKR__Inspection_Frequency__c'],
+                                        Sort_Order: InspectionItemData[j]['STKR__Sort_Order__c'],
+                                        Location: InspectionItemData[j]['STKR__Location__c'],
+                                        Reference: InspectionItemData[j]['STKR__Reference__c'],
+                                        Type: InspectionItemData[j]['STKR__Type__c'],
+                                        Id: InspectionItemData[j]['Id'],
+                                        InspectionId: InspectionData[i]['Id'],
+                                        Status: InspectionData[i]['STKR__Status__c'],
+                                        RecordTypeName: InspectionData[i]['STKR__Service_Item_Record_Type__c'],
+                                        BarCodeNumber: InspectionItemData[j]['STKR__Bar_Code_Number__c']
+                                    };
+                                    SearchInspectionResult.push(test);
+                                    continue;
+                                }
+                            } else {
+                                // Check if Inspection is offline created..
+                                if (InspectionData[i]['Id'].length < 18) {
+                                    var STKR__Item_Detail__c = '';
+                                    STKR__Item_Detail__c = InspectionItemData[j]['STKR__Reference__c'] + '-' + InspectionItemData[j]['STKR__Item_Type__c'] + InspectionItemData[j]['STKR__Location__c'];
+                                    if (STKR__Item_Detail__c.toLowerCase().match(SearchInspectionTerm.toLowerCase())) {
+                                        test = {};
+                                        test = {
+                                            Item_Type: InspectionItemData[j]['STKR__Item_Type__c'],
+                                            Inspection_Interval: InspectionItemData[j]['STKR__Inspection_Interval__c'],
+                                            Inspection_Frequency: InspectionItemData[j]['STKR__Inspection_Frequency__c'],
+                                            Sort_Order: InspectionItemData[j]['STKR__Sort_Order__c'],
+                                            Location: InspectionItemData[j]['STKR__Location__c'],
+                                            Reference: InspectionItemData[j]['STKR__Reference__c'],
+                                            Type: InspectionItemData[j]['STKR__Type__c'],
+                                            Id: InspectionItemData[j]['Id'],
+                                            InspectionId: InspectionData[i]['Id'],
+                                            Status: InspectionData[i]['STKR__Status__c'],
+                                            RecordTypeName: InspectionData[i]['STKR__Service_Item_Record_Type__c'],
+                                            BarCodeNumber: InspectionItemData[j]['STKR__Bar_Code_Number__c']
+                                        };
+                                        SearchInspectionResult.push(test);
+                                        continue;
+                                    }
+                                } else {
+                                    var Item_Detail = '';
+                                    Item_Detail = InspectionItemData[j]['STKR__Reference__c'] + '-' + InspectionItemData[j]['STKR__Item_Type__c'] + InspectionItemData[j]['STKR__Location__c'];
+                                    if (Item_Detail.toLowerCase().match(SearchInspectionTerm.toLowerCase())) {
+                                        test = {};
+                                        test = {
+                                            Item_Type: InspectionItemData[j]['STKR__Item_Type__c'],
+                                            Inspection_Interval: InspectionItemData[j]['STKR__Inspection_Interval__c'],
+                                            Inspection_Frequency: InspectionItemData[j]['STKR__Inspection_Frequency__c'],
+                                            Sort_Order: InspectionItemData[j]['STKR__Sort_Order__c'],
+                                            Location: InspectionItemData[j]['STKR__Location__c'],
+                                            Reference: InspectionItemData[j]['STKR__Reference__c'],
+                                            Type: InspectionItemData[j]['STKR__Type__c'],
+                                            Id: InspectionItemData[j]['Id'],
+                                            InspectionId: InspectionData[i]['Id'],
+                                            Status: InspectionData[i]['STKR__Status__c'],
+                                            RecordTypeName: InspectionData[i]['STKR__Service_Item_Record_Type__c'],
+                                            BarCodeNumber: InspectionItemData[j]['STKR__Bar_Code_Number__c']
+                                        };
+                                        SearchInspectionResult.push(test);
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            if (InspectionItemData[j]['STKR__Bar_Code_Number__c'] &&
+                                (InspectionItemData[j]['STKR__Bar_Code_Number__c'].toLowerCase()).match(SearchInspectionTerm.toLowerCase())) {
+                                test = {};
+                                test = {
+                                    Item_Type: InspectionItemData[j]['STKR__Item_Type__c'],
+                                    Inspection_Interval: InspectionItemData[j]['STKR__Inspection_Interval__c'],
+                                    Inspection_Frequency: InspectionItemData[j]['STKR__Inspection_Frequency__c'],
+                                    Sort_Order: InspectionItemData[j]['STKR__Sort_Order__c'],
+                                    Location: InspectionItemData[j]['STKR__Location__c'],
+                                    Reference: InspectionItemData[j]['STKR__Reference__c'],
+                                    Type: InspectionItemData[j]['STKR__Type__c'],
+                                    Id: InspectionItemData[j]['Id'],
+                                    InspectionId: InspectionData[i]['Id'],
+                                    Status: InspectionData[i]['STKR__Status__c'],
+                                    RecordTypeName: InspectionData[i]['STKR__Service_Item_Record_Type__c'],
+                                    BarCodeNumber: InspectionItemData[j]['STKR__Bar_Code_Number__c']
+                                };
+                                SearchInspectionResult.push(test);
+                            }
+
+                        }
+                    }
+                }
+            }
+            if (SearchInspectionResult.length) {
+                try {
+                    for (var k = 0; k < SearchInspectionResult.length; k++) {
+                        if (SearchInspectionResult[k]['Status'] === 'Pending') {
+                            OpenSearchedInspection.push(SearchInspectionResult[k]);
+                        } else {
+                            CompletedSearchedInspection.push(SearchInspectionResult[k]);
+                        }
+                    }
+                    $("#ListViewForSearchInspection").data("kendoMobileListView").replace(OpenSearchedInspection);
+                    $('#ListViewForSearchInspection li:nth-child(odd)').css('background-color', 'lightblue');
+                } catch (err) {
+                    console.log(err);
+                }
+            } else {
+                $("#ListViewForSearchInspection").data("kendoMobileListView").replace([]);
+                $('#MessaageOfInspectionSearch').show();
+            }
+        } else {
+            app.toastMessage('Please Enter Something', 'long');
+        }
+    }
+</script>
+<script type="script/x-kendo-template" id="SearchInspectionTemplate">
+    <div onclick="gotoInspectionDetailPage('${Id}','${InspectionId}');">
+        <label>
+            #if (Item_Type) {#
+                <b>${Item_Type}</b>
+            #}
+            if (Inspection_Interval || Inspection_Frequency) {#
+                (${Inspection_Interval} ${Inspection_Frequency})
+            #}#
+        </label><br>
+        <span>
+            <font size="2" style="color:black"> 
+                #if (Sort_Order) {# 
+                    ${Sort_Order}
+                #}
+                if (Location) {
+                    if (Sort_Order && Location) {# - #
+                    }# 
+                    ${Location} 
+                #}
+                if (Reference) {# 
+                    (${Reference})
+                #}# 
+            </font>
+        </span><br>
+        <span>
+            #if (Type) {#
+                <font size="2" style="color:black">${Type}</font>
+            #}#
+        </span>
+    </div>
+    <div style="width:100%;" >
+        <br/>
+        #if (QuickInspect) {#
+            #if (Status==='Pending') {#
+         <input class="ItemToInspectionCheckbox"
+                data-id="#:InspectionId#" 
+                data-status="#:Status#"
+                type="checkbox" 
+                style="width:20px;height:20px;top:30%;margin-left:98%;float:right;position:absolute;" 
+                onclick="changeStatus('${InspectionId}','${Status}','this.id','SearchInspectionPage')"/>
+            #} else {#
+         <input class="ItemToInspectionCheckbox"
+                data-id="#:InspectionId#" 
+                data-status="#:Status#"
+                type="checkbox" checked
+                style="width:20px;height:20px;top:30%;margin-left:98%;float:right;position:absolute;" 
+                onclick="changeStatus('${InspectionId}','${Status}','this.id','SearchInspectionPage')"/>
+            #}
+        # #}#
+    </div>
+</script>
+<style>
+    .MainBodyInspectionSearch {
+        width: 100%;
+        bottom: 0px;
+        top: 0px;
+        position: absolute;
+    }
+</style>

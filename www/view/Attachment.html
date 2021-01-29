@@ -1,0 +1,343 @@
+<div data-role="view" data-use-native-scrolling="true" data-show="DataShowAttachment" data-title="Client Attachments">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="button" data-align="left" onclick="gobackfromAttachment()" style="left:-25%;">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <span data-role="view-title" style="font-weight:bold;color:white;margin-left:-10%"></span>
+            <label class="switch" data-align="right">
+                <input type="checkbox" id="togBtn" value="false">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </header>
+    <input type="file" id="att_file" onchange="onchange_attUploadDoc()" />
+    <ul data-role="listview" id="ListviewForAttachmentData" data-template="ListviewForAttachmentTemplate"
+        data-style="inset" style="width:100%;"></ul>
+    <div class="isa_error">No internet connection found.</div>
+
+    <div data-role="footer" style="color:#39B7CD;padding:0px;display:block;">
+        <div data-role="navbar">
+            <center style="display: flex;align-items: center;justify-content: space-evenly;padding-top:2%;padding-bottom:2%;">
+                <i class="fa fa-search fa-lg headerIconStyleForAll" id="searchAttachment"
+                    onClick="app.navigate('view/SearchAttachment.html');"
+                    style="border-style:none;color:white;padding:5px;"></i>
+                <i class="fa fa-filter fa-lg headerIconStyleForAll" id="filterAttachment" onClick="openFilterAttachmentModalView()"
+                    style="border-style:none;color:white;padding:5px;"></i>
+                <i class="fa fa-upload fa-lg headerIconStyleForAll" id="uploadDoc" style="border-style:none;color:white;padding:5px;"></i>
+                <i class="fa fa-pencil fa-lg headerIconStyleForAll" onclick="DrawFloorPlan('#:Name#')"
+                    style="border-style:none;color:white;padding:5px;"></i>
+            </center>
+        </div>
+    </div>
+</div>
+<div data-role="modalview" id="modalview-filterAttachment" style="width:100%;height:80%;">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Attachment list Filter</span>
+        </div>
+    </div>
+    <ul data-role="listview">
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioNoFilter_Attachment" checked="checked"
+                value="No Filter" />
+            <label class="km-radio-label km-label" for="ModelViewRadioNoFilter_Attachment">No Filter</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioImageFilter" value="Image" />
+            <label class="km-radio-label km-label" for="ModelViewRadioImageFilter">Image</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioPDFFilter" value="PDF" />
+            <label class="km-radio-label km-label" for="ModelViewRadioPDFFilter">PDF</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioDocumentFilter" value="Document" />
+            <label class="km-radio-label km-label" for="ModelViewRadioDocumentFilter">Document</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioSheetFilter" value="Spreadsheet" />
+            <label class="km-radio-label km-label" for="ModelViewRadioSheetFilter">Spreadsheet</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioTodayFilter" value="Today" />
+            <label class="km-radio-label km-label" for="ModelViewRadioTodayFilter">Today</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioLast7DaysFilter"
+                value="Last Seven Days" />
+            <label class="km-radio-label km-label" for="ModelViewRadioLast7DaysFilter">Last 7 Days</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioThisMonthFilter" value="This Month" />
+            <label class="km-radio-label km-label" for="ModelViewRadioThisMonthFilter">This month</label>
+        </li>
+        <li>
+            <input type="radio" class="km-radio" name="filter" id="ModelViewRadioLast46DaysFilter"
+                value="Last Forty Six Days" />
+            <label class="km-radio-label km-label" for="ModelViewRadioLast46DaysFilter">Last 46 Days</label>
+        </li>
+    </ul>
+    <div data-role="footer" style="background-color:grey;">
+        <center>
+            <button onClick="FilterAttachment()" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CHOOSE</button>
+            <button data-click="closeFilterAttachmentModalView" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CANCEL</button>
+        </center>
+    </div>
+    <br />
+</div>
+<script>
+    //var Countquery = 0;
+
+    function DataShowAttachment() {
+        CountNumberOfOflineItem();
+        $(".isa_error").hide();
+        $("#togBtn").on('change', function () {
+            ontoggle();
+        });
+        $("#att_file").css('opacity', '0');
+        $("#uploadDoc").click(function (e) {
+            e.preventDefault();
+            $("#att_file").trigger('click');
+        });
+        if (navigator.onLine) {
+            $("#ListviewForAttachmentData").data("kendoMobileListView").replace([]);
+            ontoggle();
+        } else {
+            attOfflineMessage();
+        }
+    }
+
+    function attOfflineMessage() {
+        $(".isa_error").show();
+        app.toastMessage('Your device is offline', 'long');
+        $("#ListviewForAttachmentData").data("kendoMobileListView").replace([]);
+        return;
+    }
+
+    function ontoggle() {
+        var navbar = app.view()
+            .header
+            .find(".km-navbar")
+            .data("kendoMobileNavBar");
+
+        if ($(togBtn).is(':checked')) {
+            //Change title
+            navbar.title("Schedule Attachments");
+            let tempListViewItems = [];
+            for (var i = 0; i < ParticularAttachmentFolderData.length; i++) {
+                if (ParticularAttachmentFolderData[i]['STKR__SchdeuleAttachement__c'] == newDetailValue[0]['STKR__Service__c']) {
+                    tempListViewItems.push(ParticularAttachmentFolderData[i]);
+                }
+            }
+            $("#searchAttachment").hide();
+            $("#filterAttachment").hide();
+            $("#ListviewForAttachmentData").data("kendoMobileListView").replace(tempListViewItems);
+        } else {
+            //change title
+            navbar.title("Client Attachments");
+            let tempListViewItems = [];
+            for (var i = 0; i < ParticularAttachmentFolderData.length; i++) {
+                if (ParticularAttachmentFolderData[i]['STKR__Client__c'] == newDetailValue[0]['STKR__Account_lkp__c']) {
+                    tempListViewItems.push(ParticularAttachmentFolderData[i]);
+                }
+            }
+            $("#searchAttachment").show();
+            $("#filterAttachment").show();
+            $("#ListviewForAttachmentData").data("kendoMobileListView").replace(tempListViewItems);
+        }
+
+    }
+
+    function OpenAttachment(attachmentid, attachmentname,type) {
+        /*console.log(creds.instanceUrl + '/servlet/servlet.FileDownload?file=' + AttachmentData.records[0]['STKR__Attachment__c'], AttachmentData.records[0]['Name'], png);
+        downloaddocx(creds.instanceUrl + '/servlet/servlet.FileDownload?file=' + AttachmentData.records[0]['STKR__Attachment__c'], AttachmentData.records[0]['Name'], png);
+        */
+        //var type = attachmentname.split('.');
+        console.log(creds.instanceUrl + '/servlet/servlet.FileDownload?file=' + attachmentid, attachmentname, type);
+        downloaddocx(creds.instanceUrl + '/servlet/servlet.FileDownload?file=' + attachmentid, attachmentname, type);
+    }
+
+    function DrawFloorPlan(VisitName) {
+        app.navigate("view/DrawFloorPlan.html");
+    }
+
+    function gobackfromAttachment() {
+        if (FromWhere_Attachment === 'Card') {
+            window.history.back();
+            //app.navigate('view/myvisits.html');
+            //OpenVisitModelViewForAll('MyVisitModalView', '${Id}');
+        } else {
+            window.history.back();
+        }
+    }
+
+    function openFilterAttachmentModalView() {
+        $("#modalview-filterAttachment").kendoMobileModalView("open");
+    }
+
+    function closeFilterAttachmentModalView() {
+        $("#modalview-filterAttachment").kendoMobileModalView("close");
+    }
+
+    function FilterAttachment() {
+        newAttachmentData = [];
+        var countnewAttachment = 0;
+        var filtername = $('Input[name="filter"]:checked').val();
+        if (filtername === 'Image') {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if ((AllAttachmentData[i]['Name'].toLowerCase()).includes('png') ||
+                    (AllAttachmentData[i]['Name'].toLowerCase()).includes('jpg') ||
+                    (AllAttachmentData[i]['Name'].toLowerCase()).includes('jpeg')) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'PDF') {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if ((AllAttachmentData[i]['Name'].toLowerCase()).includes('pdf')) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'Document') {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if ((AllAttachmentData[i]['STKR__Type__c'].toLowerCase()).includes('msword') ||
+                    (AllAttachmentData[i]['STKR__Type__c'].toLowerCase()).includes('document') ||
+                    (AllAttachmentData[i]['Name'].toLowerCase()).includes('doc') ||
+                    (AllAttachmentData[i]['Name'].toLowerCase()).includes('docx') ||
+                    (AllAttachmentData[i]['Name'].toLowerCase()).includes('txt')) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'Spreadsheet') {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if ((AllAttachmentData[i]['STKR__Type__c'].toLowerCase()).includes('sheet') ||
+                    (AllAttachmentData[i]['Name'].toLowerCase()).includes('xlsx')) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'Today') {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if (new Date(AllAttachmentData[i]['CreatedDate']).toDateString() === new Date().toDateString()) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'Last Seven Days') {
+            var date = new Date();
+            var last7days = new Date(date.setDate(date.getDate() - 7));
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if (new Date(AllAttachmentData[i]['CreatedDate']) > last7days) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'This Month') {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if (new Date(AllAttachmentData[i]['CreatedDate']).getMonth() === new Date().getMonth()) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else if (filtername === 'Last Forty Six Days') {
+            var date = new Date();
+            var last46days = new Date(date.setDate(date.getDate() - 46));
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if (new Date(AllAttachmentData[i]['CreatedDate']) > last46days) {
+                    newAttachmentData[countnewAttachment++] = AllAttachmentData[i];
+                }
+            }
+        } else {
+            newAttachmentData = AllAttachmentData;
+        }
+        try {
+            $("#ListviewForAttachmentData").data("kendoMobileListView").replace(newAttachmentData);
+        } catch (err) {
+            console.log(err);
+        }
+        $("#modalview-filterAttachment").kendoMobileModalView("close");
+    }
+</script>
+
+<script type="text/x-kendo-template" id="ListviewForAttachmentTemplate">
+        <div class="collapsible" style="width:100%;">
+            #try {#
+            <div>
+                <span style="margin-left:1%;font-size:small;">#:Name#</span>
+                <button  class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--icon" style="float:right;" onclick="OpenAttachment('${STKR__Attachment__c}','${Name}','${STKR__Type__c}')">
+                    <i class="material-icons" style="margin-top:-5px;color:\#ffd740;">visibility</i>
+                </button>
+            </div>
+            #} catch (e) {
+            } #
+        </div>
+    </script>
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 17px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 13px;
+        width: 13px;
+        left: 2px;
+        bottom: 2px;
+        background-color: rgb(33, 159, 243);
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: white;
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked+.slider:before {
+        -webkit-transform: translateX(13px);
+        -ms-transform: translateX(13px);
+        transform: translateX(13px);
+    }
+
+    .slider.round {
+        border-radius: 17px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .isa_error {
+        color: #D8000C;
+        background-color: #FFBABA;
+        padding: 50px;
+        margin: 50px;
+    }
+</style>

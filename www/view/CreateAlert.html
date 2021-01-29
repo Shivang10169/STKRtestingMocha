@@ -1,0 +1,309 @@
+<div data-role="view" id="AddAlert" data-layout="AddAlertLayout" data-show="CreateAlert_Getid"
+    data-after-show="DAFCreateAlert" data-use-native-scrolling="true" data-title="Create New Alert">
+    <div style="margin:5%;">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <select class="mdl-textfield__input" id="salutationAlert">
+              
+            </select>
+            <label class="mdl-textfield__label" for="salutation">Salutation</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="firstnameAlert">
+            <label class="mdl-textfield__label" for="firstname">First Name</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="lastnameAlert">
+            <label class="mdl-textfield__label" for="lastname">Last Name</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="titleAlert">
+            <label class="mdl-textfield__label" for="title">Title</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="email" id="emailAlert">
+            <label class="mdl-textfield__label" for="email">Email</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="phoneAlert" >
+            <label class="mdl-textfield__label" for="phone">Phone</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="mobileAlert" >
+            <label class="mdl-textfield__label" for="mobile">Mobile</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <select class="mdl-textfield__input" id="statusAlert">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <label class="mdl-textfield__label" for="status">Status</label>
+        </div>
+        <br>
+        <div>
+            <label for="enableAlert" style="color: rgb(0,188,212);font-size: 16px;">Enable Email Alerts </label>
+            <input type="checkbox" id="enableAlert" style="float:right;margin-right:10%;">
+        </div>
+        <br />
+        <br />
+        <span style="margin-top:5%;">
+            <center>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    style="float:left;margin-left:5%;font-weight:bold;background-color:grey;"
+                    onClick="window.history.back();">
+                    CANCEL
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    style="float:right;margin-right:5%;font-weight:bold;margin-bottom:5%"
+                    onclick="ValidationOfCreateContactAlert()">
+                    SAVE
+                </button>
+            </center>
+        </span>
+        <br>
+    </div>
+</div>
+
+<div data-role="layout" data-id="AddAlertLayout">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span>Contacts/Alerts</span>
+            <a data-role="backbutton" data-align="left" style="border-style:none;">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="mdl-button mdl-js-button mdl-button--icon headerIconStyleForAll">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function Expand(obj) {
+        obj.size = obj.value.length;
+    }
+
+    function CreateAlert_Getid(e) {
+        CountNumberOfOflineItem();
+        $("#firstnameAlert").val('');
+        $("#lastnameAlert").val('');
+        $("#titleAlert").val('');
+        $("#emailAlert").val('');
+        $("#phoneAlert").val('');
+        $("#mobileAlert").val('');
+        $("#enableAlert").prop('checked', false);
+
+        var selectSalutation = $('#salutationAlert');
+        var salutationlist = [];
+        for (var i = 0; i < ContactMetadata.fields.length; i++) {
+            if (ContactMetadata.fields[i].name == "Salutation") {
+
+                salutationlist = ContactMetadata.fields[i].picklistValues.slice();
+            }
+
+        }
+        var list = '';
+        list += '<option value="none">None</option>'
+        if (salutationlist.length) {
+            for (var j = 0; j < salutationlist.length; j++) {
+                list += "<option value='" + salutationlist[j].label + "'>" + salutationlist[j].label + "</option>";
+            }
+        }
+
+        
+        selectSalutation.html(list);
+    }
+
+    function ValidationOfCreateContactAlert() {
+        if ($('#emailAlert').val()) {
+            if (!(/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test($('#emailAlert').val()))) {
+                app.toastMessage('Please provide a valid Email', 'long');
+            } else {
+                CreateContactAlert();
+            }
+        } else {
+            CreateContactAlert();
+        }
+    }
+
+    var CreateAlert_Contact_Id;
+
+    function CreateContactAlert() {
+        var salutaionCheck = "";
+        if (!($('#lastnameAlert').val() === '') && !($('#firstnameAlert').val() === '')) {
+            app.pane.loader.show();
+            if ($('#salutationAlert').val() == "none") {
+                salutaionCheck = "";
+            } else {
+                salutaionCheck = $('#salutationAlert').val();
+            }
+            var SaveContactAlert = {
+                Salutation: salutaionCheck,
+                FirstName: $('#firstnameAlert').val(),
+                LastName: $('#lastnameAlert').val(),
+                Title: $('#titleAlert').val(),
+                Email: $('#emailAlert').val(),
+                Phone: $('#phoneAlert').val(),
+                MobilePhone: $('#mobileAlert').val(),
+                STKR__Status__c: $('#statusAlert').val()
+            };
+            SaveContactAlert['AccountId'] = newDetailValue[0]['STKR__Account_lkp__c'];
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+                jsconn.sobject("Contact").create(SaveContactAlert, function (err, ret) {
+                    if (err || !ret.success) {
+                        StoreError(err);
+                        return console.error(err, ret);
+                    }
+                    console.log('Create Successfully : ' + ret.id);
+                    var data = {
+                        JsonData: JSON.stringify(SaveContactAlert),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+                        AccountID: accountid,
+                        ContactID: ret.id
+                    }
+                    app.insertRecord('Contact', data);
+                    SaveContactAlert['Id'] = ret.id;
+                    CreateAlert_Contact_Id = ret.id;
+                    ContactData.push(SaveContactAlert);
+                    app.pane.loader.hide();
+                    app.toastMessage('New Contact ' + SaveContactAlert.LastName + ' Created', 'long');
+                    if ($("#enableAlert").is(':checked')) {
+                        CreateAlert(SaveContactAlert);
+                    } else {
+                        window.history.back();
+                    }
+                });
+            } else {
+                var timestamp = (new Date().getTime()).toString();
+                SaveContactAlert['Id'] = timestamp;
+                CreateAlert_Contact_Id = timestamp;
+                if ($("#enableAlert").is(':checked')) {
+                    SaveContactAlert['STKR__Reference_Id__c'] = timestamp;
+                } else {
+                    SaveContactAlert['STKR__Reference_Id__c'] = timestamp;
+                }
+                var data = {
+                    JsonData: JSON.stringify(SaveContactAlert),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    AccountID: accountid,
+                    ContactID: timestamp
+                }
+                app.insertRecord('Contact', data);
+                var datatoupload = {
+                    JsonData: JSON.stringify(SaveContactAlert),
+                    ObjectName: 'Contact',
+                    Updated: 'newRecord',
+                    UpdateOrInsert: 'insert',
+                    UserId: creds.UserID,
+                    RecordId: timestamp
+                };
+                app.insertRecord('DataToUpdate', datatoupload);
+                ContactData.push(SaveContactAlert);
+                app.pane.loader.hide();
+                app.toastMessage('New Contact ' + SaveContactAlert.LastName + ' created', 'long');
+                if ($("#enableAlert").is(':checked')) {
+                    console.log('Inside offline  create contact');
+                    CreateAlert(SaveContactAlert);
+                } else {
+                    window.history.back();
+                }
+            }
+        } else {
+            app.toastMessage('Last Name and First Name are required', 'long');
+            app.pane.loader.hide();
+        }
+    }
+
+    function CreateAlert(ContactRecord) {
+        console.log('in create alert function', ContactRecord);
+        var SaveAlert = {};
+        SaveAlert['STKR__Contact__c'] = CreateAlert_Contact_Id;
+        SaveAlert['STKR__Service_Contract__c'] = newDetailValue[0]['STKR__Service_Contract__c'];
+        SaveAlert['STKR__Visits__c'] = true;
+        SaveAlert['STKR__Account__c'] = newDetailValue[0]["STKR__Account_lkp__c"];
+        SaveAlert['STKR__Service__c'] = newDetailValue[0]["STKR__Service__c"];
+
+        if ($("#enableAlert").is(':checked')) {
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+                jsconn.sobject("STKR__Alerts__c").create(SaveAlert, function (err, ret) {
+                    if (err || !ret.success) {
+                        StoreError(err);
+                        return console.error(err, ret);
+                    }
+                    console.log('Create Successfully : ' + ret.id);
+                    var data = {
+                        JsonData: JSON.stringify(SaveAlert),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+                        AccountID: accountid,
+                        AlertID: ret.id
+                    }
+                    app.insertRecord('Alerts', data);
+                    SaveAlert['Id'] = ret.id;
+                    console.log('ContactRecord', Object.assign({ STKR__Contact__r: ContactRecord }, SaveAlert));
+                    AlertsData.push(Object.assign({ STKR__Contact__r: ContactRecord }, SaveAlert));
+                    app.toastMessage('Alert Created', 'long');
+                    window.history.back();
+                });
+            } else {
+                console.log('createAlertContactID', CreateAlert_Contact_Id);
+                console.log('contactrecord offline', ContactRecord);
+                SaveAlert['STKR__Reference_Id__c'] = CreateAlert_Contact_Id + ';Mobile;';
+                var timestamp = new Date().getTime().toString();
+                SaveAlert['Id'] = timestamp;
+
+                var datatoupload = {
+                    JsonData: JSON.stringify(SaveAlert),
+                    ObjectName: 'STKR__Alerts__c',
+                    Updated: 'newRecord',
+                    UpdateOrInsert: 'upsert',
+                    UserId: creds.UserID,
+                    RecordId: timestamp
+                };
+                app.insertRecord('DataToUpdate', datatoupload);
+                AlertsData.push(Object.assign({ STKR__Contact__r: ContactRecord }, SaveAlert));
+                var data = {
+                    JsonData: JSON.stringify(Object.assign({ STKR__Contact__r: ContactRecord }, SaveAlert)),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    AccountID: accountid,
+                    AlertID: timestamp
+                }
+                app.insertRecord('Alerts', data);
+                app.toastMessage('Alert Created Offline', 'long');
+                window.history.back();
+            }
+        }
+    }
+
+    function DAFCreateAlert() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName("mdl-textfield"));
+            componentHandler.upgradeElements(document.getElementsByClassName("mdl-button"));
+        }
+    }    
+</script>
+
+<style>
+    .km-rightcustomicon:after,
+    .km-rightcustomicon:before {
+        content: "\e037";
+    }
+
+    .textbox {
+        border: 2px solid grey;
+        float: right;
+        size: 5;
+    }
+</style>

@@ -1,0 +1,161 @@
+<div data-role="view" data-show="DSSelectContacAccount" data-after-show="DASSelectAccountCOntact" 
+    data-title="Select Contact" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </header>
+    
+    <hr style="margin:1px;" />
+    <div data-role="listview" data-template="SearchLookupListviewTemplateForAccountContact" id="SearchLookupListviewForAccountCOntact"></div>
+</div>
+
+<script>
+    var InputElementId = '', passedFromPage = '', HiddenInputElementId = '';
+    var ActionContactList = [];
+    function DSSelectContacAccount(e) {
+        ActionContactList = [];
+        CountNumberOfOflineItem();
+        InputElementId = '';
+       
+
+        try {
+          
+            InputElementId = e.view.params.inputhtmlid;
+            passedFromPage = e.view.params.passedFromPage;
+           
+        } catch (e) {
+            alert('SelectLookup 1 : ' + e);
+        }  
+
+
+        // Empty listview
+        $('#SearchLookupListviewForAccountCOntact').data("kendoMobileListView").replace([]);
+
+        var AllValidAccounts = [];
+        AllValidAccounts.push(newDetailValue[0]["STKR__Account_lkp__c"]);
+        for(var k=0;k< AllAccounts.length ; k++){
+            if(AllAccounts[k].Id == newDetailValue[0]["STKR__Account_lkp__c"]){
+                AllValidAccounts.push(AllAccounts[k].Id);
+            }
+        }
+        for (var i = 0; i < ContactData.length; i++) {
+            if (ShowRelatedContacts != undefined && ShowRelatedContacts.STKR__Enable__c) {
+                if ((AllValidAccounts.indexOf(ContactData[i]['RelatedAccount']) >= -1 || AllValidAccounts.indexOf(ContactData[i]['AccountId']) >= -1 ) && ContactData[i]['STKR__Status__c'] === "Active") {
+                    ActionContactList.push(ContactData[i]);
+                }
+            }
+            else {
+                if (AllValidAccounts.indexOf(ContactData[i]['AccountId']) >= -1 && ContactData[i]['STKR__Status__c'] === "Active") {
+                    ActionContactList.push(ContactData[i]);
+                }
+            }
+
+        }
+        $('#SearchLookupListviewForAccountCOntact').data("kendoMobileListView").replace(ActionContactList);
+                   
+     /*   try {
+            $("[name='NewQuoteName']#STKR__Introduction__c").val('');
+            $("[name='NewQuoteName']#STKR__Site_Contact__cHidden").val('');
+            $("[name='NewQuoteName']#STKR__Site_Contact__c").val('');
+        } catch (err) {
+        } */
+    }
+/*
+    function LookupSearchButtonAccountCOntact() {
+        var SearchText = $('#SearchLookupTextAccountContact').val();
+     
+        if (SearchText.length < 2) {
+            app.toastMessage('Your search term must have 2 or more characters.', 'long');
+            return;
+        }
+
+        // Use SOQL for Search 
+        app.pane.loader.show();
+        for (var i = 0; i < ContactData.length; i++) {
+            if (ContactData[i]['AccountId'] === newDetailValue[0]["STKR__Account_lkp__c"] && ContactData[i]['STKR__Status__c'] === "Active") {
+                ActionContactList.push(ContactData[i]);
+            }
+        }
+        if (SearchText.length) {
+          
+               
+                 
+                        $('#SearchLookupListviewForAccountCOntact').data("kendoMobileListView").replace(ActionContactList);
+                        app.pane.loader.hide();
+                    
+                
+            }
+         else {
+            app.pane.loader.hide();
+            app.toastMessage('Please fill the search box', 'long');
+        }
+    }
+    */
+
+    function DASSelectAccountCOntact() {
+    }
+
+    
+
+    function LookupRecordSelectedAccountContact(FirstName,LastName, Id) {
+        var flag = 0;
+        var event;
+        console.log(InputElementId, HiddenInputElementId, FirstName,LastName, Id);
+        for(var i=0;i<ContactData.length;i++){
+            if(ContactData[i]['Id'] == Id){
+                if(ContactData[i]['Email'] != null){
+                    if(passedFromPage == 'ActionDetailPage_ActionData'){
+                        window[passedFromPage][InputElementId]=  ContactData[i]['Email'];
+                      }else{
+                       createpageSelectedvalueForemail = ContactData[i]['Email'];
+                      }
+                     
+                    flag = 1;
+                    break;
+                }else{
+                    app.toastMessage('No Email is related to this contact','long');
+                }
+               
+            }
+        }
+        if(flag){
+            // window.dispatchEvent(event);
+           window.history.back(); 
+        }
+
+//$('#' + InputElementId).val(FirstName+LastName);
+       
+      
+    }
+</script>
+
+<script type="text/x-kendo-template" id="SearchLookupListviewTemplateForAccountContact">
+  
+    #try {
+        if (FirstName) {#
+            <span style="font-weight:bold">${FirstName} </span>
+        #}
+       
+    
+    }catch(e1){
+        console.log(e1);
+       
+    }
+    try {
+        if (LastName) {#
+            <span style="font-weight:bold">${LastName} </span>
+        #}
+       
+    
+    }catch(e1){
+        console.log(e1);
+       
+    }#
+    <button style="float:right;" onClick="LookupRecordSelectedAccountContact('${FirstName}','${LastName}','${Id}');">Select</button>
+</script>

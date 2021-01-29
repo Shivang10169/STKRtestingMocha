@@ -1,0 +1,97 @@
+<div data-role="view" data-use-native-scrolling="true" data-after-show="DASDocumentsInFolder" data-show="DataShowDocumentsInFolder">
+    <header data-role="header" >
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span>Folder Documents</span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');"  style="border-style:none;float:right;margin-top:2%;" 
+            class=" mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons" style="color:white;">home</i>
+                </button>
+        </div>
+    </header>
+    <div>
+        <div class="mainBody" id="MessageOfDocumentsinFolder"></div>
+        <ul data-role="listview" id="ListviewForDocumentInFolderData" data-template="ListviewForDocumentInFolderTemplate" data-style="inset" style="width:100%;"></ul>
+    </div>
+</div>
+<script>
+    var DocumentsInFolderData = [];
+    var DocumentListInFolder = [];
+    
+    function DataShowDocumentsInFolder() {
+        CountNumberOfOflineItem();
+        app.pane.loader.show();
+        $('#MessageOfDocumentsinFolder').empty();
+        $("#ListviewForDocumentInFolderData").data("kendoMobileListView").replace([]);
+    }
+    
+    function DASDocumentsInFolder(e) {
+        DocumentListInFolder = [];
+        jsconn.sobject("Document")
+            .find({})
+            .sort({Name : 1 })
+            .where("FolderId = '" + e.view.params.Id + "'")
+            .execute(function (err, records) {
+                if (err) {
+                    return console.error(err);
+                }
+    
+                DocumentsInFolderData = records;
+                //ListofDocumentInFolder(e);
+                console.log('DocumentsInFolderData', DocumentsInFolderData);
+                
+                try {
+                    $("#ListviewForDocumentInFolderData").data("kendoMobileListView").replace(DocumentsInFolderData);
+                    app.pane.loader.hide();
+                    if (DocumentsInFolderData.length===0) {
+                        var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu")
+                        ShowPlaceholder.css('color', 'grey');
+                        ShowPlaceholder.css('position', 'absolute');
+                        ShowPlaceholder.css('top', '50%');
+                        $('#MessageOfDocumentsinFolder').html(ShowPlaceholder)
+                    }
+                } catch (e) {
+                }
+            });
+    }
+    /* function ListofDocumentInFolder(e) {
+    for (var i = 0;i < DocumentsInFolderData.length;i++) {
+    if (e.view.params.Id=== DocumentsInFolderData[i]['FolderId']) {
+    DocumentListInFolder.push(DocumentsInFolderData[i]);
+    }
+    } 
+    }*/
+    
+    function OpenDocument(id, name, body, type) {
+        // If type is URL then open the url in browser
+        if(type === 'URL'){
+            window.open(body,'_system');
+            return;
+        }
+        downloaddocx(creds.instanceUrl + body, 'DocumentFile.' + type, type); 
+    }
+</script>
+
+<script type="text/x-kendo-template" id="ListviewForDocumentInFolderTemplate">
+    <div class="collapsible" style="width:100%;" >
+        # try {
+        #
+        <div>
+            <span style="margin-left:1%;font-size:small;">#:Name#</span>
+            #if (Type === "URL") {#
+                <button  class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--icon" style="float:right;" onclick="OpenDocument('${Id}','${Name}','${Url}','${Type}');">
+                    <i class="material-icons" style="margin-top:-5px;color:\#ffd740;">visibility</i>
+                </button>
+            #}else {#
+                <button  class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--icon" style="float:right;" onclick="OpenDocument('${Id}','${Name}','${Body}','${Type}');">
+                    <i class="material-icons" style="margin-top:-5px;color:\#ffd740;">visibility</i>
+                </button>
+            #}#
+        </div>
+        #} catch (e) {
+        } #
+    </div>
+</script>

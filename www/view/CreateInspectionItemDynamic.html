@@ -1,0 +1,427 @@
+<div data-role="view" data-title="Create Inspection Item" data-show="CreateInspectionItemLayoutDataShow"
+    id="CreateInspectionItemLayoutPage" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button data-align="left" data-role="backbutton"
+                class="InspectionItemPageMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+                <button onclick="app.navigate('view/HomePage.html');"  data-align="right" style="border-style:none;"
+            class="VisitDetailMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+            <i class="material-icons" style="color:white;">home</i>
+            </button>
+            </div>
+    </header>
+    <div id="DivCreateInspectionItemLayout">
+    </div>
+    <center>
+        <button
+            class="InspectionItemPageMDL mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onClick="CreateDynamicInspectionItem()" style="font-weight:bold;">
+            CREATE
+        </button>
+    </center>
+    <br />
+</div>
+<style>
+    #CreateInspectionItemLayoutPage .km-content {
+        background: #E6E6E6;
+    }
+</style>
+
+<script>
+    var InspectionItemRecordId = '';
+    var InspectionItemRecordTypeName = '';
+    var InspectionItem_PageLayout;
+
+    function CreateInspectionItemLayoutDataShow(e) {
+        CountNumberOfOflineItem();
+
+        e.view.scroller.reset();
+        InspectionItemRecordId = '';
+        try {
+            InspectionItemRecordId = e.view.params.InspectionItemRecordId;
+            InspectionItemRecordTypeName = e.view.params.InspectionItemRecordTypeName;
+        } catch (err) {
+            StoreError(err)
+            console.log(err);
+        }
+        console.log(InspectionItemRecordId);
+        if (InspectionItemRecordId) {
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from InspectionItemRecordType where recordid=?", [InspectionItemRecordId],
+                    function (tx, rs) {
+                        if (rs.rows.length) {
+                            var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                            console.log('InspectionItem Record Type Layout', Layoutdata);
+                            InspectionItem_PageLayout = Layoutdata;
+                            InspectionItemHTML = InspectionItemLayoutGenerator(Layoutdata)
+                            $('#DivCreateInspectionItemLayout').html(InspectionItemHTML);
+                            CreateInspectionItemLayoutDataAfterShow();
+                        } else {
+                            app.toastMessage('This record type is not found, Please refresh data', 'long');
+                        }
+                    }, function (tx, error) {
+                        StoreError(error);
+                        alert(error.message)
+                    });
+            });
+        }
+    }
+
+    //Map for controller and dependent field
+    var insp_item = {};
+
+    function InspectionItemLayoutGenerator(Layoutdata) {
+        insp_item = {};
+        var InspectionItem_Metadata = InspectionItemMetadata;
+        if (InspectionItemMetadata[0]) {
+            InspectionItem_Metadata = InspectionItemMetadata[0];
+        }
+
+        console.log('InspectionItem_Metadata', InspectionItem_Metadata);
+        for (var i = 0; i < InspectionItem_Metadata['fields'].length; i++) {
+            if (InspectionItem_Metadata['fields'][i]['controllerName']) {
+                console.log('controllerName', InspectionItem_Metadata['fields'][i]['controllerName']);
+                // if not already in the  array
+                try {
+                    if (!insp_item[InspectionItem_Metadata['fields'][i]['controllerName']]) {
+                        insp_item[InspectionItem_Metadata['fields'][i]['controllerName']] = [];
+                    }
+                    insp_item[InspectionItem_Metadata['fields'][i]['controllerName']].push(InspectionItem_Metadata['fields'][i]['name']);
+                    console.log('insp_item', insp_item);
+                } catch (err) {
+                    console.log(err)
+                }
+            }
+        }
+        var InspectionItemHTML = '';
+        for (var x = 0; x < Layoutdata['editLayoutSections'].length; x++) {
+            var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+            var layoutHeader = Layoutdata['editLayoutSections'][x]['heading'];
+            InspectionItemHTML += '<center><h5>' + layoutHeader + '</h5></center>';
+            InspectionItemHTML += '<div class="mdl-shadow--2dp" style="margin:2%;padding:2%;background-color:#fff; border-radius: 10px;">';
+            for (var j = 0; j < layoutRows.length; j++) {
+                var layoutItems = layoutRows[j]['layoutItems'];
+                for (var z = 0; z < layoutItems.length; z++) {
+                    if (layoutItems[z]['editableForUpdate']) {
+                        for (var y = 0; y < layoutItems[z]['layoutComponents'].length; y++) {
+                            var layoutComponents = layoutItems[z]['layoutComponents'][y];
+                            try {
+                                var label = layoutComponents['details']['label'];
+                                var htmlid = layoutComponents['details']['name'];
+                                var dataType = layoutComponents['details']['type'];
+                                var nillable = layoutComponents['details']['nillable'];
+                                var precision = layoutComponents['details']['precision'];
+                                var scale = layoutComponents['details']['scale'];
+                                var max = Math.pow(10, (precision - scale)) - 1;
+                                var step = Math.pow(10, -1 * scale);
+                                var maxlength = layoutComponents['details']['length'];
+                                var htmlrequired = nillable ? '' : 'required';
+                                var newhtmlrequired = layoutItems[z]['required'] ? 'required' : '';
+                                if (dataType === 'string') {
+                                    if (htmlid === 'STKR__Bar_Code_Number__c') {
+                                        InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield">';
+                                        InspectionItemHTML += '<label style="rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                        InspectionItemHTML += '<input type="text" name="InspectionItemLayoutName" class="InspectionItemPageMDL mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                        InspectionItemHTML += '<button style="right:0;border-style:none;" onclick="barcodeScan_createItem();" class="InspectionListMDLClass mdl-button mdl-js-button mdl-button--icon"><i class="fa fa-barcode fa-xs"></i></button>';
+                                        InspectionItemHTML += '</div><br>';
+                                    } else {
+                                        InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionItemHTML += '<input type="text" name="InspectionItemLayoutName" class="InspectionItemPageMDL mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                        InspectionItemHTML += '<label class="InspectionItemPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                        InspectionItemHTML += '</div><br>';
+                                    }
+                                } else if (dataType === 'reference') {
+                                    if (navigator.onLine) {
+                                        if (htmlid === 'STKR__Assigned_To__c') {
+                                            InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                            if (newhtmlrequired === 'required')
+                                                InspectionItemHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                            else
+                                                InspectionItemHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                            InspectionItemHTML += '<select name="InspectionItemLayoutName" id="' + htmlid + '" class="InspectionItemPageMDL mdl-textfield__input"' + newhtmlrequired + '>';
+                                            for (var optionvalues = 0; optionvalues < Userdata.length; optionvalues++) {
+                                                InspectionItemHTML += '<option value="' + Userdata[optionvalues]['Id'] + '">' + Userdata[optionvalues]['Name'] + '</option>';
+                                            }
+                                            InspectionItemHTML += '</select>';
+                                            InspectionItemHTML += '</div></br>';
+                                        }
+                                    }
+                                } else if (dataType === 'double') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    InspectionItemHTML += '<input type="number" max="' + max + '" step="' + step + '" name="InspectionItemLayoutName" class="InspectionItemPageMDL mdl-textfield__input" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                    InspectionItemHTML += '<label class="InspectionItemPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    InspectionItemHTML += '</div><br>';
+                                } else if (dataType === 'picklist') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    if (newhtmlrequired === 'required')
+                                        InspectionItemHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    else
+                                        InspectionItemHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    if (insp_item[htmlid])
+                                        InspectionItemHTML += '<select onChange="ChangeDependentValuesOnCreateInspectionItem(\'' + htmlid + '\',\'STKR__Service_Item__c\',\'InspectionItemLayoutName\')" name="InspectionItemLayoutName" id="' + htmlid + '" class="InspectionItemPageMDL mdl-textfield__input"' + newhtmlrequired + '>';
+                                    else
+                                        InspectionItemHTML += '<select name="InspectionItemLayoutName" id="' + htmlid + '" class="InspectionItemPageMDL mdl-textfield__input"' + newhtmlrequired + '>';
+                                    if (label !== 'Status') {
+                                        InspectionItemHTML += '<option value="" selected>--None--</option>';
+                                    }
+
+                                    // Start 
+                                    for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                        if (layoutComponents['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                            InspectionItemHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '" selected>' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+
+                                        } else {
+                                            InspectionItemHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                        }
+                                    }
+
+                                    // End
+
+                                    InspectionItemHTML += '</select>';
+                                    InspectionItemHTML += '</div><br>';
+                                } else if (dataType === 'date') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield">';
+                                    InspectionItemHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    InspectionItemHTML += '<input class="InspectionItemPageMDL mdl-textfield__input" type="date" name="InspectionItemLayoutName" id="' + htmlid + '"' + newhtmlrequired + '/>';
+                                    InspectionItemHTML += '</div><br>';
+                                } else if (dataType === 'textarea') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    InspectionItemHTML += '<textarea name="InspectionItemLayoutName" id="' + htmlid + '"  class="mdl-textfield__input"  type="text" rows="5" maxlength="' + maxlength + '" ' + newhtmlrequired + '></textarea>';
+                                    InspectionItemHTML += '<label class="InspectionItemPageMDL mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                    InspectionItemHTML += '</div><br>';
+                                } else if (dataType === 'datetime') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield">';
+                                    InspectionItemHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    InspectionItemHTML += '<input class="mdl-textfield__input" type="datetime-local" name="InspectionItemLayoutName" id="' + htmlid + '"' + newhtmlrequired + '/>';
+                                    InspectionItemHTML += '</div> <br>';
+                                } else if (dataType === 'boolean') {
+                                    if (device.platform === 'Android') {
+                                        InspectionItemHTML += '<label class="InspectionItemPageMDL mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + htmlid + '">'
+                                        InspectionItemHTML += '<input name="InspectionItemLayoutName" type="checkbox" id="' + htmlid + '" class="InspectionItemPageMDL mdl-checkbox__input"' + newhtmlrequired + '>'
+                                        InspectionItemHTML += '<span class="InspectionItemPageMDL mdl-checkbox__label" style="vertical-align: super;">' + label + '</span>';
+                                        InspectionItemHTML += '</label><br>';
+                                    } else if (device.platform === 'iOS') {
+                                        InspectionItemHTML += '<input name="InspectionItemLayoutName" type="checkbox" id="' + htmlid + '"' + newhtmlrequired + ' >';
+                                        InspectionItemHTML += '<label for="' + htmlid + '">';
+                                        InspectionItemHTML += '<span style="vertical-align: super;">' + label + '</span>';
+                                        InspectionItemHTML += '</label><br>';
+                                    }
+                                } else if (dataType === 'email') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    InspectionItemHTML += '<input type="email" name="InspectionItemLayoutName" class="InspectionItemPageMDL mdl-textfield__input" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                    InspectionItemHTML += '<label class="InspectionItemPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    InspectionItemHTML += '</div><br>';
+                                } else if (dataType === 'multipicklist') {
+                                    InspectionItemHTML += '<div class="InspectionItemPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    if (newhtmlrequired === 'required')
+                                        InspectionItemHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    else
+                                        InspectionItemHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    InspectionItemHTML += '<select class="InspectionItemPageMDL mdl-textfield__input" name="InspectionItemLayoutName" id="' + htmlid + '" multiple' + newhtmlrequired + '>';
+                                    for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                        InspectionItemHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    }
+                                    InspectionItemHTML += '</select>';
+                                    InspectionItemHTML += '</div><br>';
+                                } else {
+                                    console.log('In else', dataType);
+                                }
+                            } catch (e) {
+                            }
+                        }
+
+                    }
+                    else{
+                       // console.log('layoutitems1234',layoutItems[y])
+                        var layoutComponents = layoutItems[z]['layoutComponents'][0];
+                            console.log('layoutcomponentsabc',layoutComponents); 
+                            
+                            try{
+                                if(layoutComponents){
+                                var spaceType = layoutComponents.type;
+                                if (spaceType === 'EmptySpace') {
+                                    InspectionItemHTML +='<br>';
+                                }
+                                else {
+                                    console.log('In else', dataType);
+                                }
+                            }
+                            }catch(e){
+                                console.log(e)
+                            }
+                    }
+                }
+            }
+            InspectionItemHTML += '</div>';
+        }
+        return InspectionItemHTML;
+    }
+
+    function ChangeDependentValuesOnCreateInspectionItem(htmlid, objname, nameattr) {
+        for (var i = 0; i < insp_item[htmlid].length; i++) {
+            var res = getDependentOptions(objname, htmlid, insp_item[htmlid][i]);
+            var value = $('#' + htmlid + '[name="' + nameattr + '"]').val();
+            var html = '';
+            // Remove values from picklist depending on the record types.. 
+            for (var j = 0; j < InspectionItem_PageLayout['editLayoutSections'].length; j++) {
+                for (var k = 0; k < InspectionItem_PageLayout['editLayoutSections'][j]['layoutRows'].length; k++) {
+                    for (var l = 0; l < InspectionItem_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'].length; l++) {
+                        for (var m = 0; m < InspectionItem_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'].length; m++) {
+                            if (InspectionItem_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'][m]['details']['name'] === insp_item[htmlid][i]) {
+                                var picklistValues = InspectionItem_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'][m]['details']['picklistValues'];
+                                var arraryofval = [];
+                                for (var o = 0; o < picklistValues.length; o++) {
+                                    arraryofval.push(picklistValues[o]['value']);
+                                }
+                                console.log('arraryofval', arraryofval);
+                                var n = res[value].length
+                                while (n--) {
+                                    if (arraryofval.indexOf(res[value][n]) === -1) {
+                                        res[value].splice(n, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            console.log('final', res[value]);
+            for (var prop = 0; prop < res[value].length; prop++) {
+                html += "<option value = '" + res[value][prop] + "'>" + res[value][prop] + "</option>"
+            }
+            if (!html) {
+                html += "<option value = 'None'>None</option>";
+            }
+            console.log(html, $('[name="' + nameattr + '"]#' + insp_item[htmlid][i]));
+            $('[name="' + nameattr + '"]#' + insp_item[htmlid][i]).html(html);
+        }
+    }
+
+    function CreateDynamicInspectionItem() {
+        var InspectionItemLayoutHTMLComponents = $("[name='InspectionItemLayoutName']");
+        console.log(InspectionItemLayoutHTMLComponents);
+        var datatoupload = {};
+        for (var i = 0; i < InspectionItemLayoutHTMLComponents.length; i++) {
+            var values = '';
+            if (InspectionItemLayoutHTMLComponents[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $('#' + InspectionItemLayoutHTMLComponents[i]['id'] + '[name="InspectionItemLayoutName"]')[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    console.log(selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (InspectionItemLayoutHTMLComponents[i]['type'] === "checkbox") {
+                values = $('#' + InspectionItemLayoutHTMLComponents[i]['id'] + '[name="InspectionItemLayoutName"]').prop('checked');
+            } else if (InspectionItemLayoutHTMLComponents[i]['type'] === "date") {
+                values = $('#' + InspectionItemLayoutHTMLComponents[i]['id'] + '[name="InspectionItemLayoutName"]').val()
+                if (values === '') {
+                    values = null;
+                }
+            } else if (InspectionItemLayoutHTMLComponents[i]['type'] === "datetime-local") {
+                // New 
+                values = $('#' + InspectionItemLayoutHTMLComponents[i]['id'] + '[name="InspectionItemLayoutName"]').val();
+                if (values === '') {
+                    values = null;
+                } else {
+                    try {
+                        values = new Date(values);
+                    } catch (dateErr) {
+                        alert('DateError ' + dateErr);
+                    }
+                }
+                // End New 
+            } else {
+                values = $('#' + InspectionItemLayoutHTMLComponents[i]['id'] + '[name="InspectionItemLayoutName"]').val()
+            }
+            datatoupload[InspectionItemLayoutHTMLComponents[i]['id']] = values;
+            if (InspectionItemLayoutHTMLComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return;
+            }
+        }
+        datatoupload['STKR__Account__c'] = newDetailValue[0]['STKR__Account_lkp__c'];
+        datatoupload['RecordTypeId'] = InspectionItemRecordId;
+        // Check whether device is online or not
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            //Device is online
+            jsconn.sobject("STKR__Service_Item__c").create(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    alert(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Updated Successfully : ' + ret.id);
+                datatoupload['Id'] = ret.id;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                InspectionItemData.push(datatoupload);
+                ItemListOnSite.push(datatoupload);
+                app.insertRecord('InspectionItem', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    InspectionItemID: datatoupload['Id']
+                });
+                app.toastMessage('New InspectionItem created', 'long');
+                window.history.back();
+            });
+        } else {
+            // Device is offline
+            // Store in DataToUpdate table
+            var timestamp = (new Date().getTime()).toString();
+            // I have made STKR__Account__c to stkr__account__c, so that it won't get deleted while offline sync as this is required field. 
+            delete datatoupload['STKR__Account__c'];
+            datatoupload['stkr__account__c'] = newDetailValue[0]['STKR__Account_lkp__c'];
+            datatoupload['RecordType'] = {};
+            datatoupload['RecordType']['Name'] = InspectionItemRecordTypeName;
+            datatoupload['Id'] = timestamp;
+            datatoupload['STKR__Mobile_Unique_Id__c'] = timestamp;
+            InspectionItemData.push(datatoupload);
+            ItemListOnSite.push(datatoupload);
+            app.insertRecord('InspectionItem', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                InspectionItemID: datatoupload['Id']
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'STKR__Service_Item__c',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('New InspectionItem stored offline', 'long');
+            isInspectionItemCreatedOffline++;
+            window.history.back();
+        }
+    }
+
+    function CreateInspectionItemLayoutDataAfterShow() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('InspectionItemPageMDL'));
+           
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+    }
+
+    function barcodeScan_createItem() {
+        cordova.plugins.barcodeScanner.scan(
+            function (result) {
+                console.log('Result: ' + result.text);
+                $('#STKR__Bar_Code_Number__c[name="InspectionItemLayoutName"]').val(result.text);
+            },
+            function (error) {
+                app.toastMessage('Scanning failed: ' + error, 'long');
+            },
+        );
+    }
+</script>

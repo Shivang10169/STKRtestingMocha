@@ -1,0 +1,60 @@
+<div data-role="view" data-use-native-scrolling="true" data-after-show="DASDownloadDocument"
+    data-show="DataShowDocument">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span>Folders</span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+                <button onclick="app.navigate('view/HomePage.html');"  style="border-style:none;float:right;margin-top:2%;" 
+                class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+                    <i class="material-icons" style="color:white;">home</i>
+                    </button>
+        </div>
+    </header>
+    <ul data-role="listview" id="ListviewForDocumentData" data-template="ListviewForDocumentDataTemplate"
+        data-style="inset" style="width:100%;"></ul>
+
+</div>
+
+<script>
+    var documentTypeFolders = [];
+
+    function DataShowDocument() {
+        CountNumberOfOflineItem();
+        currentLocation = '';
+        app.pane.loader.show();
+        $("#ListviewForDocumentData").data("kendoMobileListView").replace([]);
+    }
+
+    function DASDownloadDocument() {
+        //E115 : Remove signature folder
+        jsconn.sobject("Folder")
+            .find({})
+            .where("Type = 'Document' AND Name!='Signatures' AND Name Like '%mobileApp%'")
+            .sort({ Name: 1 })
+            .execute(function (err, records) {
+                if (err) {
+                    return console.error(err);
+                }
+                documentTypeFolders = records;
+                console.log('documentTypeFolders', documentTypeFolders);
+                if (documentTypeFolders.length > 0)
+                    $("#ListviewForDocumentData").data("kendoMobileListView").replace(documentTypeFolders);
+                app.pane.loader.hide();
+            });
+    }
+
+</script>
+
+<script type="text/x-kendo-template" id="ListviewForDocumentDataTemplate">
+    <div class="collapsible" style="width:100%;" onclick="app.navigate('view/DocumentsInFolder.html?Id=${Id}');">
+        # try {#
+        <div>
+            <i class="material-icons" style="float:left;margin-top:-5px;">folder</i> <span style="color:black;margin-left:1%;font-size:small;">#:Name.replace(new RegExp("mobileapp", "i"), "")#</span>
+        </div>
+        #} catch (e) {} #
+    </div>
+</script>

@@ -1,0 +1,92 @@
+<div data-role="view" id="SearchAttachment" data-show="DataShowSearchAttachment" data-after-show="DataAfterShowSearchAttachment"
+    data-title="Search" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon" href="#MyVisitssdrawer"></a>
+            <button data-align="right" onClick="app.navigate('view/HomePage.html');" class="SearchAttachmentMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div data-role="header" style="background:grey;">
+        <center>
+            <input type="text" id="term_Attachment" style="width:60%;margin:2%;line-height:2em;background-color:white;"
+                placeholder="Enter Character" />
+            <button class="SearchAttachmentMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="SearchAttachment()">
+                Search
+            </button>
+        </center>
+    </div>
+    <div>
+        <div class="mainBody" id="MessageOfSearchAttachment">
+        </div>
+        <ul data-role="listview" id="ListViewForSearchAttachment" data-template="ListviewForAttachmentTemplate" data-style="inset">
+        </ul>
+    </div>
+</div>
+<script>
+    var AttachmentSearchTerm = '';
+    var AttachmentSearchResult = [];
+    var TempCurrentTab_SearchAttachment = '';
+
+    function DataAfterShowSearchAttachment() {
+        try {
+            if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('SearchAttachmentMDLClass'));
+            var SearchAttachmentPlaceholder = $('<p>').text("No Attachment found please amend your search criteria or refresh all data if you believe the Attachment should be on your device.");
+            SearchAttachmentPlaceholder.css('color', 'grey');
+            SearchAttachmentPlaceholder.css('position', 'absolute');
+            SearchAttachmentPlaceholder.css('top', '50%');
+            $('#MessageOfSearchAttachment').html(SearchAttachmentPlaceholder);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    function DataShowSearchAttachment() {
+        CountNumberOfOflineItem();
+        TempCurrentTab_SearchAttachment = currentTab;
+        currentTab = 'Search Attachment';
+        currentLocation = '';
+        try {
+            $('#term_Attachment').val(AttachmentSearchTerm);
+        } catch (err) {
+        }
+        try {
+            $("#ListViewForSearchAttachment").data("kendoMobileListView").replace([]);
+        } catch (er) { }
+    }
+
+    function SearchAttachment() {
+        AttachmentSearchResult = [];
+        $('#MessageOfSearchAttachment').hide();
+        AttachmentSearchTerm = $('#term_Attachment').val();
+        if (AttachmentSearchTerm) {
+            for (var i = 0; i < AllAttachmentData.length; i++) {
+                if (AllAttachmentData[i]['Name'])
+                    if ((AllAttachmentData[i]['Name'].toLowerCase()).match(AttachmentSearchTerm.toLowerCase())) {
+                        AttachmentSearchResult.push(AllAttachmentData[i]);
+                        continue;
+                    }
+                if (AllAttachmentData[i]['STKR__Description__c'])
+                    if ((AllAttachmentData[i]['STKR__Description__c'].toLowerCase()).match(AttachmentSearchTerm.toLowerCase())) {
+                        AttachmentSearchResult.push(AllAttachmentData[i]);
+                        continue;
+                    }
+            }
+            if (AttachmentSearchResult.length) {
+                try {
+                    $("#ListViewForSearchAttachment").data("kendoMobileListView").replace(AttachmentSearchResult);
+                } catch (err) {
+                    console.log(err);
+                }
+            } else {
+                $('#MessageOfSearchAttachment').show();
+            }
+        } else {
+            app.toastMessage('Please Enter Something', 'long');
+        }
+    }
+</script>

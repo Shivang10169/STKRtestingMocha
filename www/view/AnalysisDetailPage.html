@@ -1,0 +1,586 @@
+<div data-role="view" 
+     data-layout="AnalysisDetailPageLayout" 
+     data-title="Analysis Detail Page" 
+     data-show="AnalysisDetailPageDataShow" 
+     data-after-show="AnalysisDetailPageDataAfterShow" 
+     id="AnalysisDetailPage"
+     data-use-native-scrolling="true">
+    <div id="AnalysisDetailPageLayoutHTML"></div>
+</div>
+<div data-id="AnalysisDetailPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" 
+                    onclick="UpdateAnalysisValues(false);" 
+                    class="AnalysisDetailPage2MDLName mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title" ></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button style="float:right;margin-top:2%;border-style:none;" 
+                    class="AnalysisDetailPage2MDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                    onclick="UpdateAnalysis_OnAttachmentClick()">
+                <i class="fa fa-paperclip"></i>
+            </button>
+            <button onclick="app.navigate('view/HomePage.html');" 
+             style="border-style:none;float:right;margin-top:2%;"
+              class="AnalysisDetailPage2MDLName headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons" style="color:white;">home</i>
+                </button>
+        </div>
+    </header>
+</div>
+<style>
+    /*  #AnalysisDetailPage .km-content
+    {
+    background: #E6E6E6;
+    }*/
+    .AnalysisDetailPage2MDLName textarea
+    {
+        width: 95%;
+        border: none;
+    }
+    .AnalysisDetailPage2MDLName input[type="text"]
+    {
+        border: none;
+        width: 95%;
+    }
+</style>
+<script>
+    var AnalysisDetailPage_RecordTypeId = '', AnalysisDetailPage_AnalysisId = '', AnalysisDetailPageHTML = '';
+    var AnalysisDetailPage_DataIndex = 0, AnalysisDetailPage_AnalysisData = {};
+    
+    function AnalysisDetailPageDataShow(e) {
+        CountNumberOfOflineItem();
+        AnalysisDetailPage_RecordTypeId = '';
+        AnalysisDetailPage_AnalysisId = '';
+        AnalysisDetailPage_AnalysisData = {};
+        try {
+            AnalysisDetailPage_RecordTypeId = e.view.params.RecordTypeId;
+            AnalysisDetailPage_AnalysisId = e.view.params.AnalysisId;
+        } catch (err) {
+            StoreError(err);
+            console.log(err);
+        }
+        for (var i = 0;i < AnalysisData.length;i++) {
+            if (AnalysisData[i]['Id']===AnalysisDetailPage_AnalysisId) {
+                console.log('Matched Analysis Data', AnalysisData[i]);
+                AnalysisDetailPage_AnalysisData = AnalysisData[i];
+                AnalysisDetailPage_DataIndex = i;
+                break;
+            }
+        }
+        if (AnalysisDetailPage_RecordTypeId) {
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from AnalysisRecordType where recordid=?", [AnalysisDetailPage_RecordTypeId],
+                              function (tx, rs) {
+                                  if (rs.rows.length) {
+                                      var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                                      console.log('Analysis Record Type Layout', Layoutdata);
+                                      AnalysisDetailPage_LayoutGenerator(Layoutdata);
+                                  }else {
+                                      app.toastMessage('This record type is not found, Please refresh data');
+                                  }
+                              }, function (tx, error) {
+                                  StoreError(error)
+                                  console.error(error.message)
+                              });
+            });
+        } else {
+            app.toastMessage('Record Type Not Found');
+        }
+    }
+    
+function AnalysisDetailPage_LayoutGenerator(Layoutdata) {
+    var AnalysisDetailPageHTML = '';
+    var CountReadOnlyFields = 0;
+    AnalysisDetailPageHTML += '<center><h5>Additional Information</h5></center>';
+    AnalysisDetailPageHTML += '<div class="mdl-shadow--2dp" style="margin:2%;padding:2%;background-color:#fff; border-radius: 10px;">';
+    console.log('Layoutdata ', Layoutdata);
+    for (var i = 1; i < Layoutdata['detailLayoutSections'].length - 2; i++) {
+        var layoutRows = Layoutdata['detailLayoutSections'][i]['layoutRows'];
+        for (var j = 0; j < layoutRows.length; j++) {
+            var layoutItems = layoutRows[j]['layoutItems'];
+            for (var k = 0; k < layoutItems.length; k++) {
+                var layoutComponent = layoutItems[k]['layoutComponents']
+                for (var l = 0; l < layoutComponent.length; l++) {
+                    try {
+                        var NotImage = false;
+                        if ((layoutComponent[l]['details']['calculatedFormula'])) {
+                            if ((layoutComponent[l]['details']['calculatedFormula'].indexOf('IMAGE') === -1)) {
+                                NotImage = true;
+                            }
+                        } else {
+                            NotImage = true;
+                        }
+
+                        if (!(layoutComponent[l]['details']['updateable']) && NotImage) {
+                            try {
+                                var htmlid = layoutComponent[l]['details']['name'];
+                                var label = layoutComponent[l]['details']['label'];
+                                var dataType = layoutComponent[l]['details']['type'];
+                                var precision = layoutComponent[l]['details']['precision'];
+                                var scale = layoutComponent[l]['details']['scale'];
+                                var max = Math.pow(10, (precision - scale)) - 1;
+                                var step = Math.pow(10, -1 * scale);
+                                CountReadOnlyFields++;
+                                if (dataType === 'string') {
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<textarea name1="RemoveThis" type="text" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" id="' + htmlid + '" disabled></textarea>';
+                                    AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'email') {
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<input name1="RemoveThis" type="email" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" id="' + htmlid + '" disabled>';
+                                    AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'reference') {
+                                    if (navigator.onLine) {
+                                        if (htmlid === 'STKR__Assigned_To__c') {
+                                            AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                            if (newhtmlrequired === 'required')
+                                                AnalysisDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                            else
+                                                AnalysisDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                            AnalysisDetailPageHTML += '<select name1="RemoveThis" name="AnalysisDetailPageName" id="' + htmlid + '" class="AnalysisDetailPage2MDLName mdl-textfield__input" disabled>';
+                                            AnalysisDetailPageHTML += '<option value="">None</option>';
+                                            for (var optionvalues = 0; optionvalues < Userdata.length; optionvalues++) {
+                                                AnalysisDetailPageHTML += '<option value="' + Userdata[optionvalues]['Id'] + '">' + Userdata[optionvalues]['Name'] + '</option>';
+                                            }
+                                            AnalysisDetailPageHTML += '</select>';
+                                            AnalysisDetailPageHTML += '</div></br>';
+                                        }
+                                    }
+                                } else if (dataType === 'double') {
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<input name1="RemoveThis" type="number" max="' + max + '" step="' + step + '" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" id="' + htmlid + '" disabled>';
+                                    AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'picklist') {
+                                    if (newhtmlrequired === 'required')
+                                        AnalysisDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    else
+                                        AnalysisDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<select name1="RemoveThis" name="AnalysisDetailPageName" id="' + htmlid + '" class="mdl-textfield__input" disabled>';
+
+                                    // New Code 
+                                    AnalysisDetailPageHTML += '<option value="" selected>--None--</option>';
+
+                                    for (var optionvalues = 0; optionvalues < layoutComponent['details']['picklistValues'].length; optionvalues++) {
+                                        if (layoutComponent['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                            AnalysisDetailPageHTML += '<option value="' + layoutComponent['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponent['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                        } else {
+                                            AnalysisDetailPageHTML += '<option value="' + layoutComponent['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponent['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                        }
+                                    }
+
+                                    // END
+                                    AnalysisDetailPageHTML += '</select>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'date') {
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '<input name1="RemoveThis" class="AnalysisDetailPage2MDLName mdl-textfield__input" type="date" name="AnalysisDetailPageName" id="' + htmlid + '" disabled>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'textarea') {
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<textarea name1="RemoveThis" name="AnalysisDetailPageName" id="' + htmlid + '" class="mdl-textfield__input" type="text" rows="5" disabled></textarea>';
+                                    AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'datetime') {
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield">';
+                                    AnalysisDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '<input name1="RemoveThis" class="mdl-textfield__input" type="datetime-local" name="AnalysisDetailPageName" id="' + htmlid + '" disabled>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'boolean') {
+                                    if (device.platform === 'Android') {
+                                        AnalysisDetailPageHTML += '<label class=" AnalysisDetailPage2MDLName mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + htmlid + '">'
+                                        AnalysisDetailPageHTML += '<input name1="RemoveThis" name="AnalysisDetailPageName" type="checkbox" id="' + htmlid + '" class="AnalysisDetailPage2MDLName mdl-checkbox__input" disabled>'
+                                        AnalysisDetailPageHTML += '<span class="AnalysisDetailPage2MDLName mdl-checkbox__label">' + label + '</span>';
+                                        AnalysisDetailPageHTML += '</label><br>';
+                                    } else if (device.platform === 'iOS') {
+                                        AnalysisDetailPageHTML += '<input name1="RemoveThis" name="AnalysisDetailPageName" type="checkbox" id="' + htmlid + '" disabled>';
+                                        AnalysisDetailPageHTML += '<label for="' + htmlid + '">';
+                                        AnalysisDetailPageHTML += '<span>' + label + '</span>';
+                                        AnalysisDetailPageHTML += '</label><br>';
+                                    }
+                                } else if (dataType === 'multipicklist') {
+                                    if (newhtmlrequired === 'required')
+                                        AnalysisDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    else
+                                        AnalysisDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    AnalysisDetailPageHTML += '<div class=" AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<select name1="RemoveThis" class="AnalysisDetailPage2MDLName mdl-textfield__input" name="AnalysisDetailPageName" id="' + htmlid + '" multiple disabled>';
+                                    for (var optionvalues = 0; optionvalues < layoutComponent['details']['picklistValues'].length; optionvalues++) {
+                                        AnalysisDetailPageHTML += '<option value="' + layoutComponent['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponent['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    }
+                                    AnalysisDetailPageHTML += '</select>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else if (dataType === 'currency'){
+                                    AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisDetailPageHTML += '<textarea name1="RemoveThis" type="text" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" id="' + htmlid + '" disabled></textarea>';
+                                    AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    AnalysisDetailPageHTML += '</div><br>';
+                                } else {
+                                    console.log('In else', dataType);
+                                }
+                            } catch (err) {
+                                console.log(err);
+                            }
+                        }
+                    } catch (e) {
+                        console.log('Prep/waste create', e)
+                    }
+                }
+            }
+        }
+    }
+    AnalysisDetailPageHTML += '</div>';
+    if (CountReadOnlyFields === 0) {
+        AnalysisDetailPageHTML = '';
+    }
+    for (var x = 0; x < Layoutdata['editLayoutSections'].length; x++) {
+        var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+        var layoutHeader = Layoutdata['editLayoutSections'][x]['heading'];
+        if (layoutHeader !== "System Information") {
+            AnalysisDetailPageHTML += '<div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:white;">';
+            AnalysisDetailPageHTML += '<center><h4>' + layoutHeader + '</h4></center>';
+            for (var j = 0; j < layoutRows.length; j++) {
+                var layoutItems = layoutRows[j]['layoutItems'];
+                for (var y = 0; y < layoutItems.length; y++) {
+                    if (layoutItems[y]['editableForUpdate']) {
+                        var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                        try {
+                            var label = layoutComponents['details']['label'];
+                            var htmlid = layoutComponents['details']['name'];
+                            var dataType = layoutComponents['details']['type'];
+                            var maxlength = layoutComponents['details']['length'];
+                            var nillable = layoutComponents['details']['nillable'];
+                            var precision = layoutComponents['details']['precision'];
+                            var scale = layoutComponents['details']['scale'];
+                            var max = Math.pow(10, (precision - scale)) - 1;
+                            var step = Math.pow(10, -1 * scale);
+                            var htmlrequired = nillable ? '' : 'required';
+
+                            var newhtmlrequired = layoutItems[y]['required'] ? 'required' : '';
+                            if (dataType === 'string') {
+                                //AnalysisDetailPageHTML+='<br/><input type="text" name="AnalysisDetailPageName" id="' + htmlid + '"/>';
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                AnalysisDetailPageHTML += '<input type="text" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                                z
+                            } else if (dataType === 'reference') {
+                            } else if (dataType === 'double') {
+                                //AnalysisDetailPageHTML+='<br/><input type="number" name="AnalysisDetailPageName" id="' + htmlid + '"/>';
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                AnalysisDetailPageHTML += '<input type="number" max="' + max + '" step="' + step + '" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'picklist') {
+                                if (newhtmlrequired === 'required')
+                                    AnalysisDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                else
+                                    AnalysisDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                AnalysisDetailPageHTML += '<select name="AnalysisDetailPageName" id="' + htmlid + '" class="AnalysisDetailPage2MDLName mdl-textfield__input"' + newhtmlrequired + '>';
+                                // New Code 
+                                AnalysisDetailPageHTML += '<option value="" selected>--None--</option>';
+
+                                for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                    if (layoutComponents['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                        AnalysisDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    } else {
+                                        AnalysisDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    }
+                                }
+
+                                // END
+                                AnalysisDetailPageHTML += '</select>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'date') {
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield">';
+                                AnalysisDetailPageHTML += '<br/><label class="km-label-above' + htmlrequired + '">' + label;
+                                AnalysisDetailPageHTML += '<br/><input type="date" name="AnalysisDetailPageName" id="' + htmlid + '"' + newhtmlrequired + '/>';
+                                AnalysisDetailPageHTML += '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'textarea') {
+                                //AnalysisDetailPageHTML+='<br/><textarea name="AnalysisDetailPageName" id="' + htmlid + '" width="100%" height="20px"></textarea>';
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield">';
+                                AnalysisDetailPageHTML += '<textarea name="AnalysisDetailPageName" id="' + htmlid + '" class="AnalysisDetailPage2MDLName mdl-textfield__input" type="text" rows="5" maxlength="' + maxlength + '"' + newhtmlrequired + '></textarea>';
+                                AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'datetime') {
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPageName mdl-textfield mdl-js-textfield">';
+                                AnalysisDetailPageHTML += '<br/><label class="km-label-above' + htmlrequired + '">' + label;
+                                AnalysisDetailPageHTML += '<br/><input type="date" name="AnalysisDetailPageName" id="' + htmlid + '"' + newhtmlrequired + '/>';
+                                AnalysisDetailPageHTML += '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'boolean') {
+                                if (device.platform === 'Android') {
+                                    //AnalysisDetailPageHTML+='<input type="checkbox" name="AnalysisDetailPageName" id="' + htmlid + '"/>';   
+                                    AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + htmlid + '">'
+                                    AnalysisDetailPageHTML += '<input name="AnalysisDetailPageName" type="checkbox" id="' + htmlid + '" class="AnalysisDetailPage2MDLName mdl-checkbox__input"' + newhtmlrequired + '>'
+                                    AnalysisDetailPageHTML += '<span class="AnalysisDetailPage2MDLName mdl-checkbox__label">' + label + '</span>';
+                                    AnalysisDetailPageHTML += '</label<br>>';
+                                } else if (device.platform === 'iOS') {
+                                    AnalysisDetailPageHTML += '<label for="' + htmlid + '">'
+                                    AnalysisDetailPageHTML += '<input name="AnalysisDetailPageName" type="checkbox" id="' + htmlid + '"' + newhtmlrequired + '>'
+                                    AnalysisDetailPageHTML += '<span>' + label + '</span>';
+                                    AnalysisDetailPageHTML += '</label<br>>';
+                                }
+                            } else if (dataType === 'multipicklist') {
+                                if (newhtmlrequired === 'required')
+                                    AnalysisDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                else
+                                    AnalysisDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield">';
+                                AnalysisDetailPageHTML += '<select name="AnalysisDetailPageName" id="' + htmlid + '" multiple' + newhtmlrequired + '>';
+                                for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                    AnalysisDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                }
+                                AnalysisDetailPageHTML += '</select>';
+                                AnalysisDetailPageHTML += '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            }else if (dataType === 'currency'){
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                AnalysisDetailPageHTML += '<input type="number" name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                AnalysisDetailPageHTML += '<label class="AnalysisDetailPage2MDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                AnalysisDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'url') {
+                                AnalysisDetailPageHTML += '<div class="AnalysisDetailPage2MDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        AnalysisDetailPageHTML += '<a style="color:#505050;"   name="AnalysisDetailPageName" class="AnalysisDetailPage2MDLName ST_Clickable_Link mdl-textfield__input" id="' + htmlid + '">' + label + '</a>';
+
+                                        AnalysisDetailPageHTML += '</div><br>';
+                            }else {
+                                console.log('In else', dataType);
+                            }
+                        } catch (e) {
+                        }
+                    }
+                }
+            }
+            AnalysisDetailPageHTML += '</div>';
+        }
+    }
+    console.log(AnalysisDetailPageHTML);
+    $('#AnalysisDetailPageLayoutHTML').html(AnalysisDetailPageHTML);
+    SetAnalysisDetailPageValues();
+    if (device.platform == "Android") {
+        componentHandler.upgradeElements(document.getElementsByClassName('AnalysisDetailPage2MDLName'));
+    }
+    componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+    componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+    componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+}
+    function SetAnalysisDetailPageValues() {
+        console.log(AnalysisDetailPage_AnalysisData);
+        var htmlComponents = $("[name='AnalysisDetailPageName']");
+        for (var i = 0;i < htmlComponents.length;i++) {
+            if (htmlComponents[i]['tagName']==='SELECT') {
+                var values = AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']];
+                if (values) {
+                    $.each(values.split(";"), function(x, e) {
+                        $("#" + htmlComponents[i]['id'] + " option[value='" + e + "']").prop("selected", true);
+                    });
+                }
+            } else if (htmlComponents[i]['type']==="checkbox") {
+                $('#' + htmlComponents[i]['id'] + '[name="AnalysisDetailPageName"]').prop('checked', AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]);
+            } else if (htmlComponents[i]['type']==="number") {
+                console.log(htmlComponents[i]['id'] + ':' + AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]);
+                $('#' + htmlComponents[i]['id'] + '[name="AnalysisDetailPageName"]').val(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]);
+            } else if (htmlComponents[i]['type']==="date") {
+                if (AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]) {
+                    if (device.platform==='Android') { 
+                        var dateval = new Date(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]);
+                        console.log(dateval.toISOString().split('T')[0])
+                        var month;
+                        var day;
+                        if ((dateval.getMonth() + 1) < 10) {
+                            month = '0' + (dateval.getMonth() + 1)
+                        } else {
+                            month = dateval.getMonth() + 1
+                        }
+                        if (dateval.getDate() < 10) {
+                            day = '0' + dateval.getDate()
+                        } else {
+                            day = dateval.getDate()
+                        }
+                        console.log($('#' + htmlComponents[i]['id'] + '[name="AnalysisDetailPageName"]').val(dateval.toISOString().split('T')[0]))
+                        $('#' + htmlComponents[i]['id'] + '[name="AnalysisDetailPageName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day)
+                    }
+                    if (device.platform==='iOS') {
+                        var dateval = new Date(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']].split('.')[0]);
+                        var month;
+                        var day;
+                        if ((dateval.getMonth() + 1) < 10) {
+                            month = '0' + (dateval.getMonth() + 1)
+                        } else {
+                            month = dateval.getMonth() + 1
+                        }
+                        if (dateval.getDate() < 10) {
+                            day = '0' + dateval.getDate()
+                        } else {
+                            day = dateval.getDate()
+                        }
+                        console.log(dateval)
+                        $('#' + htmlComponents[i]['id']).val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                    }  
+                }    
+            }else if (htmlComponents[i]['tagName'] == 'A') {
+                console.log('taggggggg22', AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']],htmlComponents[i]['id'],$.parseHTML(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]));
+            if ($.parseHTML(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]) != null) {
+                    if ($.parseHTML(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']])[0].nodeName == "A") {
+                        //$.parseHTML(newDetailValue[0].STKR__FormulaURL__c)[0].href
+                        $("[name='AnalysisDetailPageName']" + '#' + htmlComponents[i]['id'])[0].onclick = function (abc) {
+                            console.log('hukins', abc.currentTarget.id);
+
+                            window.open($.parseHTML(AnalysisDetailPage_AnalysisData[abc.currentTarget.id])[0].href, '_blank');
+                            preventDefault();
+                        }
+                    } else {
+                        $("[name='AnalysisDetailPageName']" + '#' + htmlComponents[i]['id'])[0].onclick = function (abc) {
+                            window.open(AnalysisDetailPage_AnalysisData[abc.currentTarget.id], '_blank');
+                            preventDefault();
+                        }
+                    }
+                }
+               
+            } else {
+                console.log(htmlComponents[i]['id'] + ':' + AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]);
+                $('#' + htmlComponents[i]['id'] + '[name="AnalysisDetailPageName"]').val(AnalysisDetailPage_AnalysisData[htmlComponents[i]['id']]);
+            }
+        }
+    }
+    
+    function UpdateAnalysis_OnAttachmentClick() {
+        app.navigate('view/AttachmentFolder.html?accountid=' + newDetailValue[0]['STKR__Account_lkp__c'] + '&visitid=' + newDetailValue[0]['Id'] + '&From=DetailPage');
+        UpdateAnalysisValues(true);
+    }
+    
+    function UpdateAnalysisValues(NavigateToAttachment) {
+        var datatoupload = {};
+        var htmlComponents = $("[name='AnalysisDetailPageName'][name1!='RemoveThis']");
+        console.log('HTML COMPONENTS', htmlComponents); 
+        for (var i = 0;i < htmlComponents.length;i++) {
+            var values = '';
+            if (htmlComponents[i]['tagName']==='SELECT') {
+                console.log($('#' + htmlComponents[i]['id']));
+                var selectedOptions = $("#" + htmlComponents[i]['id'] + "[name='AnalysisDetailPageName']")[0]['selectedOptions'];
+                for (var j = 0;j < selectedOptions.length;j++) {
+                    console.log(selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (htmlComponents[i]['type']==="checkbox") {
+                values = $('#' + htmlComponents[i]['id'] + '[name="AnalysisDetailPageName"]').prop('checked');
+            } else if (htmlComponents[i]['type']==="date") {
+                values = $("#" + htmlComponents[i]['id'] + "[name='AnalysisDetailPageName']").val();
+                if (!values) {
+                    values = null;
+                }
+            } else {
+                values = $("#" + htmlComponents[i]['id'] + "[name='AnalysisDetailPageName']").val();
+            }
+            datatoupload[htmlComponents[i]['id']] = values;
+            if (htmlComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return;
+            }
+        }
+        datatoupload['Id'] = AnalysisDetailPage_AnalysisData['Id'];
+        console.log('Data to upload', datatoupload);
+        for (var property in datatoupload) {
+            AnalysisData[AnalysisDetailPage_DataIndex][property] = datatoupload[property];
+        }
+        console.log(AnalysisData[AnalysisDetailPage_DataIndex]);
+        app.insertRecord('Analysis', {
+                             JsonData:JSON.stringify(AnalysisData[AnalysisDetailPage_DataIndex]),
+                             Updated:'false',
+                             UserId:creds.UserID,
+                             AnalysisID:AnalysisData[AnalysisDetailPage_DataIndex]['Id']
+                         });
+        // Check whether device is online or not
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            //Device is online
+            jsconn.sobject("STKR__Chlorination_Results__c").update(datatoupload, function(err, ret) {
+                if (err || !ret.success) {
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Updated Successfully : ' + ret.id);
+                app.deleteRecord('DataToUpdate', ret.id);
+                app.toastMessage('Analysis updated', 'long');
+                if (!NavigateToAttachment) {
+                    window.history.back();
+                }
+            });
+        } else {
+            // Device is offline
+            // Store in DataToUpdate table
+            console.log('Analysis data', AnalysisData[AnalysisDetailPage_DataIndex]);
+            try {
+                app.selectFromTable('DataToUpdate', 'recordid', AnalysisData[AnalysisDetailPage_DataIndex]['Id'], function(a, rs) {
+                    if (rs.rows.length > 0) {
+                        var updateOrInsert = rs.rows.item(0)['updated'];
+                        var data = {
+                            JsonData:JSON.stringify(AnalysisData[AnalysisDetailPage_DataIndex]),
+                            ObjectName:'STKR__Chlorination_Results__c',
+                            Updated:'newRecord',
+                            UserId:creds.UserID,
+                            RecordId:AnalysisData[AnalysisDetailPage_DataIndex]['Id']
+                        }
+                        if (updateOrInsert === 'false') {
+                            // Record is being updated and is already being on salesforce ...
+                            data['UpdateOrInsert'] = 'update';
+                            data['Updated'] = 'false';
+                        } else if (updateOrInsert === 'newRecord') {
+                            // Record is created on mobile device and needs to be created instead of updated... 
+                            data['UpdateOrInsert'] = 'insert';
+                            data['Updated'] = 'newRecord';
+                        }
+    
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Analysis changes stored offline', 'long');
+                        if (!NavigateToAttachment) {
+                            window.history.back();
+                        }
+                    } else {
+                        var data = {
+                            JsonData:JSON.stringify(AnalysisData[AnalysisDetailPage_DataIndex]),
+                            ObjectName:'STKR__Chlorination_Results__c',
+                            Updated:'false',
+                            UpdateOrInsert:'update',
+                            UserId:creds.UserID,
+                            RecordId:AnalysisData[AnalysisDetailPage_DataIndex]['Id']
+                        }
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Analysis changes stored offline', 'long');
+                        if (!NavigateToAttachment) {
+                            window.history.back();
+                        }
+                    }
+                });
+            } catch (err) {
+                var data = {
+                    JsonData:JSON.stringify(AnalysisData[AnalysisDetailPage_DataIndex]),
+                    ObjectName:'STKR__Chlorination_Results__c',
+                    Updated:'false',
+                    UpdateOrInsert:'update',
+                    UserId:creds.UserID,
+                    RecordId:AnalysisData[AnalysisDetailPage_DataIndex]['Id']
+                }
+                if (AnalysisData[AnalysisDetailPage_DataIndex]['Id'].length < 18) {
+                    data['UpdateOrInsert'] = 'insert';
+                    data['Updated'] = 'newRecord';
+                }
+                app.insertRecord('DataToUpdate', data);
+                app.toastMessage('Analysis changes stored offline', 'long');
+                if (!NavigateToAttachment) {
+                    window.history.back();
+                }
+            } 
+        }
+    }    
+</script>

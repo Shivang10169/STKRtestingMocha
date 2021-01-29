@@ -1,0 +1,621 @@
+<div data-role="view" data-show="DataShowPrintSericeReport" data-after-show="DAFPrintServiceReport" id="ServiceReportPrint"
+    data-use-native-scrolling="true" data-layout="ServiceReportLayout">
+
+    <div data-role="header">
+        <div data-role="navbar">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span>Service Report</span>
+            <a data-role="button" data-align="right" onclick="printServiceReport()">SAVE</a>
+        </div>
+    </div>
+
+    <div id="PrintServiceReport" style="font-weight:bold;padding-left:6%;padding-right:3%;padding-top:3%;padding-bottom:3%;">
+        <table style="border-collapse:collapse;">
+            <tr>
+                <td>
+                    <span style="font-weight:bold;font-size:150%;">SERVICE REPORT</span>
+                </td>
+                <td>
+                    <div align="right" style="margin-right:10px;font-size:75%;font-weight:bold;" id="STKR__Org_Name_and_Address__c"></div>
+                </td>
+            </tr>
+            <tr>
+                <td width="50%">
+                    <div style="font-size:75%;">
+                        <b>Site : </b>
+                        <span id="Print_Account__c"></span>
+                        <br/>
+                        <span id="Print_Address__c"></span>
+                    </div>
+                </td>
+                <td width="50%">
+                    <div style="font-size:75%;text-align: right;margin-right:5px;">
+                        <b>Service Date:</b>
+                        <span id="Print_Service_Date"></span>
+                        <br/>
+                        <b>Visit Number:</b>
+                        <span id="Print_Name"></span>
+                        <br/>
+                        <b>Time in:</b>
+                        <span id="Print_Arrival_Time__c"></span>
+                        <br/>
+                        <b>Time out:</b>
+                        <span id="Print_Completion_Time__c"></span>
+                        <br/>
+                        <span id="Print_Visit_peryear"></span>
+                        <br/>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <hr width="100%" size="4" />
+        <br/>
+
+        <table border="1" width="100%" style="border-collapse:collapse;">
+            <tr style="font-weight:bold;">
+                <th>Type of Visit</th>
+                <th>Risk</th>
+                <th>Proofing</th>
+            </tr>
+            <tr>
+                <td style="padding:1px;" id="Print_Visit_Type__c">
+                </td>
+                <td style="padding:1px;" id="Print_Risk__c">
+                </td>
+                <td style="padding:1px;" id="Print_Proofing__c">
+                </td>
+            </tr>
+        </table>
+        <br/>
+
+        <table border="1" width="100%" style="border-collapse:collapse;">
+            <tr style="font-weight:bold;">
+                <th>Description</th>
+                <th>Pests Found</th>
+                <th>Hygiene</th>
+            </tr>
+            <tr>
+                <td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;" id="Print_Notes__Long__c">
+                </td>
+                <td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;" id="Print_Pests_Found__c">
+                </td>
+                <td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;" id="Print_Hygiene__c">
+                </td>
+            </tr>
+        </table>
+        <br/>
+
+        <div id="PrintServiceReportPesticidesSection">
+        </div>
+        <br/>
+
+        <div id="PrintServiceReportFindingsSection">
+        </div>
+
+        <div id="PrintServiceReportRecommendations">
+        </div>
+
+        <div id="ActionTableDiv">
+        </div>
+
+        <div id="ActionTableCustomerComments">
+        </div>
+
+        <div id="PrintServiceReportPageBreak" style="page-break-after:auto;"></div>
+        <div class="prevent-split" style="page-break-inside: avoid;">
+
+            <table width="100%">
+                <tr>
+                    <td>
+                        <div style="display: table;width: 100%;border-collapse: collapse;">
+                            <div style="display: table-row-group;">
+                                <div style="display: table-row;">
+                                    <div style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">Client Name</div>
+                                    <div style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">Reported By Technician</div>
+                                </div>
+                                <div style="display: table-row;">
+                                    <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;" id="Print__Client_Name__c"></div>
+                                    <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;" id="Print__Resource_Name__c"></div>
+                                </div>
+                                <div style="display: table-row;">
+                                    <div style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">Client Signature</div>
+                                    <div style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">Signature</div>
+                                </div>
+                                <div style="display: table-row;">
+                                    <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;" id="Print__Client_Signature"></div>
+                                    <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;" id="Print__Signature__c"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+
+    <center>
+        <button data-role="button" onClick="printServiceReport();">Print</button>
+    </center>
+    <br/>
+</div>
+
+<div data-role="layout" data-id="ServiceReportLayout">
+    <div data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <span></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    var Print_VisitData;
+
+    function DataShowPrintSericeReport(e) {
+        e.view.scroller.reset();
+        try {
+            Print_VisitData = newDetailValue[0];
+        } catch (err) {
+            Print_VisitData = {};
+            alert(err);
+        }
+        // Clear all the previous DOM
+    }
+
+    function DAFPrintServiceReport() {
+        try {
+            if (Print_VisitData['STKR__Account__c']) {
+                $('#Print_Account__c').html(Print_VisitData['STKR__Account__c']);
+            } else {
+                $('#Print_Account__c').html('');
+            }
+            if (Print_VisitData['STKR__Address__c']) {
+                $('#Print_Address__c').html((Print_VisitData['STKR__Address__c'].substring(1, Print_VisitData['STKR__Address__c'].length - 1)));
+            } else {
+                $('#Print_Address__c').html('');
+            }
+            if (Print_VisitData['STKR__Completion_Time__c']) {
+                try {
+                    $('#Print_Service_Date').html(convertDate(Print_VisitData['STKR__Completion_Time__c']));
+                } catch (e) {
+                }
+            } else {
+                $('#Print_Service_Date').html('');
+            }
+            if (Print_VisitData['STKR__Completion_Time__c']) {
+                try {
+                    $('#Print_Completion_Time__c').html(convertTime(Print_VisitData['STKR__Completion_Time__c']));
+                } catch (e) {
+                }
+            } else {
+                $('#Print_Completion_Time__c').html();
+            }
+            $("#Print_Visit_peryear").html(valueOfVisitPeyear);
+            $('#Print_Name').html(Print_VisitData['Name']);
+            if (Print_VisitData['STKR__Arrival_Time__c']) {
+                try {
+                    $('#Print_Arrival_Time__c').html(convertTime(Print_VisitData['STKR__Arrival_Time__c']));
+                } catch (e) {
+                }
+            } else {
+                $('#Print_Arrival_Time__c').html('');
+            }
+            if (Print_VisitData['STKR__Visit_Type__c'])
+                $('#Print_Visit_Type__c').html(Print_VisitData['STKR__Visit_Type__c']);
+            else
+                $('#Print_Visit_Type__c').html('');
+            if (Print_VisitData['STKR__Risk__c'])
+                $('#Print_Risk__c').html(Print_VisitData['STKR__Risk__c'].replace(/\n|\r\n|\r/g, '<br/>'));
+            else
+                $('#Print_Risk__c').html('');
+            if (Print_VisitData['STKR__Proofing__c'])
+                $('#Print_Proofing__c').html(Print_VisitData['STKR__Proofing__c'].replace(/\n|\r\n|\r/g, '<br/>'));
+            else
+                $('#Print_Proofing__c').html('');
+            if (Print_VisitData['STKR__Notes_Long__c'])
+                $('#Print_Notes__Long__c').html(Print_VisitData['STKR__Notes_Long__c']);
+            else
+                $('#Print_Notes__Long__c').html('');
+            if (Print_VisitData['STKR__Field_Notes__c']) {
+                var FieldsNoteHTML = '';
+                FieldsNoteHTML += '<table border="1" width="100%" style="border-collapse:collapse;">';
+                FieldsNoteHTML += '<tr style="font-weight:bold;">'
+                FieldsNoteHTML += '<th>Findings and Actions taken by Technician</th>'
+                FieldsNoteHTML += '</tr>'
+                FieldsNoteHTML += '<tr>'
+                FieldsNoteHTML += '<td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;" id="Print__Field_Notes__c">' +
+                    Print_VisitData['STKR__Field_Notes__c'].replace(/\n|\r\n|\r/g, '<br/>') + '</td>'
+                FieldsNoteHTML += '</tr>'
+                FieldsNoteHTML += '</table>'
+                FieldsNoteHTML += '<br/>'
+                $('#PrintServiceReportFindingsSection').html(FieldsNoteHTML);
+            } else {
+                $('#PrintServiceReportFindingsSection').html('');
+            }
+
+            if (Print_VisitData['STKR__Recommendations__c']) {
+                var RecommendationsHTML = '';
+                RecommendationsHTML += '<table border="1" width="100%" style="border-collapse:collapse;">'
+                RecommendationsHTML += '<tr style="font-weight:bold;">'
+                RecommendationsHTML += '<th>Recommendations</th>'
+                RecommendationsHTML += '</tr>'
+                RecommendationsHTML += '<tr>'
+                RecommendationsHTML += '<td style="padding:1px;word-break:break-word;overflow-wrap:break-word;word-wrap:break-word;white-space:pre-wrap;" id="Print__Recommendations__c">' +
+                    Print_VisitData['STKR__Recommendations__c'].replace(/\n|\r\n|\r/g, '<br/>') +
+                    '</td>'
+                RecommendationsHTML += '</tr>'
+                RecommendationsHTML += '</table>'
+                RecommendationsHTML += '<br/>'
+                $('#PrintServiceReportRecommendations').html(RecommendationsHTML);
+            } else {
+                $('#PrintServiceReportRecommendations').html('');
+            }
+            if (Print_VisitData['STKR__Pests_Found__c'])
+                $('#Print_Pests_Found__c').html(Print_VisitData['STKR__Pests_Found__c']);
+            else
+                $('#Print_Pests_Found__c').html('');
+            if (Print_VisitData['STKR__Hygiene__c'])
+                $('#Print_Hygiene__c').html(Print_VisitData['STKR__Hygiene__c']);
+            else
+                $('#Print_Hygiene__c').html('');
+            if (Print_VisitData['STKR__Resource_Name__c'])
+                $('#Print__Resource_Name__c').html(Print_VisitData['STKR__Resource_Name__c']);
+            else
+                $('#Print__Resource_Name__c').html('');
+        } catch (Err) {
+            alert(Err);
+        }
+
+        var PrintPrepWaste = '';
+        PrintPrepWaste += '<center style="font-weight:bold;padding: 5px;">Pesticides/Materials & Quanitities Used</center>';
+        PrintPrepWaste += '<table border="1" width="100%" id="Print_Prep_Waste" style="border-collapse:collapse;">';
+        PrintPrepWaste += '<tr style="font-weight:bold;">';
+        PrintPrepWaste += '<th>Code</th>';
+        PrintPrepWaste += '<th>Trade Name</th>';
+        PrintPrepWaste += '<th>Quantity</th>';
+        PrintPrepWaste += '</tr>';
+        var countPrepWasteDataPrintServiceReport = 0;
+        for (var i = 0; i < Prep_WasteManagementData.length; i++) {
+            if (Prep_WasteManagementData[i]['STKR__Visit__c'] === Print_VisitData['Id']) {
+                countPrepWasteDataPrintServiceReport++;
+                PrintPrepWaste += '<tr>';
+                for (var j = 0; j < Prep_WasteData.length; j++) {
+                    if (Prep_WasteData[j]['Id'] === Prep_WasteManagementData[i]['STKR__Prep_Waste__c']) {
+                        PrintPrepWaste += '<td>' + Prep_WasteData[j]['STKR__Waste_Code__c'] + '</td>';
+                        PrintPrepWaste += '<td>' + Prep_WasteData[j]['Name'] + '</td>';
+                    }
+                }
+                if (Prep_WasteManagementData[i]['STKR__Qty__c']) {
+                    if (PrintPrepWaste.substring(PrintPrepWaste.length - 3, PrintPrepWaste.length) === 'tr>') {
+                        PrintPrepWaste += '<td></td>';
+                        PrintPrepWaste += '<td></td>';
+                    }
+                    PrintPrepWaste += '<td>' + Prep_WasteManagementData[i]['STKR__Qty__c'] + '</td>';
+                }
+                PrintPrepWaste += '</tr>';
+            }
+        }
+        PrintPrepWaste += '</table>';
+        $('#PrintServiceReportPesticidesSection').html(PrintPrepWaste);
+        if (!countPrepWasteDataPrintServiceReport) {
+            $('#PrintServiceReportPesticidesSection').html('');
+        }
+
+        ///Show Action Data in the report
+        var PrintActionInfo = '';
+        PrintActionInfo += '<center style="font-weight:bold;padding: 5px;">Actions</center>'
+        PrintActionInfo += '<table border="1" width="100%" id="ActionTable" style="border-collapse:collapse;">'
+        PrintActionInfo += '<tr>';
+        PrintActionInfo += '<th>Action No</th>';
+        PrintActionInfo += '<th>Action</th>';
+        PrintActionInfo += '<th>Date for Completion</th>';
+        PrintActionInfo += '<th>Status</th>';
+        PrintActionInfo += '</tr>';
+        var CountActionOnVisit = 0;
+        if (ActionData.length) {
+            for (var i = 0; i < ActionData.length; i++) {
+                if (ActionData[i]['STKR__Visit__c'] === Print_VisitData['Id']) {
+                    CountActionOnVisit++;
+                    console.log(ActionData[i], i);
+                    PrintActionInfo += '<tr>';
+                    if (ActionData[i]['Name']) {
+                        PrintActionInfo += '<td>' + ActionData[i]['Name'] + '</td>';
+                    } else {
+                        PrintActionInfo += '<td></td>';
+                    }
+                    if (ActionData[i]['STKR__Action__c']) {
+                        PrintActionInfo += '<td>' + ActionData[i]['STKR__Action__c'] + '</td>';
+                    } else {
+                        PrintActionInfo += '<td> </td>';
+                    }
+                    var VisitAssignDate;
+                    if (device.platform === 'Android') {
+                        try {
+                            VisitAssignDate = new Date(ActionData[i]['STKR__Date_for_Completion__c']);
+                            var day = (VisitAssignDate.getDate() < 10 ? '0' : '') + VisitAssignDate.getDate();
+                            var month = parseInt((VisitAssignDate.getMonth() < 9 ? '0' : '') + VisitAssignDate.getMonth()) + 1;
+                            PrintActionInfo += '<td>' + day + '/' + month + '/' + VisitAssignDate.getFullYear() + '</td>';
+                        } catch (err) {
+                        }
+                    } else if (device.platform === 'iOS') {
+                        try {
+                            if (typeof (a) === "object") {
+                                VisitAssignDate = new Date(ActionData[i]['STKR__Date_for_Completion__c']);
+                                var day = (VisitAssignDate.getDate() < 10 ? '0' : '') + VisitAssignDate.getDate();
+                                var month = parseInt((VisitAssignDate.getMonth() < 9 ? '0' : '') + VisitAssignDate.getMonth()) + 1;
+                                PrintActionInfo += '<td>' + day + '/' + month + '/' + VisitAssignDate.getFullYear() + '</td>';
+                            } else {
+                                VisitAssignDate = new Date(ActionData[i]['STKR__Date_for_Completion__c'].split('.')[0]);
+                                var day = (VisitAssignDate.getDate() < 10 ? '0' : '') + VisitAssignDate.getDate();
+                                var month = parseInt((VisitAssignDate.getMonth() < 9 ? '0' : '') + VisitAssignDate.getMonth()) + 1;
+                                PrintActionInfo += '<td>' + day + '/' + month + '/' + VisitAssignDate.getFullYear() + '</td>';
+                            }
+                        } catch (err) {
+                        }
+                    }
+                    if (ActionData[i]['STKR__Status__c']) {
+                        PrintActionInfo += '<td>' + ActionData[i]['STKR__Status__c'] + '</td>';
+                    } else {
+                        PrintActionInfo += '<td></td>';
+                    }
+                    /*if (ActionData[i]['STKR__Comments__c']) {
+                    PrintActionInfo += '<td>' + ActionData[i]['STKR__Comments__c'] + '</td>';	
+                    }else {
+                    PrintActionInfo += '<td> </td>';
+                    }*/
+                    PrintActionInfo += '</tr>';
+                }
+            }
+            PrintActionInfo += '</table><br/>';
+            $('#ActionTableDiv').html(PrintActionInfo);
+        }
+        if (!CountActionOnVisit) {
+            $('#ActionTableDiv').html('');
+        }
+        /*if (CountActionOnVisit > 5) {
+        $("#PrintServiceReportPageBreak").addClass("page-break");
+        }else {
+        $("#PrintServiceReportPageBreak").removeClass("page-break");
+        }*/
+
+        var PrintActionInfoCustomerComments = '';
+        PrintActionInfoCustomerComments += '<table border="1" width="100%" style="border-collapse:collapse;">'
+        PrintActionInfoCustomerComments += '<tr style="font-weight:bold;">';
+        PrintActionInfoCustomerComments += '<th>Customer Completion Comments</th>';
+        PrintActionInfoCustomerComments += '</tr>';
+        // var CountActionComments = 0;
+        if (ActionData.length) {
+            for (var i = 0; i < ActionData.length; i++) {
+                if (ActionData[i]['STKR__Visit__c'] === Print_VisitData['Id']) {
+                    PrintActionInfoCustomerComments += '<tr>';
+                    if (ActionData[i]['STKR__Comments__c']) {
+                        // CountActionComments++;
+                        PrintActionInfoCustomerComments += '<td>' + ActionData[i]['STKR__Comments__c'] + '<br/></td>';
+                    }
+                }
+            }
+            PrintActionInfoCustomerComments += '</tr>';
+            PrintActionInfoCustomerComments += '<tr>';
+            PrintActionInfoCustomerComments += '<td><br/></td>';
+            PrintActionInfoCustomerComments += '</tr>';
+            PrintActionInfoCustomerComments += '</table><br/>';
+            $('#ActionTableCustomerComments').html(PrintActionInfoCustomerComments);
+        }
+        /* if (!CountActionComments) {
+        $('#ActionTableCustomerComments').html('');   
+        }*/
+
+        app.db.transaction(function (tx) {
+            tx.executeSql("Select * from StoreSignature where userid=? AND VisitId=?", [creds.UserID, newDetailValue[0]['Id']],
+                function (tx, rs) {
+                    try {
+                        var detailvalue = JSON.parse(rs.rows.item(0)['jsondata']);
+                        if (detailvalue.ParentId === newDetailValue[0]['Id']) {
+                            if (detailvalue.Name)
+                                $('#Print__Client_Name__c').html(detailvalue.Name);
+
+                            if (detailvalue.Body)
+                                $('#Print__Client_Signature').html('<img src="' + detailvalue.Body + '" width="50%"/>');
+                        } else {
+                            app.toastMessage('No signature found for this visit.', 'long');
+                            $('#Print__Client_Name__c').html('');
+                            $('#Print__Client_Signature').html('');
+                        }
+                    } catch (err) {
+                        StoreError(err);
+                        app.toastMessage('No signature found for this visit.', 'long');
+                        $('#Print__Client_Name__c').html('');
+                        $('#Print__Client_Signature').html('');
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+        });
+
+        app.db.transaction(function (tx) {
+            tx.executeSql("Select * from UserSignature where userid=?", [creds.UserID],
+                function (tx, rs) {
+                    var detailvalue = (rs.rows.item(0)['signature']);
+                    if (detailvalue)
+                        $('#Print__Signature__c').html('<img src="' + detailvalue + '" width="50%"/>');
+                    else {
+                        $('#Print__Signature__c').html('<img src="" width="50%"/>');
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+        });
+
+        for (var i = 0; i < Userdata.length; i++) {
+            if (Userdata[i]['Id'] === creds.UserID) {
+                $('#STKR__Org_Name_and_Address__c').html(Userdata[i]['STKR__Org_Name_and_Address__c']);
+                break;
+            } else {
+                $('#STKR__Org_Name_and_Address__c').html('');
+            }
+        }
+    }
+
+    function printServiceReport() {
+        /*
+        var page = document.getElementById('PrintServiceReport');
+        cordova.plugins.printer.print(page, {name:Print_VisitData['Name'] + 'ServiceReport.pdf',});
+        */
+        print2pdf();
+        return null;
+        kendo.drawing.drawDOM($('#PrintServiceReport'), {
+            paperSize: "A3",
+            scale: 0.5,
+            keepTogether: ".prevent-split",
+            forcePageBreak: ".page-break"
+        })
+            .then(function (group) {
+                group.options.set("pdf", {
+                    multiPage: true,
+                    margin: {
+                        left: "4cm",
+                        right: "2cm",
+                        top: "1cm",
+                        bottom: "1cm"
+                    }
+                });
+                console.log('group', group);
+                if (device.platform === 'Android') {
+                    kendo.drawing.pdf.saveAs(group, Print_VisitData['Name'] + "ServiceReport.pdf", '', function (a) {
+                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dir) {
+                            dir.getFile(Print_VisitData['Name'] + "ServiceReport.pdf", { create: true }, function (file) {
+                                file.createWriter(function (writer) {
+                                    writer.onwrite = function (evt) {
+                                        try {
+                                            cordova.plugins.fileOpener2.open(decodeURIComponent(file.nativeURL),
+                                                'application/pdf', {
+                                                    error: function (e) {
+                                                        app.pane.loader.hide();
+                                                        alert('Error status: ' + e.status + ' - Error message: ' + e.message);
+                                                    },
+                                                    success: function () {
+                                                    }
+                                                });
+                                        } catch (e) {
+                                            alert("pdf error" + e);
+                                        }
+                                    };
+                                    writer.write(a);
+                                });
+                            });
+                        });
+                    });
+                } else if (device.platform === 'iOS') {
+                    kendo.drawing.pdf.toBlob(group, function (blob) {
+                        window.resolveLocalFileSystemURL(cordova.file.documentsDirectory, function (dir) {
+                            dir.getFile(Print_VisitData['Name'] + "ServiceReport.pdf", { create: true }, function (file) {
+                                file.createWriter(function (writer) {
+                                    writer.onwrite = function (evt) {
+                                        cordova.plugins.fileOpener2.open(file.nativeURL,
+                                            'application/pdf', {
+                                                error: function (e) {
+                                                    alert('Error status: ' + e.status + ' - Error message: ' + e.message);
+                                                },
+                                                success: function () {
+                                                }
+                                            });
+                                    }
+                                    try {
+                                        writer.write(blob);
+                                    } catch (err) {
+                                        alert(err);
+                                    }
+                                });
+                            });
+                        });
+                    });
+                }
+            });
+    }
+
+    function convertDate(inputFormat) {
+        if (device.platform.toLowerCase()) {
+            inputFormat = new Date(inputFormat.split('+')[0]);
+        } else {
+            inputFormat = new Date(inputFormat);
+        }
+        function pad(s) {
+            return (s < 10) ? '0' + s : s;
+        }
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+    }
+
+    function convertTime(inputDate) {
+        var printDate;
+        if (device.platform === "iOS") {
+            printDate = new Date(inputDate.split('+')[0]);
+        }
+        if (device.platform === "Android") {
+            printDate = new Date(inputDate);
+        }
+        var hours = printDate.getHours();
+        var minutes = printDate.getMinutes();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var strTime = hours + ':' + minutes + ' ' + ampm;
+        return strTime;
+    }
+
+    function print2pdf() {
+        var html = '';
+        html += '<!DOCTYPE html><html>';
+        html += $('#PrintServiceReport').html();
+        html += '</html>';
+        pdf.htmlToPDF({
+            data: html,
+            documentSize: "A4",
+            landscape: "portrait",
+            type: "share",
+            fileName: Print_VisitData['Name'] + "ServiceReport.pdf"
+        }, function (data) {
+            //window.open("data:application/pdf;base64," + data, '_blank');
+        }, function (err) {
+            alert(err);
+        });
+    }
+</script>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 5px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        color: black;
+    }
+
+    /* DivTable.com */
+
+    .divTableHeading {
+        background-color: #EEE;
+        display: table-header-group;
+        font-weight: bold;
+    }
+
+    .divTableFoot {
+        background-color: #EEE;
+        display: table-footer-group;
+        font-weight: bold;
+    }
+</style>

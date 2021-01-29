@@ -1,0 +1,120 @@
+<!-- <div data-role="view" 
+     data-show="GetContactAlert" 
+     data-after-show="MdlbuttonEffect" 
+     data-layout="ContactAlertListLayout" 
+     data-title="Contact Alert" 
+     data-use-native-scrolling="true">
+    <div class="mainBody" id="MessaageOfContactAlert"></div>
+    <ul data-role="listview" id="AllContactAlertListview" data-template="ContactAlertListemplate" ></ul>
+</div>
+<div data-role="layout" data-id="ContactAlertListLayout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();" class="ContactAlertListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <button  onclick="gotoCreateContactAlert()"  style="border-style:none;float:right;margin-top:2%;" class="ContactAlertListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </header>
+</div>
+<script>
+    var ContactAlertdata = [];
+    var Email;
+    var accountid;
+    
+    function GetContactAlert(e) {
+        CountNumberOfOflineItem();
+        accountid = ''; 
+        try {
+            accountid = e.view.params.AccountId;
+        }catch (err) {
+            StoreError(err);
+        }
+        try {
+            $("#AllContactAlertListview").data("kendoMobileListView").refresh();
+            ContactAlertdata = [];
+            for (var i = 0;i < ContactData.length;i++) {
+                if (ContactData[i]['AccountId'] === newDetailValue[0]['STKR__Account_lkp__c']) {
+                    for (var j = 0;i < AlertsData.length;j++) {
+                        if (AlertsData[j]['STKR__Contact__c'] === ContactData[i]['Id']) {
+                            ContactAlertdata.push(ContactData);
+                            $("#AllContactAlertListview").data("kendoMobileListView").replace(ContactAlertdata);
+                        }
+                    }
+                }
+            }
+        } catch (e) {   
+            console.error('ContactAlertList: ' + e);                                                                    
+        }
+    }
+    function MdlbuttonEffect() {
+        if (device.platform == "Android") {
+        componentHandler.upgradeElements(document.getElementsByClassName('ContactAlertListMDLClass'));
+        }
+        $('#MessaageOfContactAlert').empty();
+        if (!(NewContactAlertdata.length)) {
+            var ContactAlertListPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu");
+            ContactAlertListPlaceholder.css('color', 'grey');
+            ContactAlertListPlaceholder.css('position', 'absolute');
+            ContactAlertListPlaceholder.css('top', '50%');
+            $('#MessaageOfContactAlert').html(ContactAlertListPlaceholder); 
+        }
+    }
+    function PhoneCall(phone) {
+        window.open('tel:' + phone);
+    }
+    function ComposeEmail(email) {
+        Email = email;
+        if (AppIsOnline) {
+            try {
+                window.plugins.socialsharing.shareViaEmail('Message', 'Subject', Email, '', '', null, function success(s) {
+                }, function EmailError(error) {
+                    var Error = {
+                        Errordata:err,
+                        UserId:creds.UserID
+                    }
+                    app.insertRecord('ErrorLog', Error);
+                } 
+                    );
+            } catch (e) {
+                console.error('ContactAlertList: ' + e)
+            } 
+        } else {
+            app.toastMessage('No Internet', 'long')
+        }
+    }
+    function gotoCreateContactAlert() {
+        app.navigate('view/CreateContactAlert.html?accountid=' + accountid)
+    }
+    
+</script>
+<script type="text/x-kendo-template" id="ContactAlertListemplate">
+    <div style="background-color:white;margin:0.5%;" 
+         onclick="">
+        #if (FirstName || LastName) {#
+            <span style="font-weight:bold">${FirstName} ${LastName}</span>
+        #}#
+        <div>
+            #if (Title) {#
+            <span>${Title}</span><br/>#}
+            if (Phone) {#
+                <span style="text-decoration: underline;color:rgb(102,178,255);" onclick="PhoneCall(${Phone});event.stopPropagation();" >${Phone}</span><br/>
+            #}if (Email) {#
+                <a style="text-decoration: underline;color:rgb(102,178,255);" onclick="ComposeEmail('#=Email#');event.stopPropagation();">${Email}</a><br/>
+            #}#
+        </div>
+    </div>
+</script>
+<style>
+    .mainBody
+    {
+        width: 100%; 
+        bottom: 0px; 
+        top: 0px; 
+        position: absolute;
+    }
+</style> -->

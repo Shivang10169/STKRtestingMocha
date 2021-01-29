@@ -1,0 +1,82 @@
+<div data-role="view" data-title="Tasks" id="TaskListPage" data-layout="TaskListPageLayout" data-show="DSTaskList"
+    data-after-show="DASTaskList" data-use-native-scrolling="true">
+    <div class="mainBody" id="MessageOfTaskList"></div>
+    <ul data-role="listview" id="TaskListViewPage" data-style="inset" data-template="TaskListPageTemplate"></ul>
+</div>
+<div data-id="TaskListPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();" class="TaskListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="openModalViewTask();" class="TaskListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <span data-role="view-title"></span>
+            <button onclick="app.navigate('view/HomePage.html');"  style="border-style:none;float:right;margin-top:2%;" class="TaskListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons" style="color:white;">home</i>
+                </button>
+        </div>
+    </header>
+</div>
+<script type="text/javascript">
+    var StoreTask = [];
+
+    function DSTaskList() {
+        try {
+            clearInterval(taskIntervalId);
+        } catch (er) { }
+        StoreTask = [];
+        try {
+            for (var i = 0; i < TaskData.length; i++) {
+                if (TaskData[i]['WhatId'] === newDetailValue[0]['Id']) {
+                    StoreTask.push(TaskData[i]);
+                }
+            }
+            if (StoreTask.length) {
+                $("#TaskListViewPage").data("kendoMobileListView").replace(StoreTask);
+                $('#MessageOfTaskList').hide();
+            } else {
+                $('#MessageOfTaskList').show();
+            }
+        } catch (e) {
+        }
+    }
+
+    function DASTaskList() {
+        if (!StoreTask.length) {
+            var TaskListPlaceholder = $('<p>').text("No Tasks added to visit. Please use the + icon to add an entry.")
+            TaskListPlaceholder.css('color', 'grey');
+            TaskListPlaceholder.css('position', 'absolute');
+            TaskListPlaceholder.css('top', '50%');
+            $('#MessageOfTaskList').html(TaskListPlaceholder);
+        }
+    }
+</script>
+<script type="text/x-kendo-template" id="TaskListPageTemplate">
+    #try{
+        if (Subject) {#
+        <span><b>Subject: </b>${Subject}</span><br/>
+        #}
+    }catch(err){}# 
+    #try{
+        if (Description) {#
+        <span><b>Description: </b>${Description}</span><br/>
+        #}
+    }catch(err){}#  
+    #try{
+        if (Priority) {#
+        <span><b>Priority: </b>${Priority}</span><br/>
+        #}
+    }catch(err){}# 
+    #try{
+        if (Status) {#
+        <span><b>Status: </b>${Status}</span><br/>
+        #}
+    }catch(err){}# 
+    #try{
+        if (ActivityDate) {#
+        <span><b>Activity Date: </b>#:new Date(ActivityDate).toLocaleString()#</span>
+        #}
+    }catch(err){}# 
+</script>

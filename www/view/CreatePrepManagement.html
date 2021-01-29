@@ -1,0 +1,214 @@
+<div data-role="view" data-show="getDetailsPrep" data-after-show="DAS_CreatePrepManagment" data-use-native-scrolling="true" id="CreatePrepWasteManagement">
+    <div data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons" >keyboard_backspace</i>
+            </a>
+            <span id="CreateprepwasteHeaderDetail"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;" class="CreatePrepWasteMDLButton headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+    <div style="padding:10px;background:#0A7CB2;color:white;">
+        <center>
+            <span id="CreatePrepMgmtTitle"></span>
+        </center>
+    </div>
+    <div id="RecordtypePrepWaste_Div" class="mdl-shadow--2dp" style="margin:2%;padding:2%;background-color:#fff;border-radius: 10px;">
+        <label style="color:rgb(0,188,212);font-size: 16px;">Record Type</label>
+        <select style="outline:none" id="prepMangCreate_recordtype" onchange="ChangeLayout(this.value)" class="mdl-textfield__input"></select>
+    </div>
+    <div id="Dynamic_CreateLayoutPrepWaste"></div>
+    <br />
+    <br />
+    <center>
+        <button onClick="window.history.back();" class="CreatePrepManagementMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="background-color:grey;color:white;width:35%;">
+            CANCEL
+        </button>
+        <button onClick="InsertPrepWasteManagement();" class="CreatePrepManagementMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="color:white;width:35%;">
+            SAVE
+        </button>
+    </center>
+    <br />
+</div>
+<script>
+    var PrepWasteOption = '';
+    var VisitId;
+    var Visitname;
+    var InspectionId;
+    var PrepWasteRecordId;
+    var createPrepManagement_PrepWasteId = '';
+    var ActionId;
+
+    function ChangeLayout(value) {
+        $('#Dynamic_CreateLayoutPrepWaste').html('');
+        for (var i = 0; i < PrepWasteManagementPageLayout.length; i++) {
+            if (PrepWasteManagementPageLayout[i].RecordTypeId__Custom==value) {
+                PrepWasteRecordId=PrepWasteManagementPageLayout[i].RecordTypeId__Custom;
+                $('#Dynamic_CreateLayoutPrepWaste').html(PrepWasteLayoutGenerator(PrepWasteManagementPageLayout[i]));
+                break;
+            }
+        }
+        DAS_CreatePrepManagment();
+    }
+
+    function getDetailsPrep(e) {
+        CountNumberOfOflineItem();
+        //createPrepManagement_PrepWasteId = '';
+        e.view.scroller.reset();
+        PrepWasteOption = '';
+        //PrepWasteRecordId = e.view.params.PrepWasteRecordId;
+        VisitId = e.view.params.visitid;
+        Visitname = e.view.params.Visitname;
+        InspectionId = e.view.params.InspectionId;
+        createPrepManagement_PrepWasteId = e.view.params.PrepWasteId;
+        ActionId = e.view.params.actionid;
+            console.log("ececsden diabdsicebdvu",createPrepManagement_PrepWasteId)
+        $("#CreateprepwasteHeaderDetail").text(PrepWasteLabel);
+        for (var i = 0; i < PrepWasteManagementPageLayout.length; i++) {
+            if (PrepWasteManagementPageLayout[i]['RecordTypeId__Custom'] === PrepWasteManagementMetadata['recordTypeInfos'][0]['recordTypeId']) {
+                PrepWasteRecordId=PrepWasteManagementPageLayout[i]['RecordTypeId__Custom'];
+                $('#Dynamic_CreateLayoutPrepWaste').html(PrepWasteLayoutGenerator(PrepWasteManagementPageLayout[i]));
+                break;
+            }
+        }
+        $('#CreatePrepMgmtTitle').text(Visitname);
+
+        //Select Prep/waste automatically, selected from search page
+        if (createPrepManagement_PrepWasteId) {
+            var selectedElement = $('#Dynamic_CreateLayoutPrepWaste #STKR__Prep_Waste__c')
+            selectedElement.value = createPrepManagement_PrepWasteId;
+        }
+        try {
+            var OptionHTML = '';
+            for (var i = 0; i < PrepWasteManagementMetadata['recordTypeInfos'].length-1; i++) {
+                if (PrepWasteManagementMetadata.recordTypeInfos[i]['available']) {
+                    OptionHTML += '<option value="' + PrepWasteManagementMetadata['recordTypeInfos'][i]['recordTypeId'] + '" id="' + PrepWasteManagementMetadata['recordTypeInfos'][i]['recordTypeId'] + '">' + PrepWasteManagementMetadata['recordTypeInfos'][i]['name'] + '</option>';
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        $("#prepMangCreate_recordtype").html(OptionHTML);
+    }
+
+    function InsertPrepWasteManagement() {
+        var datatoupload = {};
+        var htmlComponents = $("[name='PrepWasteLayoutName']");
+        console.log('HTML COMPONENTS', htmlComponents);
+        for (var i = 0; i < htmlComponents.length; i++) {
+            var values = '';
+            if (htmlComponents[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $('#' + htmlComponents[i]['id'] + '[name="PrepWasteLayoutName"]')[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    console.log(selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (htmlComponents[i]['type'] === "checkbox") {
+                values = $('#' + htmlComponents[i]['id'] + '[name="PrepWasteLayoutName"]').prop('checked');
+            } else if (htmlComponents[i]['type'] === "date") {
+                values = $('#' + htmlComponents[i]['id'] + '[name="PrepWasteLayoutName"]').val();
+                if (values === '') {
+                    values = null;
+                }
+            } else {
+                values = $('#' + htmlComponents[i]['id'] + '[name="PrepWasteLayoutName"]').val()
+            }
+            datatoupload[htmlComponents[i]['id']] = values;
+            if (htmlComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return;
+            }
+        }
+        if (InspectionId) {
+            datatoupload['STKR__Inspection__c'] = InspectionId;
+        } else {
+            datatoupload['STKR__Inspection__c'] = null;
+        }
+        if (ActionId) {
+            datatoupload['STKR__Action__c'] = ActionId;
+        } else {
+            datatoupload['STKR__Action__c'] = null;
+        }
+        datatoupload['STKR__Visit__c'] = VisitId;
+        datatoupload['RecordTypeId'] = PrepWasteRecordId;
+
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            jsconn.sobject("STKR__Prep_Waste_Management__c").create(datatoupload, function(err, ret) {
+                if (err || !ret.success) {
+                    StoreError(err);
+                    app.toastMessage(err, 'long');
+                    return console.error(err, ret);
+                }
+                console.log('Create Successfully : ', ret);
+                datatoupload['Id'] = ret.id;
+                var dataOftable = {
+                    JsonData: JSON.stringify(datatoupload),
+                    UserId: creds.UserID,
+                    Prep_WasteMgmtId: ret.id
+                }
+                Prep_WasteManagementData.push(datatoupload)
+                app.insertRecord('Prep_WasteManagement', dataOftable);
+                app.toastMessage('Record created', 'long');
+                app.navigate("#:back");
+            });
+        } else {
+            var timestamp = new Date().getTime().toString();
+            datatoupload['Id'] = timestamp;
+            var dataOftable = {
+                JsonData: JSON.stringify(datatoupload),
+                UserId: creds.UserID,
+                Prep_WasteMgmtId: timestamp
+            };
+            app.insertRecord('Prep_WasteManagement', dataOftable);
+
+            if (datatoupload['STKR__Inspection__c'] && datatoupload['STKR__Inspection__c'].length < 18) {
+                //datatoupload['STKR__Inspection__c'] = null;
+                datatoupload['STKR__Mobile_Unique_Id__c'] = InspectionPageDetailData['STKR__UniqueId__c'] + ';PrepWasteManagementMobile;' + timestamp;
+            } else if (datatoupload['STKR__Action__c'] && datatoupload['STKR__Action__c'].length < 18) {
+                datatoupload['STKR__Mobile_Unique_Id__c'] = ActionData[ActionDetailPage_DataIndex].STKR__Mobile_Unique_Id__c + ';PrepWasteManagementOnAction;' + timestamp;
+
+            }
+            var datatouploadoffline = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'STKR__Prep_Waste_Management__c',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp
+            }
+            Prep_WasteManagementData.push(datatoupload);
+            app.insertRecord('DataToUpdate', datatouploadoffline);
+            app.toastMessage('Record stored offline for later upload', 'long');
+            if(FromWhichPage=="Inspection"){
+                app.navigate('view/PrepWasteManagement.html?visitid=' + VisitId + '&Visitname=' + Visitname + '&inspectionid=' + InspectionId + '&From=Inspection');
+            }else if(FromWhichPage=="Action"){
+                app.navigate('view/PrepWasteManagement.html?visitid=' + VisitId + '&Visitname=' + Visitname + '&actionid=' + ActionId + '&From=Action');
+            }else if(FromWhichPage=='Visit'){
+                app.navigate('view/PrepWasteManagement.html?visitid=' + VisitId + '&Visitname=' + Visitname + '&inspectionid=' + InspectionId + '&From=Visit');
+            }
+            //app.navigate('view/PrepWasteManagement.html?visitid=' + VisitId + '&Visitname=' + Visitname + '&inspectionid=' + InspectionId + '&From=Inspection');
+        }
+    }
+
+    function DAS_CreatePrepManagment() {
+        // Register dom for material design
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('CreatePrepManagementMDLClass'));
+            componentHandler.upgradeElements(document.getElementsByClassName('PrepWasteDetailPageMDL'));
+
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+    }
+</script>
+<style>
+    #CreatePrepWasteManagement .km-content {
+        background: #E6E6E6;
+    }
+</style>

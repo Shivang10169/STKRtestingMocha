@@ -1,0 +1,95 @@
+<div data-role="view" id="SearchSchedules" data-show="DataShowSearchSchedules"
+    data-after-show="DataAfterShowSearchSchedules" data-title="Search" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon"
+                href="#MyVisitsdrawer"></a>
+            <button data-align="right" onClick="app.navigate('view/HomePage.html');"
+                class="MyScheduleMDLIcon mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div data-role="header" style="background:grey;">
+        <center>
+            <input type="text" id="term_schedule" style="width:60%;margin:2%;line-height:2em;background-color:white;"
+                placeholder="Enter Character" />
+            <button
+                class="SearchSchedulesMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="SearchSchedule()">
+                Search
+            </button>
+        </center>
+    </div>
+    <div>
+        <div class="mainBody" id="MessageOfSearchSchedules">
+        </div>
+        <ul id="ListViewForSearchSchedules">
+        </ul>
+    </div>
+</div>
+
+<script>
+    var SchedulesSearchTerm = '';
+    var SchedulesSearchResult = [];
+    var TempCurrentTab = '';
+
+    function DataAfterShowSearchSchedules() {
+        try {
+            if (device.platform == "Android")
+                componentHandler.upgradeElements(document.getElementsByClassName('SearchSchedulesMDLClass'));
+            var SearchSchedulePlaceholder = $('<p>').text("No Schedule found please amend your search criteria or refresh all data if you believe the Schedule should be on your device.");
+            SearchSchedulePlaceholder.css('color', 'grey');
+            SearchSchedulePlaceholder.css('position', 'absolute');
+            SearchSchedulePlaceholder.css('top', '50%');
+            $('#MessageOfSearchSchedules').html(SearchSchedulePlaceholder);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    function DataShowSearchSchedules() {
+        CountNumberOfOflineItem();
+        TempCurrentTab = currentTab;
+        currentTab = 'Search Schedule';
+        currentLocation = '';
+        try {
+            $('#term_schedule').val(SchedulesSearchTerm);
+        } catch (err) {
+        }
+
+        try {
+            $("#ListViewForSearchSchedules").data("kendoMobileListView").replace([]);
+        } catch (er) { }
+    }
+
+    function SearchSchedule() {
+        SchedulesSearchResult = [];
+        $('#MessageOfSearchSchedules').hide();
+        SchedulesSearchTerm = $('#term_schedule').val();
+        if (SchedulesSearchTerm) {
+            for (var i = 0; i < ScheduleData.length; i++) {
+                if (ScheduleData[i]["STKR__Account__r"]["Name"])
+                    if ((ScheduleData[i]["STKR__Account__r"]["Name"].toLowerCase()).match(SchedulesSearchTerm.toLowerCase())) {
+                        SchedulesSearchResult.push(ScheduleData[i]);
+                    }
+                if (ScheduleData[i]["STKR__Account__r"]["ShippingPostalCode"])
+                    if ((ScheduleData[i]["STKR__Account__r"]["ShippingPostalCode"].toLowerCase()).match(SchedulesSearchTerm.toLowerCase())) {
+                        SchedulesSearchResult.push(ScheduleData[i]);
+                    }
+            }
+            if (SchedulesSearchResult.length) {
+                try {
+                    generateDynamicListItemLayout("STKR__Service__c", SchedulesSearchResult);
+                } catch (err) {
+                    console.log(err);
+                }
+            } else {
+                $('#MessageOfSearchSchedules').show();
+            }
+        } else {
+            app.toastMessage('Please Enter Something', 'long');
+        }
+    }
+</script>

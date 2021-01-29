@@ -1,0 +1,324 @@
+<div data-role="view" id="searchVisits" data-show="DataShowSearchVisits" data-after-show="SearchVisitDataAfterShow"
+    data-title="Search" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon"
+                href="#MyVisitsdrawer"></a>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button data-align="right" onClick="app.navigate('view/HomePage.html');"
+                class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+
+            <button data-align="right" style="color:white" id="toggleVisits"
+                class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="fa fa-check-circle-o"></i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div data-role="header" style="background:grey;">
+        <center>
+            <input type="text" id="term" style="width:60%;margin:2%;line-height:2em;background-color:white;"
+                placeholder="Enter Character" />
+            <button
+                id="searchVisitsButton"
+                class="SearchVisitsMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="getvisit()">
+                Search
+            </button>
+        </center>
+    </div>
+    <div>
+        <div class="mainBody" id="MessaageOfSearch">
+        </div>
+        <ul data-role="listview" id="ListViewForSearchVisit" data-template="ListViewForVisitTemplate"
+            data-style="inset">
+        </ul>
+    </div>
+</div>
+
+<script>
+    var SearchTerm = '';
+    var SearchResult = [];
+    var TempCurrentTab = '';
+    var CompletedVisits = [];
+    var RestVisits = [];
+    var StoreTerritoryId = [];
+
+    function SearchVisitDataAfterShow() {
+        try {
+            if (device.platform == "Android")
+                componentHandler.upgradeElements(document.getElementsByClassName('SearchVisitsMDLClass'));
+            var SearchVisitPlaceholder = $('<p>').text("No Visits found please amend your search criteria or refresh all data if you believe the Visit should be on your device.");
+            SearchVisitPlaceholder.css('color', 'grey');
+            SearchVisitPlaceholder.css('position', 'absolute');
+            SearchVisitPlaceholder.css('top', '50%');
+            $('#MessaageOfSearch').html(SearchVisitPlaceholder);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    function DataShowSearchVisits() {
+        CountNumberOfOflineItem();
+        TempCurrentTab = currentTab;
+        currentTab = 'Search Visit';
+        currentLocation = '';
+        count_AssociatedVisit = 0;
+        try {
+            $('#term').val(SearchTerm);
+        } catch (err) {
+        }
+
+        var count = 0;
+        $("#toggleVisits").click(function () {
+            count++;
+            var isEven = function (someNumber) {
+                return (someNumber % 2 === 0) ? true : false;
+            };
+            if (isEven(count) === false) {
+                $("#ListViewForSearchVisit").data("kendoMobileListView").replace(CompletedVisits);
+                changeVisitColor();
+            } else if (isEven(count) === true) {
+                $("#ListViewForSearchVisit").data("kendoMobileListView").replace(RestVisits);
+                changeVisitColor();
+            }
+        });
+    }
+    
+    function getvisit() {
+        SearchResult = [];
+        RestVisits = [];
+        CompletedVisits = [];
+        StoreTerritoryId = [];
+        $('#MessaageOfSearch').hide();
+        try {
+            $("#ListViewForSearchVisit").data("kendoMobileListView").replace(SearchResult);
+        } catch (err) {
+            console.log(err);
+        }
+       SearchTerm = $('#term').val();
+        console.log(SearchTerm);
+
+        function pushUniqueVisit(visitRecord) {
+            let found = false;
+            for (var i = 0; i < SearchResult.length; i++) {
+                if (SearchResult[i].Id == visitRecord.Id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                SearchResult.push(visitRecord);
+        }
+
+        if (SearchTerm) {
+            for (var j = 0; j < ScheduleData.length; j++) {
+                if (ScheduleData[j]['STKR__Account__r']['STKR__Territory__r'] != null) {
+                    if ((ScheduleData[j]['STKR__Account__r']['STKR__Territory__r']['Name'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        console.log('matched');
+                        StoreTerritoryId.push(ScheduleData[j]['STKR__Account__r']['STKR__Territory__r']['Id'].substring(0, 15));
+                    }
+                }
+            }
+            for (var i = 0; i < AllVisits.length; i++) {
+                // Search By Name
+                if (AllVisits[i]['Name'])
+                    if ((AllVisits[i]['Name'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+
+                // Search By Status
+                if (AllVisits[i]['STKR__Status__c'])
+                    if ((AllVisits[i]['STKR__Status__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search by Account Name
+                if (AllVisits[i]['STKR__Account__c'])
+                    if ((AllVisits[i]['STKR__Account__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //search By Visit type
+                if (AllVisits[i]['STKR__Visit_Type__c'])
+                    if ((AllVisits[i]['STKR__Visit_Type__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Start Due Date
+                if (AllVisits[i]['STKR__Due_Date__c'])
+                    if ((AllVisits[i]['STKR__Due_Date__c'].split('T')[0]).match(SearchTerm)) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By End Due Date
+                if (AllVisits[i]['STKR__Due_Finish__c'])
+                    if ((AllVisits[i]['STKR__Due_Finish__c'].split('T')[0]).match(SearchTerm)) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Record Type
+                if (AllVisits[i]['RecordTypeId'])
+                    if ((AllVisits[i]['RecordTypeId']).match(SearchTerm)) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Address
+                if (AllVisits[i]['STKR__Address__c'])
+                    if ((AllVisits[i]['STKR__Address__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Pests Found
+                if (AllVisits[i]['STKR__Pests_Found__c'])
+                    if ((AllVisits[i]['STKR__Pests_Found__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Other Pests Found
+                if (AllVisits[i]['STKR__Other_Pests_Found__c'])
+                    if ((AllVisits[i]['STKR__Other_Pests_Found__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Risk Assesment
+                if (AllVisits[i]['STKR__Risk_Assessment__c'])
+                    if ((AllVisits[i]['STKR__Risk_Assessment__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Risk Assesment Question
+                if (AllVisits[i]['STKR__Risk_Assessment_Questions__c'])
+                    if ((AllVisits[i]['STKR__Risk_Assessment_Questions__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                //Search By Recommendation
+                if (AllVisits[i]['STKR__Recommendations__c'])
+                    if ((AllVisits[i]['STKR__Recommendations__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Prep Used
+                if (AllVisits[i]['STKR__Prep_Used__c'])
+                    if ((AllVisits[i]['STKR__Prep_Used__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Proofing
+                if (AllVisits[i]['STKR__Proofing__c'])
+                    if ((AllVisits[i]['STKR__Proofing__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Hygiene
+                if (AllVisits[i]['STKR__Hygiene__c'])
+                    if ((AllVisits[i]['STKR__Hygiene__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Notes
+                if (AllVisits[i]['STKR__Notes__c'])
+                    if ((AllVisits[i]['STKR__Notes__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Notes Long
+                if (AllVisits[i]['STKR__Notes_Long__c'])
+                    if ((AllVisits[i]['STKR__Notes_Long__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Seacrh By Priority 
+                if (AllVisits[i]['STKR__Priority__c'])
+                    if ((AllVisits[i]['STKR__Priority__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Healt and Safety Note
+                if (AllVisits[i]['STKR__Heath_And_Safety__c'])
+                    if ((AllVisits[i]['STKR__Heath_And_Safety__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Resource Name 
+                if (AllVisits[i]['STKR__Resource_Name__c'])
+                    if ((AllVisits[i]['STKR__Resource_Name__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Business Type
+                if (AllVisits[i]['STKR__Visit_Type__c'])
+                    if ((AllVisits[i]['STKR__Visit_Type__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // Search By Findings
+                if (AllVisits[i]['STKR__Field_Notes__c'])
+                    if ((AllVisits[i]['STKR__Field_Notes__c'].toLowerCase()).match(SearchTerm.toLowerCase())) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // search By Object Id  
+                if (AllVisits[i]['Id'])
+                    if ((AllVisits[i]['Id']).match(SearchTerm)) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // search By description
+                if (AllVisits[i]['Id'])
+                    if ((AllVisits[i]['Id']).match(SearchTerm)) {
+                        pushUniqueVisit(AllVisits[i]);
+                        continue;
+                    }
+                // search By territory
+                if (AllVisits[i]['STKR__Territory__c'])
+                    for (var pq = 0; pq < StoreTerritoryId.length; pq++) {
+                        if ((StoreTerritoryId[pq].indexOf(AllVisits[i]['STKR__Territory__c']) > -1)) {
+                            pushUniqueVisit(AllVisits[i]);
+                            continue;
+                        }
+                    }
+
+            }
+            //console.log('Matched Visits', SearchResult);
+            if (SearchResult.length) {
+                try {
+                    for (var k = 0; k < SearchResult.length; k++) {
+                        if (SearchResult[k]['STKR__Status__c'] === 'Complete') {
+                            CompletedVisits.push(SearchResult[k]);
+                        } else {
+                            RestVisits.push(SearchResult[k]);
+                        }
+                    }
+                    $("#ListViewForSearchVisit").data("kendoMobileListView").replace(RestVisits);
+                } catch (err) {
+                    console.log(err);
+                }
+                changeVisitColor();
+            } else {
+                $('#MessaageOfSearch').show();
+            }
+        } else {
+            app.toastMessage('Please Enter Something', 'long');
+        }
+        
+        return SearchResult.length;
+        
+    }
+    
+</script>
+<style>
+    .mainBody {
+        width: 100%;
+        bottom: 0px;
+        top: 0px;
+        position: absolute;
+    }
+</style>
+
+

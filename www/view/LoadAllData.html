@@ -1,0 +1,1714 @@
+<div data-role="view" data-use-native-scrolling="true" data-after-show="LoadAllData" data-title="Refresh All Data"
+    data-layout="RefreshDataLayout" data-show="DataShowLoadAllData" id="LoadAllData" data-init="DataInitLoadAllData">
+    <div id="RefreshAllDataSubTitle" style="padding:10px;background:#0A7CB2;color:white;font-style:italic">
+        <center>
+            <span> Please wait while all data required for Offline operation is downloaded. Please stay on this screen
+                until it
+                has completed. </span>
+        </center>
+    </div>
+    <div data-role="listview" id="ListViewForDownloadingData" data-template="ListViewForDownloadingDataTemplate"
+        data-style="inset">
+    </div>
+    <br />
+    <div class="gotoMyVisit" id="DivgotoMyVisits">
+        <ul data-role="listview" id="buttongotomyvisits">
+            <li>
+                <center>
+                    <button id="LoadAllDataMDLButton"
+                        class="LoadAllDataMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                        onClick="NavigateHomePageWithOrWithoutError();"
+                        style="color:white;background-color:#7FE817;font-weight:bold;height:100%;line-height:110%;padding:2%">
+                        All Data has been updated.Tap to continue
+                    </button>
+                </center>
+            </li>
+
+        </ul>
+    </div>
+    <center>
+        <a data-role="button" data-icon="refresh" onclick="onDeviceReady()" id="ReloadButton"
+            style="background-color:#FF4500;padding:2%;width:80%;">Retry</a>
+    </center>
+    <br />
+</div>
+
+<div data-role="layout" data-id="RefreshDataLayout">
+    <header data-role="header">
+        <div data-role="navbar" id="normal" class="km-accent">
+            <!--<a data-align="left" data-role="button" href="#RefreshAllDatadrawer" data-rel="drawer" data-icon="drawer-icon"></a>-->
+
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="LoadAllDataBackButton()"
+                class="LoadAllDataMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+
+    <footer data-role="footer" id="LoadAlldataFooter" style="color:white">
+
+    </footer>
+</div>
+
+<style>
+    #RefreshAllDatadrawer .km-listview {}
+
+    .km-listview .km-icon {
+        margin-left: 0.3em;
+        padding-right: 2em;
+        font-size: 1.5em;
+    }
+
+    .km-ios .km-loader:before {
+        content: "\a0";
+        display: inline-block;
+        height: 100%;
+        width: 0;
+        vertical-align: bottom
+    }
+</style>
+
+<script>
+
+    // function LoadAllData() is defined on function.js
+    //For Push Notification
+    var ClickedOnButton = false;
+
+    var CountAllDownloadObjects = 0,
+        TotalObjectCount = 22;
+    var TotalMetadataCount = 18,
+        CountAllDownloadedMetadata = 0;
+
+    var AllVisits = [],
+        AllOthersVisits = [],
+        VisitOverdue = [],
+        VisitToday = [],
+        VisitThisWeek = [],
+        VisitWithin45 = [],
+        VisitCompleted = [],
+        VisitNearby = [];
+
+    var VisitMetadata = [];
+    var VisitRecordTypes = [];
+    var AllVisitPageLayout = [];
+    var VisitOverdueCount = 0,
+        VisitTodayCount = 0,
+        VisitThisWeekCount = 0,
+        VisitWithin45Count = 0,
+        VisitCompletedCount = 0,
+        VisitNearbyCount = 0;
+
+    var ScheduleData = [];
+    var ScheduleMetadata = [];
+    var ScheduleItemMetadata = [];
+
+    var ActionData = [];
+    var ActionMetadata = [];
+    var ActionRecordTypes = [];
+    var ActionRecordTypeDetail = [];
+    var AlertsData = [];
+    var Prep_WasteData = [];
+    var PrepWasteMetadata = [];
+
+    var ContactData = [];
+    //var ContactAlertData = [];
+    var ResourceData = [];
+    var ResourceMetadata = [];
+    var ResourceRecordtype = [];
+
+    var AnalysisData = [];
+    var AnalysisRecordTypes = [];
+    var AnalysisMetadata = [];
+    var AnalysisRecordTypeDetail = [];
+
+    var vehicleMetaData = [];
+    var vehicleRecordType = [];
+    var vehicleData = [];
+    var InspectionData = [];
+    var InspectionItemData = [];
+    var InspectionRecordType = [];
+    var InspectionMetadata = [];
+    var InspectionItemMetadata = [];
+    var InspectionItemRecordType = [];
+    var InspectionItemRecordTypeDetail = [];
+
+    var InspectionItemParameterData = [];
+
+    var Prep_WasteManagementData = [];
+    var PrepWasteManagementMetadata = [];
+    var PrepWasteManagementPageLayout = [];
+    var PrepWasteRecordtype = [];
+
+    var Userdata = [];
+
+    var OrgInfo;
+
+    var PersonalEvents = [];
+    var EventsMetadata = [];
+    var EventData = [];
+    var EventRecordTypes = [];
+    var EventRecordTypeDetail = [];
+
+    var Visitdata;
+    var PrepWasteLabel;
+    var QuoteLocationLabel;
+    var QuoteDescriptionLabel;
+    var ActionLabel, QuickInspect, CameraSettings, ShowAllVisitsSettings, FixedVisitCheck, ButtonSettings, ShowRelatedContacts;
+
+
+    var ContactMetadata;
+
+    var EventsOverdue = [],
+        EventsToday = [],
+        EventsThisWeek = [],
+        EventsWithin45 = [],
+        EventsOverdueCount = 0,
+        EventsTodayCount = 0,
+        EventsThisWeekCount = 0,
+        EventsWithin45Count = 0;
+
+    var InspectionItemCompactLayout;
+    var InspectionCompactLayout;
+    var PrepWasteCompactLayout;
+    var TaskData = [];
+    var ContractData = [];
+    var DefaultValues;
+   
+
+    // navigate even on error while Downloading
+    function NavigateHomePageWithOrWithoutError() {
+        if ($("#ReloadButton").is(":visible") == true) {
+            app.navigate('view/LoadAllDataOffline.html');
+        } else {
+            app.navigate('view/HomePage.html');
+        }
+    }
+    // back button funtionality
+    function LoadAllDataBackButton() {
+        if (history.length > 2) {
+            window.history.back();
+        } else {
+            app.pane.loader.hide();
+            $("button").attr('disabled', false);
+            navigator.app.exitApp();
+        }
+    }
+
+    function DataInitLoadAllData() {
+        var permissions = cordova.plugins.permissions;
+
+        permissions.checkPermission(permissions.READ_CALENDAR, function (status) {
+            if (status.hasPermission) {
+                permissions.checkPermission(permissions.WRITE_CALENDAR, function (status) {
+
+                });
+            } else {
+                permissions.requestPermission(permissions.CALENDAER, function () {
+                    permissions.checkPermission(permissions.WRITE_CALENDAR, function (status) {
+                    });
+                }, function () {
+                    app.toastMessage("Please allow access to calendar for creating events", "long")
+                });
+            }
+        });
+    }
+    // DataShow
+    function DataShowLoadAllData() {
+        app.pane.loader.hide();
+        $("button").attr('disabled', false);
+        try {
+            //cordova.plugins.snackbar('This is a indefinite snackbar text', 'INDEFINITE', "Dismiss", function() {
+            console.log('Dismiss Button Clicked');
+            //});
+        } catch (err) {
+        }
+        //Clear all variables..
+        clearAllVariables();
+
+        TotalObjectCount = 21;
+        CountAllDownloadObjects = 0;
+        CountAllDownloadedMetadata = 0;
+        try {
+            $("#ListViewForDownloadingData").data("kendoMobileListView").refresh()
+        } catch (e) {
+        }
+        $('#ReloadButton').hide();
+        $('.gotoMyVisit').hide();
+        // Initialize Push Notification
+        try {
+
+            pushNotification = PushNotification.init({
+                android: {
+                    vibrate: true
+                },
+                browser: {
+                },
+                ios: {
+                    alert: "true",
+                    badge: "true",
+                    sound: "true"
+                },
+                windows: {}
+            });
+
+            pushNotification.on('registration', (data) => {
+                //console.log('data', data);
+                // data.registrationId
+                if (device.platform.toLowerCase() === 'android') {
+                    if (data.registrationId.length > 0) {
+                        jsconn.sobject("MobilePushServiceDevice")
+                            .create({ Id: device.uuid, ServiceType: 'androidGcm', ConnectionToken: data.registrationId },
+                                function (err, ret1) {
+                                    if (err || !ret1.success) {
+                                        return console.error(err, ret1);
+                                    }
+                                    //console.log('registerd', ret1);
+                                    // Store the records in the db
+                                    /*app.db.transaction(function (tx) {
+                                        tx.executeSql('INSERT INTO PushNotificationDetail(pushnotificationdata,userid,SFId) VALUES (?,?,?)',
+                                            ['', creds.UserID, ret1.id],
+                                            function (a, b) {
+                                                tx.executeSql("SELECT SFId FROM PushNotificationDetail WHERE SFId != ?", [ret1.id], function (m, n) {
+                                                    var datatodelete = [];
+                                                    for (var i = 0; i < n.rows.length; i++) {
+                                                        datatodelete.push(n.rows.item(i)['SFId']);
+                                                    }
+                                                    console.log('Token to delte', datatodelete);
+                                                    // Delete the records from the salesforce .. 
+                                                    if (datatodelete.length)
+                                                        jsconn.sobject("MobilePushServiceDevice").del(datatodelete,
+                                                            function (err, ret2) {
+                                                                if (err) {
+                                                                    return console.error(err);
+                                                                }
+
+                                                                for (var i = 0; i < ret2.length; i++) {
+                                                                    if (ret2[i].success) {
+                                                                        console.log("Deleted Successfully : " + ret2[i].id);
+                                                                    }
+                                                                }
+                                                                tx.executeSql("DELETE FROM PushNotificationDetail WHERE userid=? AND SFId != ? ", [creds.UserID, ret1.id], function (a, b) {
+                                                                    console.log(a, b);
+                                                                }, function (e) {
+                                                                });
+                                                            });
+                                                }, function (er) {
+                                                });
+                                            },
+                                            function (er) {
+                                            });
+                                    });*/
+                                });
+                    }
+                } else if (device.platform === 'iOS') {
+                    jsconn.sobject("MobilePushServiceDevice").create({ Id: device.uuid, ServiceType: 'apple', ConnectionToken: data.registrationId }, function (err, ret) {
+                        if (err || !ret.success) {
+                            return console.error(err, ret);
+                        }
+                        //app.toastMessage('Registered for Push Notification ... ', 'long');
+                    });
+                }
+
+            });
+
+            pushNotification.on('notification', (data) => {
+                // data.message,
+                // data.title,
+                // data.count,
+                // data.sound,
+                // data.image,
+                // data.additionalData
+                console.log('onnotification', data);
+                if (device.platform.toLowerCase() == 'android') {
+                    androidNotification(data);
+                } else {
+                    onNotificationAPN(data);
+                }
+            });
+
+            pushNotification.on('error', (e) => {
+                console.error('error e', e);
+            });
+        } catch (err) {
+            txt = "There was an error on this page.\n\n";
+            txt += "Error description: " + err.message + "\n\n";
+            app.toastMessage(txt, 'long');
+        }
+    }
+
+    // DataAfterShow 
+    function LoadAllData() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('LoadAllDataMDLClass'));
+        if (AppIsOnline) {
+            console.log('Start downloading data')
+            app.pane.loader.show();
+            $("button").attr('disabled', true);    //to disable the buttton
+
+            getDefaultCurrency();
+
+            //Download Schedule metadata
+            jsconn.sobject("Contact").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading contact metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show();
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                ContactMetadata = meta;
+                //ResourceRecordtype = meta['recordTypeInfos'];
+
+                app.deleteAllData('ContactMetadata');
+                //Insert Metadata of Action into table
+                app.insertRecord('ContactMetadata', data = {
+                    JsonData: JSON.stringify(ContactMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'Contact'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            // Downloading Inspection Metadata
+            try {
+                jsconn.sobject("STKR__Inspection__c").describe(function (err, meta) {
+                    if (err) {
+                        //$("#ListViewForDownloadingData").data("kendoMobileListView").append([ { message: 'Error while downloading inspection metadata',count:0,iserror:true } ]);
+                        app.pane.loader.hide();
+                        err = err.toString();
+                        $("button").attr('disabled', false);
+                        $('#ReloadButton').show();
+                        $('.gotoMyVisit').show()
+                        if (err.indexOf("Access Declined") > -1) {
+                            AppIsOnline = false;
+                            navigator.splashscreen.hide();
+                            if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                                app.navigate('view/LoadAllDataOffline.html');
+                            }
+                        }
+                        return console.error(err);
+                    }
+                    InspectionMetadata = meta;
+                    InspectionRecordType = meta['recordTypeInfos'];
+                    //app.deleteAllData('InspectionRecordType');
+                    app.deleteAllData('InspectionMetadata');
+
+                    //Download record type of Inspection and insert it into sqlite table  
+                    for (var i = 0; i < InspectionRecordType.length; i++) {
+                        function SynRecord(xrecordid) {
+                            ForcetkClient.describeLayout("STKR__Inspection__c", xrecordid, function (Layoutdata) {
+                                app.insertRecord('InspectionRecordType', data = {
+                                    JsonData: JSON.stringify(Layoutdata),
+                                    RecordId: xrecordid,
+                                    UserId: creds.UserID
+
+                                });
+                            }, function (Layouterror) {
+                                console.log(Layouterror);
+                            });
+                        }
+                        if (InspectionRecordType[i]['available'])
+                            SynRecord(InspectionRecordType[i]['recordTypeId']);
+                    }
+
+                    //Insert Inspection MetaData into sqlite table
+                    app.insertRecord('InspectionMetadata', data = {
+                        JsonData: JSON.stringify(meta),
+                        UserId: creds.UserID,
+                        ObjectName: 'STKR__Inspection__c'
+                    }, function () {
+                        scrollToBottom();
+                        CountAllDownloadedMetadata++;
+                        if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                            $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                            AllMetadataDownloaded();
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error('Metabasdf ' + err);
+            }
+            //download vehicle metadata
+            try {
+                jsconn.sobject("STKR__Vehicle_checks__c").describe(function(err, meta) {
+                    if (err) {
+                        //$("#ListViewForDownloadingData").data("kendoMobileListView").append([ { message: 'Error while downloading inspection metadata',count:0,iserror:true } ]);
+                        app.pane.loader.hide();
+                        err = err.toString();
+                        $("button").attr('disabled', false);
+                        $('#ReloadButton').show();
+                        $('.gotoMyVisit').show()
+                        if (err.indexOf("Access Declined") > -1) {
+                            AppIsOnline = false;
+                            navigator.splashscreen.hide();
+                            if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                                app.navigate('view/LoadAllDataOffline.html');
+                            }
+                        }
+                        return console.error(err);
+                    }
+                    vehicleMetaData = meta;
+                    vehicleRecordType = meta['recordTypeInfos'];
+                    app.deleteAllData('vehicleRecordType');
+                    app.deleteAllData('vehicleMetaData');
+
+                    //Download record type of vehicle and insert it into sqlite table  
+                    for (var i = 0; i < vehicleRecordType.length; i++) {
+                        function SynRecord(xrecordid) {
+                            ForcetkClient.describeLayout("STKR__Vehicle_checks__c", xrecordid, function(Layoutdata) {
+                                Layoutdata['VehicleRecordTypeId'] = xrecordid;
+                                app.insertRecord('vehicleRecordType', data = {
+                                    JsonData: JSON.stringify(Layoutdata),
+                                    RecordId: xrecordid,
+                                    UserId: creds.UserID
+
+                                });
+                            }, function(Layouterror) {
+                                console.log(Layouterror);
+                            });
+                        }
+                        if (vehicleRecordType[i]['available'])
+                            SynRecord(vehicleRecordType[i]['recordTypeId']);
+                    }
+
+                    // Insert vehicle MetaData into sqlite table
+                    app.insertRecord('vehicleMetaData', data = {
+                        JsonData: JSON.stringify(meta),
+                        UserId: creds.UserID,
+                        ObjectName: 'STKR__Vehicle_checks__c'
+                    }, function() {
+                        scrollToBottom();
+                        CountAllDownloadedMetadata++;
+                        if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                            $("#ListViewForDownloadingData").data("kendoMobileListView").append([{
+                                message: 'All Metadata',
+                                count: null,
+                                iserror: false
+                            }]);
+                            AllMetadataDownloaded();
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error('Metabasdf ' + err);
+            }
+            // Downloading Visit Metadata
+            jsconn.sobject("STKR__Visit__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading visit metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+                VisitMetadata = meta;
+                VisitRecordTypes = meta['recordTypeInfos'];
+                app.deleteAllData('VisitMetadata');
+                //app.deleteAllData('VisitRecordTypes');
+
+                //Insert recordtype of visit into sqlite table
+                for (var i = 0; i < VisitRecordTypes.length; i++) {
+                    function SynRecord(xrecordid, RecordName) {
+                        ForcetkClient.describeLayout("STKR__Visit__c", xrecordid, function (Layoutdata) {
+                            Layoutdata['RecordTypeName'] = RecordName;
+                            Layoutdata['RecordTypeId'] = xrecordid;
+
+                            AllVisitPageLayout.push(Layoutdata);
+
+                            app.insertRecord('VisitRecordTypes', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (VisitRecordTypes[i]['available'])
+                        SynRecord(VisitRecordTypes[i]['recordTypeId'], VisitRecordTypes[i]['name']);
+                }
+
+                //Insert Metadata of visit into sqlite table
+                app.insertRecord('VisitMetadata', data = {
+                    JsonData: JSON.stringify(meta),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Visit__c'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            // Downloading Resources Metadata
+            jsconn.sobject("STKR__Resource__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading resource metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                ResourceMetadata = meta;
+                ResourceRecordtype = meta['recordTypeInfos'];
+                app.deleteAllData('ResourceMetadata');
+                //app.deleteAllData('ResourceRecordtype');
+
+                //Insert record type of Resource into sqlite table
+                for (var i = 0; i < ResourceRecordtype.length; i++) {
+                    function SynRecord(xrecordid) {
+                        ForcetkClient.describeLayout("STKR__Resource__c", xrecordid, function (Layoutdata) {
+                            // Store in sqlite database JSON.stringify(Layoutdata) , recordid=xrecordid , userid
+                            //var JsonData=Layoutdata;
+                            app.insertRecord('ResourceRecordtype', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID
+
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (ResourceRecordtype[i]['available'])
+                        SynRecord(ResourceRecordtype[i]['recordTypeId']);
+                }
+
+                //Insert Metadata of Resource into table
+                app.insertRecord('ResourceMetadata', data = {
+                    JsonData: JSON.stringify(meta),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Resource__c'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            // Downloading Analysis Metadata
+            jsconn.sobject("STKR__Chlorination_Results__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading analysis metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                AnalysisMetadata = meta;
+                AnalysisRecordTypeDetail = [];
+                // Store Analysis recordtype in sqlite table
+
+                AnalysisRecordTypes = meta['recordTypeInfos'];
+
+                // Delete All Data
+                app.deleteAllData('AnalysisMetadata');
+                //app.deleteAllData('AnalysisRecordType');
+
+                for (var i = 0; i < AnalysisRecordTypes.length; i++) {
+                    function SynRecord(xrecordid) {
+                        ForcetkClient.describeLayout("STKR__Chlorination_Results__c", xrecordid, function (Layoutdata) {
+                            Layoutdata['AnalysisRecordTypeId'] = xrecordid;
+                            AnalysisRecordTypeDetail.push(Layoutdata);
+                            app.insertRecord('AnalysisRecordType', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (AnalysisRecordTypes[i]['available'])
+                        SynRecord(AnalysisRecordTypes[i]['recordTypeId']);
+                }
+
+                //Store Analysis Metadata into sqlite table
+                app.insertRecord('AnalysisMetadata', data = {
+                    JsonData: JSON.stringify(meta),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Chlorination_Results__c'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            // Downloading Action Metadata
+            jsconn.sobject("STKR__Actions__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading action metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                app.deleteAllData('ActionMetadata');
+                //app.deleteAllData('ActionRecordType');
+
+                ActionMetadata = meta;
+                ActionRecordTypes = meta['recordTypeInfos'];
+
+                for (var i = 0; i < ActionRecordTypes.length; i++) {
+                    function SynRecord(xrecordid) {
+                        ForcetkClient.describeLayout("STKR__Actions__c", xrecordid, function (Layoutdata) {
+                            Layoutdata['ActionRecordTypeId'] = xrecordid;
+                            ActionRecordTypeDetail.push(Layoutdata);
+                            app.insertRecord('ActionRecordType', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (ActionRecordTypes[i]['available'])
+                        SynRecord(ActionRecordTypes[i]['recordTypeId']);
+                }
+
+                //Insert Metadata of Action into table
+                app.insertRecord('ActionMetadata', data = {
+                    JsonData: JSON.stringify(ActionMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Actions__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            //Download Schedule metadata
+            jsconn.sobject("STKR__Service__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading schedule metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                ScheduleMetadata = meta;
+                //ResourceRecordtype = meta['recordTypeInfos'];
+
+                app.deleteAllData('ScheduleMetadata');
+                //Insert Metadata of Action into table
+                app.insertRecord('ScheduleMetadata', data = {
+                    JsonData: JSON.stringify(ScheduleMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Service__c'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            //Download metatdata for prepWaste Management
+            jsconn.sobject("STKR__Prep_Waste_Management__c").describe(function (err, meta) {
+                if (err) {
+                    err = err.toString();
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading prep waste metadata', count: 0, iserror: true }]);
+                    $('#ReloadButtsobjecton').show();
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                PrepWasteManagementMetadata = meta;
+                PrepWasteRecordtype = meta['recordTypeInfos'];
+
+                app.deleteAllData('PrepWasteMgmtMetadata');
+                //app.deleteAllData('PrepWasteManagementRecordTypes');
+
+                //Insert recordtype of prep waste into sqlite table
+                for (var i = 0; i < PrepWasteRecordtype.length; i++) {
+                    function SynRecord(xrecordid, RecordName) {
+                        ForcetkClient.describeLayout("STKR__Prep_Waste_Management__c", xrecordid, function (Layoutdata) {
+                            Layoutdata['Name__Custom'] = RecordName;
+                            Layoutdata['RecordTypeId__Custom'] = xrecordid;
+                            PrepWasteManagementPageLayout.push(Layoutdata);
+                            app.insertRecord('PrepWasteManagementRecordTypes', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (PrepWasteRecordtype[i]['available'])
+                        SynRecord(PrepWasteRecordtype[i]['recordTypeId'], PrepWasteRecordtype[i]['name']);
+                }
+
+                //Insert Metadata of Prep Waste into table
+                app.insertRecord('PrepWasteMgmtMetadata', data = {
+                    JsonData: JSON.stringify(PrepWasteManagementMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Prep_Waste_Management__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            //Download metatdata for prepWaste
+            jsconn.sobject("STKR__Prep_Waste__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading visit Prep-Waste', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                PrepWasteMetadata = meta;
+                //ResourceRecordtype = meta['recordTypeInfos'];
+
+                app.deleteAllData('PrepWasteMetadata');
+
+                //Insert Metadata of Action into table
+                app.insertRecord('PrepWasteMetadata', data = {
+                    JsonData: JSON.stringify(PrepWasteMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Prep_Waste__c'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            //Download metatdata for InspectionItem 
+            jsconn.sobject("STKR__Service_Item__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading InspectionItem metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                InspectionItemMetadata = meta;
+                InspectionItemRecordType = meta['recordTypeInfos'];
+                //app.deleteAllData('InspectionItemRecordType');
+                app.deleteAllData('InspectionItemMetadata');
+
+                //Download record type of InspectionItem and insert it into sqlite table  
+                for (var i = 0; i < InspectionItemRecordType.length; i++) {
+                    function SynRecord(xrecordid) {
+                        ForcetkClient.describeLayout("STKR__Service_Item__c", xrecordid, function (Layoutdata) {
+                            Layoutdata['InspectionItemRecordTypeId'] = xrecordid;
+                            InspectionItemRecordTypeDetail.push(Layoutdata);
+                            app.insertRecord('InspectionItemRecordType', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID
+
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (InspectionItemRecordType[i]['available'])
+                        SynRecord(InspectionItemRecordType[i]['recordTypeId']);
+                }
+
+                //Insert InspectionItem MetaData into sqlite table
+                app.insertRecord('InspectionItemMetadata', data = {
+                    JsonData: JSON.stringify(meta),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Service_Item__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            //Download metatdata for ScheduleItem 
+            jsconn.sobject("STKR__Schedule_Items__c").describe(function (err, meta) {
+                if (err) {
+                    scrollToBottom();
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading schedule Item metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                ScheduleItemMetadata = meta;
+
+                app.deleteAllData('ScheduleItemMetadata');
+
+                //Insert Metadata of Action into table
+                app.insertRecord('ScheduleItemMetadata', data = {
+                    JsonData: JSON.stringify(ScheduleItemMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Schedule_Items__c'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+            //Download metatdata for Events 
+            jsconn.sobject("Event").describe(function (err, meta) {
+                if (err) {
+                    scrollToBottom();
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading event metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                EventsMetadata = meta;
+                EventRecordTypes = EventsMetadata['recordTypeInfos'];
+
+                app.deleteAllData('EventMetadata');
+                //app.deleteAllData('EventLayout');
+
+                for (var i = 0; i < EventRecordTypes.length; i++) {
+                    function SynRecord(xrecordid, RecordTypeName) {
+                        ForcetkClient.describeLayout("Event", xrecordid, function (Layoutdata) {
+                            Layoutdata['EventRecordTypeId'] = xrecordid;
+                            EventRecordTypeDetail.push(Layoutdata);
+                            app.insertRecord('EventLayout', data = {
+                                JsonData: JSON.stringify(Layoutdata),
+                                RecordId: xrecordid,
+                                UserId: creds.UserID,
+                                RecordTypeName: RecordTypeName
+                            });
+                        }, function (Layouterror) {
+                            console.log(Layouterror);
+                        });
+                    }
+                    if (EventRecordTypes[i]['available'])
+                        SynRecord(EventRecordTypes[i]['recordTypeId'], EventRecordTypes[i]['name']);
+                }
+
+                //Insert Metadata of Events into table
+                app.insertRecord('EventMetadata', data = {
+                    JsonData: JSON.stringify(EventsMetadata),
+                    UserId: creds.UserID,
+                    ObjectName: 'Event'
+
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+
+            //Download Inspection Item primary Compact layout
+            jsconn.apex.get("/../data/v43.0/sobjects/STKR__Service_Item__c/describe/compactLayouts/primary", function (err, records) {
+
+                if (err) {
+                    scrollToBottom();
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading compact layout', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+                //console.log("response: ", records);
+                InspectionItemCompactLayout = records;
+                app.deleteAllData('InspectionItemCompactLayout');
+                app.insertRecord('InspectionItemCompactLayout', data = {
+                    JsonData: JSON.stringify(InspectionItemCompactLayout),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Service_Item__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+            //End
+
+                //Download Inspection  primary Compact layout
+            jsconn.apex.get("/../data/v43.0/sobjects/STKR__Inspection__c/describe/compactLayouts/primary", function (err, records) {
+
+                if (err) {
+                    scrollToBottom();
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading compact layout', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+                //console.log("response: ", records);
+                InspectionCompactLayout = records;
+                app.deleteAllData('InspectionCompactLayout');
+                app.insertRecord('InspectionCompactLayout', data = {
+                    JsonData: JSON.stringify(InspectionCompactLayout),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Inspection__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+//End
+
+// Preswaste compact layout
+
+            jsconn.apex.get("/../data/v43.0/sobjects/STKR__Prep_Waste__c/describe/compactLayouts/primary", function (err, records) {
+
+                if (err) {
+                    scrollToBottom();
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading compact layout', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+                //console.log("response: ", records);
+                PrepWasteCompactLayout = records;
+                app.deleteAllData('PrepWasteCompactLayout');
+                app.insertRecord('PrepWasteCompactLayout', data = {
+                    JsonData: JSON.stringify(PrepWasteCompactLayout),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Prep_Waste__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+
+// end
+            //Download STKR__Billing__c metadata
+            jsconn.sobject("STKR__Billing__c").describe(function (err, meta) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading quote metadata', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+                BillingMetadata = meta;
+                BillingRecordtype = meta['recordTypeInfos'];
+                app.deleteAllData('BillingMetadata');
+
+                //Insert Metadata of Resource into table
+                app.insertRecord('BillingMetadata', data = {
+                    JsonData: JSON.stringify(meta),
+                    UserId: creds.UserID,
+                    ObjectName: 'STKR__Billing__c'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'All Metadata', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+            });
+            //End
+
+            //Download Search layout for STKR__Service__c
+            jsconn.apex.get("/../../services/data/v43.0/search/layout/?q=STKR__Service__c", function (err, res) {
+                if (err) { return console.error(err); }
+                if (res.errorMsg) {
+                    alert(res.errorMsg);
+                    return;
+                }
+                window.localStorage.setItem('STKR__Service__c_SearchLayout', JSON.stringify(res));
+            });
+
+            //Download Mapp_FetchDefaultValues
+            jsconn.apex.get("/STKR/Mapp_FetchDefaultValues/", function (err, data) {
+                if (err) {
+                    $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Error while downloading default values', count: 0, iserror: true }]);
+                    app.pane.loader.hide();
+                    $("button").attr('disabled', false);
+                    $('#ReloadButton').show();
+                    $('.gotoMyVisit').show()
+
+                    err = err.toString();
+                    if (err.indexOf("Access Declined") > -1) {
+                        AppIsOnline = false;
+                        navigator.splashscreen.hide();
+                        if (window.location.href.indexOf('HomePage.html') === -1 && window.location.href.indexOf('LoadAllDataOffline.html') === -1) {
+                            app.navigate('view/LoadAllDataOffline.html');
+                        }
+                    }
+                    return console.error(err);
+                }
+
+                if (data) {
+                    DefaultValues = data;
+                }
+
+                app.deleteAllData('DefaultValues');
+
+                //Insert Metadata of Resource into table
+                app.insertRecord('DefaultValues', {
+                    JsonData: JSON.stringify(data),
+                    UserId: creds.UserID,
+                    ObjectName: 'DefaultValues'
+                }, function () {
+                    scrollToBottom();
+                    CountAllDownloadedMetadata++;
+                    if (TotalMetadataCount === CountAllDownloadedMetadata) {
+                        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Default Values', count: null, iserror: false }]);
+                        AllMetadataDownloaded();
+                    }
+                });
+
+            });
+            //End 1111111
+
+            function AllMetadataDownloaded() {
+                // Once All Metadata is downloaded Upload All offline changes..
+                $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Uploading Offline data', count: null, iserror: false }]);
+                UploadOfflineChanges();
+            }
+        } else {
+            $('#LoadAlldataFooter').html('<p style="margin-left:2px;">Cannot upload data while you are offline. Please connect to the internet first.</p>')
+        }
+    }
+
+    function RenderIt() {
+        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Overdue Visits ', count: VisitOverdueCount, iserror: false }]);
+        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Today Visits ', count: VisitTodayCount, iserror: false }]);
+        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'This Week Visits ', count: VisitThisWeekCount, iserror: false }]);
+        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Next 46 Days Visits ', count: VisitWithin45Count, iserror: false }]);
+        $("#ListViewForDownloadingData").data("kendoMobileListView").append([{ message: 'Completed Visits ', count: VisitCompletedCount, iserror: false }]);
+    }
+
+    function AllDownloaded() {
+        // Check offline database and update the records..
+        // Dec 15, 2017 @Ashutosh
+        UpdateWithOfflineRecords();
+        //End
+        $('#RefreshAllDataSubTitle').hide();
+        app.pane.loader.hide();
+        $("button").attr('disabled', false);
+        $('.gotoMyVisit').show();
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementById('LoadAllDataMDLButton'));
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        // topOffset set when the view loads like the following
+        // var topOffset = scroller.find(".km-scroll-container").position().top
+        var usingNativeScrolling = app.view().element.data("use-native-scrolling");
+        var scroller = app.view().scroller;
+
+        if (usingNativeScrolling) {
+            $("#ListViewForDownloadingData")[0].scrollIntoView();
+            $("#DivgotoMyVisits")[0].scrollIntoView();
+        } else {
+            var scrollerHeight = scroller.scrollHeight();
+            var viewportHeight = scroller.height();
+
+            if ((scrollerHeight + topOffset) > viewportHeight) {
+                var position = -1 * (scrollerHeight - viewportHeight - topOffset);
+                scroller.animatedScrollTo(0, position);
+            }
+        }
+    }
+
+    // Push Notification
+    // handle GCM notifications for Android
+    function androidNotification(e) {
+
+        navigator.vibrate(1000);
+        ClickedOnButton = false;
+        var CheckIfVisitIsAvailable = false;
+        for (var i = 0; i < AllVisits.length; i++) {
+            if (AllVisits[i]['Id'] === e.additionalData.VisitId) {
+                CheckIfVisitIsAvailable = true;
+                break;
+            }
+        }
+        if (e.additionalData.foreground) {
+            var PushNotificationModalViewTemplate = kendo.template($("#PushNotificationModalViewTemplate").html());
+
+            if (!CheckIfVisitIsAvailable) {
+                if (AppIsOnline) {
+                    // Add this if user press on refresh button
+                    try {
+                        var refreshDataNotification = setInterval(function (e) {
+                            // Check if he pressed refresh all data
+                            if (ClickedOnButton) {
+                                // All data is downloaded
+                                // Show dialog if he is on myvisits.html page
+                                if ((window.location.href).split('#')[1] === 'view/myvisits.html') {
+                                    // pop up notification and only show open visit and cancel buttons
+                                    var PushNotificationModalViewTemplate = kendo.template($("#PushNotificationModalViewTemplate").html());
+                                    try {
+                                        if (e.title.match(/delete/g)) {
+                                            $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                                            $("#PushNotificationModalView").kendoMobileModalView("open"); 
+                                        } else {
+                                            $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                                            $("#PushNotificationModalView").kendoMobileModalView("open");
+                                        }
+                                    } catch (err) {
+                                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                                    }
+                                    NotificationElementUpgrade();
+                                    // Clear this timer if he press cancel button
+                                    clearInterval(refreshDataNotification);
+                                }
+                            }
+                        }, 5000, e);
+                    } catch (IntervalErr) {
+                    }
+
+                    // Also clear this timer after 10 mins (600000 msec)
+                    setTimeout(function () {
+                        clearInterval(refreshDataNotification);
+                    }, 600000);
+
+                    $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="attchInterval();">Refresh Data</button></center><br/><br/>');
+                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                    $('#pushNotificationButtons').hide();
+                } else {
+                    $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="app.toastMessage(\'Your device is offline.\', \'long\');">Refresh Data</button></center>');
+                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                    $('#pushNotificationButtons').hide();
+                }
+            } else {
+                $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                $("#PushNotificationModalView").kendoMobileModalView("open");
+                $('#pushNotificationButtons').show();
+            }
+            NotificationElementUpgrade();
+        } else {
+            // otherwise we were launched because the user touched a notification in the notification tray.
+            if (e.coldstart) {
+                var waitForAllData = setInterval(function () {
+                    if ((window.location.href).split('#')[1] === 'view/myvisits.html') {
+                        clearInterval(waitForAllData);
+                        var PushNotificationModalViewTemplate = kendo.template($("#PushNotificationModalViewTemplate").html());
+                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                        try {
+                            if (e.title.match(/delete/g)) {
+                                $("#PushNotificationModalView").kendoMobileModalView("open");
+                            } else {
+                                $("#PushNotificationModalView").kendoMobileModalView("open");
+                            }
+                        } catch (err) {
+                            $("#PushNotificationModalView").kendoMobileModalView("open");
+                        }
+                        NotificationElementUpgrade();
+                    }
+                }, 5000);
+            } else {
+                var PushNotificationModalViewTemplate = kendo.template($("#PushNotificationModalViewTemplate").html());
+                if (!CheckIfVisitIsAvailable) {
+                    if (AppIsOnline) {
+                        try {
+                            var refreshDataNotification = setInterval(function (e) {
+                                // Check if he pressed refresh all data
+                                if (ClickedOnButton) {
+                                    // All data is downloaded
+                                    // Show dialog if he is on myvisits.html page
+                                    if ((window.location.href).split('#')[1] === 'view/myvisits.html') {
+                                        // pop up notification and only show open visit and cancel buttons
+                                        try {
+
+                                            var PushNotificationModalViewTemplate = kendo.template($("#PushNotificationModalViewTemplate").html());
+                                            $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                                            try {
+                                                if (e.title.match(/delete/g)) {
+                                                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                                                } else {
+                                                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                                                }
+                                            } catch (err) {
+                                                $("#PushNotificationModalView").kendoMobileModalView("open");
+                                            }
+                                            NotificationElementUpgrade();
+                                            // Clear this timer if he press cancel button
+                                            clearInterval(refreshDataNotification);
+                                        } catch (Err) {
+                                            alert(Err);
+                                        }
+                                    }
+                                }
+                            }, 5000, e);
+                            // Also clear this timer after 10 mins (600000 msec)
+                            setTimeout(function () {
+                                clearInterval(refreshDataNotification);
+                            }, 600000);
+                        } catch (IntervalErr) {
+                            alert('IntervalErr' + IntervalErr);
+                        }
+
+                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="attchInterval();">Refresh Data</button></center><br/><br/>');
+                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                        $('#pushNotificationButtons').hide();
+                    } else {
+                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="app.toastMessage(\'Your device is offline.\', \'long\');">Refresh Data</button></center>');
+                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                        $('#pushNotificationButtons').hide();
+                    }
+                } else {
+                    $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                    $('#pushNotificationButtons').show();
+                }
+                NotificationElementUpgrade();
+            }
+        }
+    }
+
+
+    // handle APNS notifications for iOS
+    function onNotificationAPN(e) {
+        if (e.alert) {
+            navigator.vibrate(1000);
+            ClickedOnButton = false;
+            var CheckIfVisitIsAvailable = false;
+            for (var i = 0; i < AllVisits.length; i++) {
+                if (AllVisits[i]['Id'] === e.VisitId) {
+                    CheckIfVisitIsAvailable = true;
+                    break;
+                }
+            }
+            // if this flag is set, this notification happened while we were in the foreground.
+            // you might want to play a sound to get the user's attention, throw up a dialog, etc.
+            if (e.foreground === '1') {
+                //var my_media = new Media("/android_asset/www/" + soundfile);
+                //my_media.play();
+                var PushNotificationModalViewTemplate = kendo.template($("#iOSPushNotificationModalViewTemplate").html());
+
+                if (!CheckIfVisitIsAvailable) {
+                    if (AppIsOnline) {
+                        // Add this if user press on refresh button
+                        try {
+                            var refreshDataNotification = setInterval(function (e) {
+                                // Check if he pressed refresh all data
+                                if (ClickedOnButton) {
+                                    // All data is downloaded
+                                    // Show dialog if he is on myvisits.html page
+                                    if ((window.location.href).split('#')[1] === 'view/myvisits.html') {
+                                        // pop up notification and only show open visit and cancel buttons
+                                        var PushNotificationModalViewTemplate = kendo.template($("#iOSPushNotificationModalViewTemplate").html());
+                                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                                        try {
+                                            if (e.title == "Visit Records have been deleted") {
+                                            } else {
+                                                $("#PushNotificationModalView").kendoMobileModalView("open");
+                                            }
+                                        } catch (err) {
+                                            $("#PushNotificationModalView").kendoMobileModalView("open");
+                                        }
+                                        NotificationElementUpgrade();
+                                        // Clear this timer if he press cancel button
+                                        clearInterval(refreshDataNotification);
+                                    }
+                                }
+                            }, 5000, e);
+                        } catch (IntervalErr) {
+                        }
+
+                        // Also clear this timer after 10 mins (600000 msec)
+                        setTimeout(function () {
+                            clearInterval(refreshDataNotification);
+                        }, 600000);
+
+                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="attchInterval();">Refresh Data</button></center><br/><br/>');
+                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                        $('#pushNotificationButtons').hide();
+                    } else {
+                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="app.toastMessage(\'Your device is offline.\', \'long\');">Refresh Data</button></center>');
+                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                        $('#pushNotificationButtons').hide();
+                    }
+                } else {
+                    $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                    $('#pushNotificationButtons').show();
+                }
+                NotificationElementUpgrade();
+            } else {
+                // otherwise we were launched because the user touched a notification in the notification tray.
+                if (e.coldstart === "0") {
+                    var waitForAllData = setInterval(function () {
+                        if ((window.location.href).split('#')[1] === 'view/myvisits.html') {
+                            clearInterval(waitForAllData);
+                            var PushNotificationModalViewTemplate = kendo.template($("#iOSPushNotificationModalViewTemplate").html());
+                            $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                            try {
+                                if (e.title == "Visit Records have been deleted") {
+                                } else {
+                                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                                }
+                            } catch (err) {
+                                $("#PushNotificationModalView").kendoMobileModalView("open");
+                            }
+                            NotificationElementUpgrade();
+                        }
+                    }, 5000);
+                } else {
+                    var PushNotificationModalViewTemplate = kendo.template($("#iOSPushNotificationModalViewTemplate").html());
+                    if (!CheckIfVisitIsAvailable) {
+                        if (AppIsOnline) {
+                            try {
+                                var refreshDataNotification = setInterval(function (e) {
+                                    // Check if he pressed refresh all data
+                                    if (ClickedOnButton) {
+                                        // All data is downloaded
+                                        // Show dialog if he is on myvisits.html page
+                                        if ((window.location.href).split('#')[1] === 'view/myvisits.html') {
+                                            // pop up notification and only show open visit and cancel buttons
+                                            try {
+                                                var PushNotificationModalViewTemplate = kendo.template($("#iOSPushNotificationModalViewTemplate").html());
+                                                $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                                                try {
+                                                    if (e.title == "Visit Records have been deleted") {
+                                                    } else {
+                                                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                                                    }
+                                                } catch (err) {
+                                                    $("#PushNotificationModalView").kendoMobileModalView("open");
+                                                }
+                                                NotificationElementUpgrade();
+                                                // Clear this timer if he press cancel button
+                                                clearInterval(refreshDataNotification);
+                                            } catch (Err) {
+                                                alert(Err);
+                                            }
+                                        }
+                                    }
+                                }, 5000, e);
+                                // Also clear this timer after 10 mins (600000 msec)
+                                setTimeout(function () {
+                                    clearInterval(refreshDataNotification);
+                                }, 600000);
+                            } catch (IntervalErr) {
+                                alert('IntervalErr' + IntervalErr);
+                            }
+
+                            $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="attchInterval();">Refresh Data</button></center><br/><br/>');
+                            $("#PushNotificationModalView").kendoMobileModalView("open");
+                            $('#pushNotificationButtons').hide();
+                        } else {
+                            $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e) + '<br/>This is new visit. Do you want to refresh data ? <br/><center><button class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="app.toastMessage(\'Your device is offline.\', \'long\');">Refresh Data</button></center>');
+                            $("#PushNotificationModalView").kendoMobileModalView("open");
+                            $('#pushNotificationButtons').hide();
+                        }
+                    } else {
+                        $("#PushNotificationModalView").html(PushNotificationModalViewTemplate(e));
+                        $("#PushNotificationModalView").kendoMobileModalView("open");
+                        $('#pushNotificationButtons').show();
+                    }
+                    NotificationElementUpgrade();
+                }
+            }
+        }
+        if (e.sound) {
+            // playing a sound also requires the org.apache.cordova.media plugin
+            var snd = new Media(e.sound);
+            snd.play();
+        }
+        if (e.badge) {
+            pushNotification.setApplicationIconBadgeNumber(successHandler, e.badge);
+        }
+    }
+
+    function NotificationElementUpgrade() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('NotificationMLDBUttons'));
+    }
+
+    /* End of Push Notification code*/
+
+    // Download Files from Internet
+    function download(PathToDownload, FileName) {
+        var filepath = encodeURI(PathToDownload);
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+            fileSystem.root.getFile(FileName, {
+                create: true,
+                exclusive: false
+            }, function (fileEntry) {
+                // get the full path to the newly created file on the device
+                var localPath = fileEntry.fullPath;
+                // massage the path for android devices (not tested)
+                if (device.platform === "Android" && localPath.indexOf("file://") === 0) {
+                    localPath = localPath.substring(7);
+                }
+
+                // download the remote file and save it
+                var remoteFile = filepath;
+                //loadingOverlay.displayLoading("Image will be save on your device.");
+
+                var fileTransfer = new FileTransfer();
+                fileTransfer.download(remoteFile, fileEntry.nativeURL, function (newFileEntry) {
+                    // successful download, continue to the next image
+                    var dwnldImagePath = newFileEntry.fullPath;
+                    //app.toastMessage('successful download: ' + dwnldImagePath, 'long');
+                    // Convert image
+                    getFileContentAsBase64(newFileEntry.nativeURL, function (base64Image) {
+                        //window.open(base64Image);
+                        app.insertRecord('UserSignature', { SignatureImage: base64Image, UserId: creds.UserID }, function () {
+                        });
+                    });
+                }, function (error) { // error callback for #download
+                }, false, {
+                        headers: { "Authorization": "Bearer " + creds.accessToken }
+                    });
+            },
+                function (error) { // error callback for #getFile
+                });
+        })
+    }
+
+    // Get base64 of local image file
+    function getFileContentAsBase64(path, callback) {
+        window.resolveLocalFileSystemURL(path, gotFile, fail);
+
+        function fail(e) {
+        }
+
+        function gotFile(fileEntry) {
+            fileEntry.file(function (file) {
+                var reader = new FileReader();
+                reader.onloadend = function (e) {
+                    var content = this.result;
+                    callback(content);
+                };
+                // The most important point, use the readAsDatURL Method from the file plugin
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+</script>
+
+<script type="text/x-kendo-template" id="ListViewForDownloadingDataTemplate">
+    #if (iserror) {#
+    <div style="color:red;">
+        <span>#: message #</span>
+        <span style="float:right;color:red;font-weight:bold;">&nbsp;Error</span>
+        #if (count) {#
+            <div style="float:right;font-weight:bold;">(#:count#) </div> 
+        #}#
+    </div>
+    #}else {#
+    <div>
+        <span>#: message #</span>
+        <span style="float:right;color:\#7FE817;font-weight:bold;">&nbsp;Loaded</span>
+        #if (count) {#
+            <div style="float:right;font-weight:bold;color:\#7FE817">(#:count#) </div> 
+        #}#
+    </div>
+    #}#
+</script>

@@ -1,0 +1,466 @@
+<div data-role="view" id="DataOpenAction" data-layout="ActionPageLayout" data-show="Actiontocomplete"
+    data-after-show="ActionMdlaftershow" data-use-native-scrolling="true">
+
+    <div id="touch-ActionToComplete" data-role="touch" data-enable-swipe="1" data-swipe="ActionTouch.swipe"
+        class="mainBody">
+        <div class="mainBody" id="MessaageOfActionToCompleteDiv">THIS IS TEST .....</div>
+        <ul data-role="listview" id="listViewItemToAction" data-style="inset" data-template="Openaction"></ul>
+    </div>
+</div>
+
+<div data-role="view" id="DataCompletedAction" data-layout="ActionPageLayout" data-title="Completed Action"
+    data-show="CompletedAction" data-after-show="ActionMdlaftershow" data-use-native-scrolling="true" class="mainBody">
+
+    <div id="touch-ActionCompleted" data-role="touch" data-enable-swipe="1" data-swipe="ActionTouch.swipe"
+        class="mainBody">
+        <div class="mainBody" id="MessaageOfActionCompletedDiv"></div>
+        <ul data-role="listview" id="listViewCompletedaAction" data-style="inset" data-template="Completedaction"></ul>
+    </div>
+</div>
+
+<div data-id="ActionPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()"
+                class="ActionListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="gotonewactionpage();"
+                class="ActionListMDLClass headerIconStyleForAll headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <button style="float:right;margin-top:2%;border-style:none;"
+                onclick="app.navigate('view/SearchAction.html')"
+                class="ActionListMDLClass headerIconStyleForAll headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">search</i>
+            </button>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="ActionListMDLClass headerIconStyleForAll headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <span id="HeaderAction"></span>
+
+        </div>
+    </header>
+    <header data-role="header">
+        <div data-role="tabstrip" data-selected-index="0">
+            <a id="tabstripActionToComplete" onclick="window.location.replace('#DataOpenAction')"
+                style="font-size:130%;">Action to Complete</a>
+            <a id="tabstripActionCompleted" onclick="window.location.replace('#DataCompletedAction')"
+                style="font-size:130%;">Completed</a>
+        </div>
+    </header>
+</div>
+
+<script>
+
+    var ActionCurrentTab = 'ActionToComplete'
+    var OpenAction = [];
+    var Completedaction = [];
+    var ActionId;
+    var Action_AccountNameIdMap = {}
+    var ActionPage_VisitId = '';
+    var AccountDetail = [];
+    var VisitOrInspection;
+    var MapUserwithAction = {};
+    // To check what kind of action list we need to show; Site action or visit action or inspection actions
+    var ActionFor;
+    var Action_InspectionItemId;
+    var createpageSelectedvalueForemail ='';
+
+    for (var i = 0; i < Userdata.length; i++) {
+        MapUserwithAction[Userdata[i]['Id']] = Userdata[i]['Name'];
+    }
+
+    function gotoactiondetailpage(id) {
+        ActionId = id;
+        app.navigate("view/ActionDynamicDetailPage.html?ActionId=" + ActionId);
+    }
+
+    function gotonewactionpage() {
+        app.navigate("view/ActionSelectRecordType.html");
+    }
+
+    function Actiontocomplete(e) {
+        CountNumberOfOflineItem();
+        createpageSelectedvalueForemail='';
+        OpenAction = [];
+        console.log("Action Page Params ", e.view.params);
+
+        try {
+            if (Object.keys(e.view.params).length > 0) {
+                ActionPage_VisitId = e.view.params.ActionVisitId;
+                ActionFor = e.view.params.From;
+                Action_InspectionItemId = '';
+                Action_InspectionItemId = e.view.params.InspectionItemId;
+            }
+        } catch (err) {
+            console.error('Error when parsing page parameters', err);
+        }
+
+        //Update the header action label from custom setting
+        if (ActionLabel !== 'undefined' && ActionLabel !== undefined && ActionLabel !== 'null' && ActionLabel !== null) {
+            var text = '';
+            if (ActionFor === 'FromInspectionDetail') {
+                text = ActionLabel + ' on Inspection';
+            } else if (ActionFor === 'FromVisitDetail') {
+                text = ActionLabel + ' on Visit';
+            } else if (ActionFor === 'ForSiteActions') {
+                text = ActionLabel + ' on Site';
+            } else {
+                text = ActionLabel;
+            }
+            $("#HeaderAction").text(text);
+        } else {
+            $("#HeaderAction").text("Action");
+        }
+        $("#listViewItemToAction").data("kendoMobileListView").replace(OpenAction);
+        $("#tabstripActionToComplete").addClass("km-button km-state-active");
+
+        try {
+            $("#tabstripActionToComplete").text(ActionLabel + ' to Complete');
+        } catch (e) {
+        }
+
+        console.log(ActionPage_VisitId, ActionFor, Action_InspectionItemId);
+        for (var i = 0; i < ActionData.length; i++) {
+            if (ActionFor === 'FromInspectionDetail') {
+                if (Action_InspectionItemId && ActionData[i]['STKR__Service_Item__c'] &&
+                    (Action_InspectionItemId === ActionData[i]['STKR__Service_Item__c']) &&
+                    ActionData[i]['STKR__Status__c'] === 'Open') {
+                    OpenAction.push(ActionData[i]);
+                }
+                //document.getElementById('HeaderAction').innerHTML = 'Inspection Action';
+            } else if (ActionFor === 'FromVisitDetail') {
+                if (ActionPage_VisitId && ActionData[i]['STKR__Visit__c'] &&
+                    ActionData[i]['STKR__Visit__c'] === ActionPage_VisitId &&
+                    ActionData[i]['STKR__Status__c'] === 'Open') {
+                    OpenAction.push(ActionData[i]);
+                }
+               // document.getElementById('HeaderAction').innerHTML = 'Visit Action';
+            } else if (ActionFor === 'ForSiteActions') {
+                if ((ActionData[i]['STKR__Account__c'] === newDetailValue[0]['STKR__Account_lkp__c'] ||
+                    ActionData[i]['stkr__account__c'] === newDetailValue[0]['STKR__Account_lkp__c']) &&
+                    ActionData[i]['STKR__Status__c'] === 'Open') {
+                    OpenAction.push(ActionData[i]);
+                }
+               // document.getElementById('HeaderAction').innerHTML = 'Site Action';
+            }
+        }
+
+        console.log('Open Action List Data', OpenAction);
+
+        if (OpenAction.length) {
+            $('#MessaageOfActionToCompleteDiv').hide()
+            $("#listViewItemToAction").data("kendoMobileListView").replace(OpenAction);
+        } else {
+            $('#MessaageOfActionToCompleteDiv').show()
+            $("#listViewItemToAction").data("kendoMobileListView").replace(OpenAction);
+        }
+    }
+
+    function CompletedAction() {
+        CountNumberOfOflineItem();
+        createpageSelectedvalueForemail = '';
+        Completedaction = [];
+        if (ActionLabel !== 'undefined' && ActionLabel !== undefined && ActionLabel !== 'null' && ActionLabel !== null) {
+            var text = '';
+            if (ActionFor === 'FromInspectionDetail') {
+                text = ActionLabel + ' on Inspection';
+            } else if (ActionFor === 'FromVisitDetail') {
+                text = ActionLabel + ' on Visit';
+            } else if (ActionFor === 'ForSiteActions') {
+                text = ActionLabel + ' on Site';
+            } else {
+                text = ActionLabel;
+            }
+            $("#HeaderAction").text(text);
+        } else {
+            $("#HeaderAction").text("Action");
+        }
+        $("#listViewCompletedaAction").data("kendoMobileListView").replace(Completedaction);
+
+
+        for (var i = 0; i < ActionData.length; i++) {
+            if (ActionFor === 'FromInspectionDetail') {
+                if (Action_InspectionItemId && ActionData[i]['STKR__Service_Item__c'] &&
+                    Action_InspectionItemId === ActionData[i]['STKR__Service_Item__c'] &&
+                    ActionData[i]['STKR__Status__c'] === 'Complete') {
+                    Completedaction.push(ActionData[i]);
+                }
+            } else if (ActionFor === 'FromVisitDetail') {
+                if (ActionPage_VisitId && ActionData[i]['STKR__Visit__c'] === ActionPage_VisitId &&
+                    (ActionData[i]['STKR__Status__c'] === 'Complete')) {
+                    Completedaction.push(ActionData[i]);
+                }
+            } else if (ActionFor === 'ForSiteActions') {
+                if ((ActionData[i]['STKR__Account__c'] === newDetailValue[0]['STKR__Account_lkp__c'] ||
+                    ActionData[i]['stkr__account__c'] === newDetailValue[0]['STKR__Account_lkp__c']) &&
+                    ActionData[i]['STKR__Status__c'] === 'Complete') {
+                    Completedaction.push(ActionData[i]);
+                }
+            }
+        }
+
+        if (Completedaction.length) {
+            $('#MessaageOfActionCompletedDiv').hide();
+            $("#listViewCompletedaAction").data("kendoMobileListView").replace(Completedaction);
+        } else {
+
+            $('#MessaageOfActionCompletedDiv').show();
+            $("#listViewCompletedaAction").data("kendoMobileListView").replace(Completedaction);
+        }
+    }
+
+    function ActionMdlaftershow() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('ActionListMDLClass'));
+
+        if (!OpenAction.length) {
+            var ActionToCompletePlaceholder = $('<p>').text("No Actions added to visit. Please use the + icon to add an entry.")
+            ActionToCompletePlaceholder.css('color', 'grey');
+            ActionToCompletePlaceholder.css('position', 'absolute');
+            ActionToCompletePlaceholder.css('top', '50%');
+            $('#MessaageOfActionToCompleteDiv').html(ActionToCompletePlaceholder)
+        }
+        if (!Completedaction.length) {
+            var ActionCompletedPlaceholder = $('<p>').text("No Actions added to visit. Please use the + icon to add an entry.")
+            ActionCompletedPlaceholder.css('color', 'grey');
+            ActionCompletedPlaceholder.css('position', 'absolute');
+            ActionCompletedPlaceholder.css('top', '50%');
+            $('#MessaageOfActionCompletedDiv').html(ActionCompletedPlaceholder)
+        }
+    }
+
+    function gotoPreviousPageFromAction() {
+        if (ActionFor === 'FromVisitDetail') {
+            app.navigate('view/visitdetail.html?visitid=' + visitDataForBack.VisitId + '&accountid=' + visitDataForBack.AccountId + '&currentTab=' + currentTab);
+        } else {
+            app.navigate("view/InspectionDetailPage.html?inspectionid=" + InspectionPageDetailData.Id + '&inspectionitemid=' + InspectionPageDetailData.STKR__Service_Item__c + "&VisitId=" + InspectionPageDetailData.STKR__Visit__c);
+        }
+    }
+
+    window.ActionTouch = {
+        swipe: function (e) {
+            var commingFrom = window.location.href.split("#")[1];
+            console.log(commingFrom, e.direction);
+            if (e.direction === "left") {
+                $("#tabstripActionToComplete").removeClass("km-state-active");
+                $("#tabstripActionCompleted").addClass("km-button km-state-active");
+                window.location.replace("#DataCompletedAction");
+            }
+            if (e.direction === "right") {
+                $("#tabstripActionCompleted").removeClass("km-state-active");
+                $("#tabstripActionToComplete").addClass("km-button km-state-active");
+                window.location.replace("#DataOpenAction");
+            }
+        }
+    }
+
+</script>
+
+<script type="text/x-kendo-template" id="Openaction">
+    <div class="openactionlist" onclick="gotoactiondetailpage('#=Id#')">
+    
+        <span>
+            #try {#
+                <font size="2">
+                    #if(ActionMetadata.label){#
+                        ${ActionMetadata.label}
+                   #  } else{ #
+                         ${ActionMetadata[0].label}
+                   #  }#
+                    #if (data.Name) {
+                #${data.Name}#}else {
+                #[NewAction]#}
+                    #</font> <b> for #if (STKR__Assigned_To__c) {
+                        ##:MapUserwithAction[STKR__Assigned_To__c]#
+                    #}#</b>
+            #}catch (err) {
+                try {
+                    # <b>#:MapUserwithAction['STKR__Assigned_To__c']#</b>
+                #}catch (err) {
+                }# 
+            #}
+            
+            #
+            #try{
+                if (STKR__Priority__c) {#
+                <font size="2" style="float:right;color:green;">${STKR__Priority__c}</font>
+            #}}catch(err){}#
+            
+        </span><br/>
+        #try{
+                if (STKR__Action__c) {#
+            <span>
+                <font size="2"> Details: ${STKR__Action__c}</font>
+            </span><br/>
+        #}}catch(err){}#
+        
+        # try {
+            if (STKR__Comments__c) {#
+                <span>
+                    <font size="2">Comments: ${STKR__Comments__c}</font>
+                </span><br/>
+            #}   
+        }catch (err) {
+        }
+        
+        try {  
+            var dateval;
+            if (device.platform==='iOS') {
+                if (STKR__Date_for_Completion__c!==null) {
+                    if (typeof(STKR__Date_for_Completion__c) ==='object') {
+                        dateval = STKR__Date_for_Completion__c;
+                    } else {
+                        dateval = new Date(STKR__Date_for_Completion__c.split('+')[0]);
+                    }
+                }else {
+                    dateval = new Date(STKR__Date_for_Completion__c);
+                }
+            } else {
+                if (STKR__Date_for_Completion__c) {
+                    if (typeof(STKR__Date_for_Completion__c) ==='object') {
+                        dateval = STKR__Date_for_Completion__c;
+                    } else {
+                        dateval = new Date(STKR__Date_for_Completion__c.split('+')[0]);
+                    }
+                }
+            }
+            var month;
+            var day;
+            var fullyr;
+            if ((dateval.getMonth() + 1) < 10) {
+                month = '0' + (dateval.getMonth() + 1)
+            } else { 
+                month = dateval.getMonth() + 1
+            }
+            if (dateval.getDate() < 10) { 
+                day = '0' + dateval.getDate()
+            } else {
+                day = dateval.getDate()
+            }
+            fullyr = dateval.getFullYear();
+            #
+            <font size="2"> Date for Completion : ${fullyr}-${month}-${day}</font>
+        #}catch (err) {
+            console.error('date error' + err) 
+        }#
+        
+    </div>
+
+</script>
+
+<script type="text/x-kendo-template" id="Completedaction">
+    <div class="completedlist" onclick="gotoactiondetailpage('#=Id#')">
+
+        <span>
+            #try {#
+                <font size="2">
+                    #if(ActionMetadata.label){#
+                        ${ActionMetadata.label}
+                   #  } else{ #
+                         ${ActionMetadata[0].label}
+                   #  }#
+                    #if (data.Name) {
+                #${data.Name}#}else {
+                #[NewAction]#}
+                    #</font> <b> for #if (STKR__Assigned_To__c) {
+                        ##:MapUserwithAction[STKR__Assigned_To__c]#
+                    #}#</b>
+            #}catch (err) {
+                try {
+                    # <b>#:MapUserwithAction['STKR__Assigned_To__c']#</b>
+                #}catch (err) {
+                }# 
+            #}#
+            #try{
+                if (STKR__Priority__c) {#
+                <font size="2" style="float:right;color:green;">${STKR__Priority__c}</font>
+            #}}catch(err){}#
+            
+        </span><br/>
+        #try{
+                if (STKR__Action__c) {#
+            <span>
+                <font size="2"> Details: ${STKR__Action__c}</font>
+            </span><br/>
+        #}}catch(err){}#
+        
+        # try {
+            if (STKR__Comments__c) {#
+                <span>
+                    <font size="2">Comments: ${STKR__Comments__c}</font>
+                </span><br/>
+            #}
+        }catch (err) {
+        } try {  
+            var dateval;
+            if (device.platform==='iOS') {
+                if (STKR__Date_for_Completion__c!==null) {
+                    if (typeof(STKR__Date_for_Completion__c) ==='object') {
+                        dateval = STKR__Date_for_Completion__c;
+                    } else {
+                        dateval = new Date(STKR__Date_for_Completion__c.split('+')[0]);
+                    }
+                }
+            } else {
+                if (STKR__Date_for_Completion__c) {
+                    if (typeof(STKR__Date_for_Completion__c) ==='object') {
+                        dateval = STKR__Date_for_Completion__c;
+                    } else {
+                        dateval = new Date(STKR__Date_for_Completion__c.split('+')[0]);
+                    }
+                }
+            }
+            var month;
+            var day;
+            var fullyr;
+            if ((dateval.getMonth() + 1) < 10) {
+                month = '0' + (dateval.getMonth() + 1)
+            } else { 
+                month = dateval.getMonth() + 1
+            }
+            if (dateval.getDate() < 10) { 
+                day = '0' + dateval.getDate()
+            } else {
+                day = dateval.getDate()
+            }
+            fullyr = dateval.getFullYear();
+            #
+            <font size="2"> Date for Completion : ${fullyr}-${month}-${day}</font>
+        #}catch (err) {
+            console.error('date error' + err) 
+        }#        
+    </div>
+</script>
+
+<style>
+    .openactionlist {
+        font-weight: normal;
+    }
+
+    .completedlist {
+        font-weight: normal;
+    }
+
+    #tabstripActionToComplete {
+        font-weight: bold;
+        margin-bottom: 25%;
+    }
+
+    #tabstripActionCompleted {
+        font-weight: bold;
+        margin-bottom: 25%;
+    }
+
+    .mainBody {
+        width: 100%;
+        bottom: 0px;
+        top: 0px;
+        position: absolute;
+    }
+</style>

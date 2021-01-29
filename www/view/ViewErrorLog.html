@@ -1,0 +1,89 @@
+<div data-role="view" 
+     id="errorlog" 
+     data-show="ShowErrorLog">
+    <div data-role="header">   
+        <div data-role="navbar">
+            <span>Error Log</span>
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon" href="#MyVisitsdrawer"></a>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <a data-align="right" data-role="button" data-icon="delete" onclick="deleteErrorList()"></a>
+            <button onclick="app.navigate('view/HomePage.html');"  data-align="right" style="border-style:none;"
+            class=" mdl-button mdl-js-button mdl-button--icon" >
+            <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div> 
+    </div>
+    <ul data-role="listview" id="ErrorLogListview" data-style="inset" data-template="ErrorLogTemplate"></ul>
+</div>
+<script>
+    var ErrorListData = [];
+    var dataSource;
+    
+    function ShowErrorLog() {
+        CountNumberOfOflineItem();
+        app.pane.loader.show();
+        ErrorListData = [];
+        try {
+            $("#ErrorLogListview").data("kendoMobileListView").replace([]);
+        }catch (err) {
+            StoreError(err);
+        }
+    
+        app.db.transaction(function(tx) {
+            tx.executeSql("SELECT * from ErrorLog ORDER BY id DESC", [],
+                          function(tx, res) {
+                              for (var i = 0; i < res.rows.length; i++) { 
+                                  try {
+                                      var data = {}
+                                      data['Date'] = res.rows.item(i).ErrorTime;
+                                      data['error'] = res.rows.item(i).Errordata;
+                                      ErrorListData.push(data);
+                                  }catch (error) {
+                                      alert(error);
+                                  }
+                              }
+                              console.log('ErrorListData', ErrorListData);
+                              dataSource = new kendo.data.DataSource({
+                                                                         data: ErrorListData
+                                                                     });
+                              
+                              $("#ErrorLogListview").kendoMobileListView({
+                                                                             dataSource: dataSource,
+                                                                             template: $("#ErrorLogTemplate").text(),                                                                             
+                                                                             virtualViewSize: 10, // this configuration is needed to determine the items displayed, since the datasource does not (and should not) have paging set.
+                                                                             endlessScroll: true
+                                                                         });
+  
+                              //$("#ErrorLogListview").data("kendoMobileListView").replace(ErrorListData);
+                              app.pane.loader.hide();
+                          },
+                          function(tx, res) {
+                              alert('error: ' + res.message);
+                          });
+        });
+    }
+    function deleteErrorList() {
+        try {
+            var listviewError = $("#ErrorLogListview").data("kendoMobileListView");
+            listviewError.setDataSource([]);
+            app.deleteAllData('ErrorLog');
+        }catch (err) {
+            alert(error);
+        }
+    }
+
+</script>
+
+<script type="script/x-kendo-template" id="ErrorLogTemplate">
+    #try {#
+        <span>${Date}</span> 
+    #}catch (err) {
+    }#
+    
+    #try {#
+        <p style="font-weight:bold;">${error}</p>
+    #}catch (err) {
+        alert(err);
+    }#    
+</script>

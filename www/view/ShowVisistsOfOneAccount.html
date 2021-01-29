@@ -1,0 +1,92 @@
+<div data-role="view" 
+     data-show="ShowVisitsOnAccount" 
+     id="VisitsOnAccount" 
+     data-after-show="DFSVisitOnAccount"
+    data-use-native-scrolling="true">
+    <div id="VisitsOnAccountMessage"></div>
+    <div data-role="header">
+        <div data-role="navbar">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon" href="#MyVisitsdrawer"></a>
+            <span>Visits For Selected Accounts</span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');"  data-align="right" style="border-style:none;"
+            class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--icon" >
+            <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+    <ul data-role="listview" data-template="ListViewForVisitTemplate" id="VisitOfSelectedAccountListview"></ul>
+</div>
+
+<script>
+    var MapmyScheduleToVisitId = {}
+    var VisitOfSelectedAccount = [];
+    
+    function DFSVisitOnAccount() {
+        try {
+            $("#VisitOfSelectedAccountListview").data("kendoMobileListView").replace(VisitOfSelectedAccount);
+            changeVisitColor();
+        }catch (err) {
+            console.log('error', err);
+        }
+    }
+    
+    function ShowVisitsOnAccount(e) {
+        CountNumberOfOflineItem();
+        VisitOfSelectedAccount = [];
+        try {
+            $("#VisitsOnAccountMessage").empty();
+            $("#VisitOfSelectedAccountListview").data("kendoMobileListView").refresh();
+        }catch (err) {
+        }
+        for (var i = 0; i < NewVisits.length; i++) {
+            if (e.view.params.AccountId===NewVisits[i]['STKR__Account_lkp__c']) {
+                VisitOfSelectedAccount.push(NewVisits[i])
+                console.log(NewVisits[i]['Name']);
+            }
+        }
+        if (VisitOfSelectedAccount.length===0) {
+            var ShowPlaceholder = $('<p>').text("No Visits are due on this Site")
+            ShowPlaceholder.css('color', 'grey');
+            ShowPlaceholder.css('margin-top', '80%');
+            ShowPlaceholder.css('margin-left', '25%');
+            $('#VisitsOnAccountMessage').html(ShowPlaceholder)
+        }
+         
+        // for last visit date in maplistview
+        for (var i = 0;i < NewVisits.length;i++) {
+            function getScheduleDetials(index) {
+                app.db.transaction(function (tx) {
+                    tx.executeSql("SELECT * FROM Schedule WHERE scheduleid=?", [NewVisits[index]['STKR__Service__c']],
+                                  function(a, b) {
+                                      var parsedScheduleValue = JSON.parse(b.rows.item(0)['jsondata']);
+                                      MapmyScheduleToVisitId[NewVisits[index]['Id']] = parsedScheduleValue;
+                                      var lastvisitdate = new Date(parsedScheduleValue['STKR__Last_Visit__c']).toLocaleDateString();
+    
+                                      if (lastvisitdate) {
+                                          $('#LastVisit' + NewVisits[index]['Id']).html(lastvisitdate);
+                                      }
+                                  },
+                                  function(tx, err) {
+                                      // StoreError(err);
+                                      alert(err.message);
+                                  });
+                });
+            }
+            getScheduleDetials(i);
+        }
+        
+        
+        
+        
+        
+    }  
+    
+    //document.addEventListener("backbutton", gotomyVisitFromShowVisitsOneAccount);
+    
+    function gotomyVisitFromShowVisitsOneAccount() {
+        console.log("current tab" + currentTab);
+        window.history.back();
+        //app.navigate('view/myvisits.html#overduevisits');
+    }
+</script>

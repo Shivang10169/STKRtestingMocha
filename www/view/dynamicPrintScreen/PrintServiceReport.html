@@ -1,0 +1,328 @@
+<div data-role="view" data-show="DataShowPrintSericeReport" data-after-show="DAFPrintServiceReport"
+    id="ServiceReportPrint" data-use-native-scrolling="true" data-layout="ServiceReportLayout">
+
+    <div data-role="header">
+        <div data-role="navbar">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span>Service Report</span>
+            <a data-role="button" data-align="right" onclick="page_printServiceReport()">SAVE</a>
+        </div>
+    </div>
+
+    <div id="page_PrintServiceReport"
+        style="font-weight:bold;padding-left:6%;padding-right:3%;padding-top:3%;padding-bottom:3%;">
+        <div id="page_PrintServiceReport_dynamic"></div>
+        <div class="page_PrintServiceReport_static">
+            <div id="PrintServiceReportPageBreak" style="page-break-after:auto;"></div>
+            <div class="prevent-split" style="page-break-inside: avoid;">
+
+                <table width="100%">
+                    <tr>
+                        <td>
+                            <div style="display: table;width: 100%;border-collapse: collapse;">
+                                <div style="display: table-row-group;">
+                                    <div style="display: table-row;">
+                                        <div
+                                            style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">
+                                            Client Name</div>
+                                        <div
+                                            style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">
+                                            Reported By Technician</div>
+                                    </div>
+                                    <div style="display: table-row;">
+                                        <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;"
+                                            id="Print__Client_Name__c"></div>
+                                        <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;"
+                                            id="Print__Resource_Name__c"></div>
+                                    </div>
+                                    <div style="display: table-row;">
+                                        <div
+                                            style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">
+                                            Client Signature</div>
+                                        <div
+                                            style="font-weight:bold;border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;">
+                                            Signature</div>
+                                    </div>
+                                    <div style="display: table-row;">
+                                        <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;"
+                                            id="Print__Client_Signature"></div>
+                                        <div style="border: 1px solid #999999;display: table-cell;padding: 3px 10px;width: 50%;"
+                                            id="Print__Signature__c"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <center>
+        <button data-role="button" onClick="page_printServiceReport();">Print</button>
+    </center>
+    <br />
+</div>
+
+<div data-role="layout" data-id="ServiceReportLayout">
+    <div data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <span></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    var Print_VisitData;
+
+    function DataShowPrintSericeReport(e) {
+        e.view.scroller.reset();
+    }
+
+    function DAFPrintServiceReport() {
+        try {
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from StoreSignature where userid=? AND VisitId=?", [creds.UserID, newDetailValue[0]['Id']],
+                    function (tx, rs) {
+                        try {
+                            var detailvalue = JSON.parse(rs.rows.item(0)['jsondata']);
+                            if (detailvalue.ParentId === newDetailValue[0]['Id']) {
+                                if (detailvalue.Name)
+                                    $('#Print__Client_Name__c').html(detailvalue.Name);
+
+                                if (detailvalue.Body)
+                                    $('#Print__Client_Signature').html('<img src="' + detailvalue.Body + '" width="50%"/>');
+                            } else {
+                                app.toastMessage('No signature found for this visit.', 'long');
+                                $('#Print__Client_Name__c').html('');
+                                $('#Print__Client_Signature').html('');
+                            }
+                        } catch (err) {
+                            StoreError(err);
+                            app.toastMessage('No signature found for this visit.', 'long');
+                            $('#Print__Client_Name__c').html('');
+                            $('#Print__Client_Signature').html('');
+                        }
+                    }, function (tx, error) {
+                        StoreError(error);
+                        alert(error.message)
+                    });
+            });
+
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from UserSignature where userid=?", [creds.UserID],
+                    function (tx, rs) {
+                        var detailvalue = (rs.rows.item(0)['signature']);
+                        if (detailvalue)
+                            $('#Print__Signature__c').html('<img src="' + detailvalue + '" width="50%"/>');
+                        else {
+                            $('#Print__Signature__c').html('<img src="" width="50%"/>');
+                        }
+                    }, function (tx, error) {
+                        StoreError(error);
+                        alert(error.message)
+                    });
+            });
+            $('#Print__Resource_Name__c').html(newDetailValue[0]['STKR__Resource_Name__c']);
+        } catch (err) {
+
+        }
+
+        // Use local tempalte
+        // If custom setting is true then use the downloaded template
+
+        try {
+            if (ButtonSettings.STKR__Service_Report_Template__c != undefined && ButtonSettings.STKR__Service_Report_Template__c) {
+                //Check if file is being downloaded , else use locally available file
+                //console.log('Custom Template')
+                let template = window.localStorage.ServiceReportTemplate;
+                if (template) {
+                    //console.log(template);
+                    psr_renderTemplate(template);
+                } else {
+                    throw new Error("else")
+                }
+            } else {
+                throw new Error("else")
+            }
+        } catch (err) {
+            if (err == "else") {
+                $.ajax({
+                    url: 'view/dynamicPrintScreen/template.html',
+                    type: 'GET',
+                    success: function (data) {
+                        //console.log(data);
+                        psr_renderTemplate(data);
+                    },
+                    error: function (err) { console.error(err); }
+                })
+            }
+        }
+    }
+
+    function psr_renderTemplate(templateText) {
+
+        //Remove whitespaces
+        templateText = templateText.trim();
+
+        // Prepare the data
+
+        let userdata = {}, scheduleData = {};
+        for (let i = 0; i < Userdata.length; i++) {
+            if (Userdata[i]['Id'] == creds.UserID) {
+                userdata = Userdata[i];
+                break;
+            }
+        }
+
+        for (let i = 0; i < ScheduleData.length; i++) {
+            if (ScheduleData[i]['Id'] == newDetailValue[0]['STKR__Service__c']) {
+                scheduleData = ScheduleData[i];
+            }
+        }
+        var data = {
+            STKR__Visit__c: newDetailValue[0],
+            User: userdata,
+            STKR__Prep_Waste__c: Prep_WasteData,
+            STKR__Prep_Waste_Management__c: Prep_WasteManagementData,
+            STKR__Actions__c: ActionData,
+            STKR__Service__c: scheduleData
+        }
+
+        let htmlVer = $.parseHTML(templateText);
+        //console.log(htmlVer);
+        try {
+            //console.log(htmlVer[0]['attributes'][2]['value']);
+            let sfObjects = htmlVer[0]['attributes'][2]['value'].split(',');
+            //Remove whitespace
+            for (let i = 0; i < sfObjects; i++) {
+                sfObjects[i] = sfObjects[i].trim();
+            }
+            data = page_prepareData(data, sfObjects);
+            //console.log('Template data', data);
+            let page_PrintServiceReportTemplate = kendo.template(htmlVer[0]['innerHTML']);
+            let result = page_PrintServiceReportTemplate(data);
+            //console.log('HTML Result', result);
+            $("#page_PrintServiceReport_dynamic").html(result);
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    function page_prepareData(tData, sfObjects) {
+        if (sfObjects.length) {
+            for (var k = 0; k < sfObjects.length; k++) {
+                switch (sfObjects[k].trim()) {
+                    case 'Account':
+                        for (var i = 0; i < AllAccounts.length; i++) {
+                            if (AllAccounts[i]['Id'] == newDetailValue[0]["STKR__Account_lkp__c"]) {
+                                tData['Account'] = AllAccounts[i];
+                                break;
+                            }
+                        }
+                        break;
+                    case 'STKR__Inspection__c':
+                        for (var i = 0; i < InspectionData.length; i++) {
+                            if (InspectionData[i]['STKR__Visit__c'] == newDetailValue[0]["Id"]) {
+                                if (tData['STKR__Inspection__c']) {
+                                    tData['STKR__Inspection__c'].push(InspectionData[i]);
+                                } else {
+                                    tData['STKR__Inspection__c'] = [];
+                                    tData['STKR__Inspection__c'].push(InspectionData[i]);
+                                }
+                            }
+                        }
+                        break;
+                    case 'STKR__Resource__c':
+                        for (var i = 0; i < ResourceData.length; i++) {
+                            if (ResourceData[i]['STKR__User__c'] == creds.UserID) {
+                                tData['STKR__Resource__c'] = ResourceData[i];
+                                break;
+                            }
+                        }
+                        break;
+                    case 'STKR__Service_Contract__c':
+                        for (var i = 0; i < ContractData.length; i++) {
+                            if (ContractData[i]['Id'] == newDetailValue[0]["STKR__Service_Contract__c"]) {
+                                tData['STKR__Service_Contract__c'] = ContractData[i];
+                                break;
+                            }
+                        }
+                        break;
+                    case 'Task':
+                        for (var i = 0; i < TaskData.length; i++) {
+                            if (TaskData[i]['WhatId'] == newDetailValue[0]["Id"]) {
+                                if (tData['Task']) {
+                                    tData['Task'].push(TaskData[i]);
+                                } else {
+                                    tData['Task'] = [];
+                                    tData['Task'].push(TaskData[i]);
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        return tData;
+    }
+
+    function page_printServiceReport() {
+        page_print2pdf();
+        return null;
+    }
+
+    function page_print2pdf() {
+        var html = '';
+        html += '<!DOCTYPE html><html>';
+        html += $('#page_PrintServiceReport').html();
+        html += '</html>';
+        pdf.htmlToPDF({
+            data: html,
+            documentSize: "A4",
+            landscape: "portrait",
+            type: "share",
+            fileName: newDetailValue[0]['Name'] + "ServiceReport.pdf"
+        }, function (data) {
+            //window.open("data:application/pdf;base64," + data, '_blank');
+        }, function (err) {
+            alert(err);
+        });
+    }
+</script>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 5px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        color: black;
+    }
+
+    /* DivTable.com */
+
+    .divTableHeading {
+        background-color: #EEE;
+        display: table-header-group;
+        font-weight: bold;
+    }
+
+    .divTableFoot {
+        background-color: #EEE;
+        display: table-footer-group;
+        font-weight: bold;
+    }
+</style>

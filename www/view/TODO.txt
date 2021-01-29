@@ -1,0 +1,89 @@
+- Online/Offline till visit is "In Progress"
+- If Visit is in "In Progress" then make device offline..
+- Create all records in offline i.e. 
+    Task, ... Done
+    Alerts, ... Done
+    Contacts, ... Done
+    Attachments, 
+    Signature, 
+    Action, 
+    Inspection, 
+    Inspection Item, 
+    Analysis, 
+    Prep/Waste, 
+    Visit,
+    Quotes,
+    QuoteLineItems etc.
+- When user clicks on "Complete Visit".. Upload the all records related to any visit to salesforce...???????
+- Make Sure Visit request is last to go on salesforce
+- Make sure event listner for Onilne/Offline states works depending on Current Visit Status..
+- Make Sure if user is not on visit and related data Inspection/Action etc, then event listner for Online/Offline should work as expected.
+
+- Add another public variable isCurrentVisitInProgress ??? and then add the variable to if conditions.. 
+  by default value will be false. 
+==========================================================================
+- When user press on "Refresh All Data" it should perform as it is..
+UpdateStatusOfVisit
+    -> ChangeVisitStatus()
+ConfirmationDialogVisitDetailStatusChange
+    -> ChangeVisitStatus()
+
+
+updateVisit() -> Is called to update the visit data expect status  
+
+CompleteVisit==1 ??
+
+
+[
+What if ChangeVisitStatus() got executed in offline  and app comes online updateVisit() is executed in online mode.
+This can revert the completed visit to previous status. 
+]
+
+- UpdateResourceGeolocation
+- UpdateGeolocation
+
+=> CompleteVisit
+
+
+=============
+Need to double think on these pages for isCurrentVisitInProgress condition
+
+ShowVisitsMap.html
+
+============
+
+Testing
+-----
+
+Images are being uploaded to salesforce from floor plan page/folder page ... when visit in progress
+maybe Folder.html or FilesInFolder.html
+
+######### Visit : V313143
+
+* Editing Visit
+
+=================================
+Visit : V318735
+
+
+* Visit Updated
+* Prep/wasted Created, Updated, Deleted Offline Created Prep/waste
+# Error : In offline mode; delete prep/waste if that is created in offline mode.
+* Task Created
+* Action Created, UPdated in offline mode
+* Taken 2 photos from camera
+* Taken 1 Image from Gallary
+* Floor Plan Stored Offline
+# Choose a file from file manager [Got uploaded right away !!!]
+* New Quote Created and Stored in offline mode
+# ON editing Offline created quote; line item doesn't show...
+* Offline Created Contact Only ; Ajay Dhingal
+* Offline create contact with alert : Ashutosh Kashyap
+* Editing Contact with alert
+* Creating Inspection Item "TMV" 
+* Creating Inspection on Offline Created Inspection item
+# Clicking on Inspect on offline created Inspection doesn't move it to inspected page !!!
+* Added one bird analysis on offline inspection 
+# Inspection history is showing only loader !!! and seems like it is working in online mode .. Beacuse inpsection item is created in offline mode, so salesoforce is giving error while quering...
+# Task page don't have offline item count at top right hand side
+## Can't create Analysis in offline mode for offline created inspection which is on offline created inspection item. 

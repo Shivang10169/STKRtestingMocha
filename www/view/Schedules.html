@@ -1,0 +1,641 @@
+<div data-role="view" id="Schedules" data-title="Schedules" data-show="DataShowSchedules"
+    data-after-show="DataAfterShowSchedules" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon"
+                href="#MyVisitsdrawer"></a>
+            <button data-align="right" onClick="app.navigate('view/HomePage.html');"
+                class="MyScheduleMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <button data-align="right" class="MyScheduleMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                onClick="app.navigate('view/SearchSchedules.html');">
+                <i class="material-icons" style="color:white;">search</i>
+            </button>
+            <button data-align="right" class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                onClick="OpenScheduleFilter();">
+                <i class="fa fa-filter" style="color:white;"></i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div id="parseHTMLforDynamicListItem" style="display: none;"></div>
+    <div>
+        <div class="mainBody" id="MessageOfSchedules">
+        </div>
+        <ul id="ListViewForSchedules">
+        </ul>
+      
+    </div>
+</div>
+<div data-role="modalview" id="VisitDescriptionScheduleModalview" style="width:95%;height:75%;">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Visit note description and User</span>
+
+        </div>
+    </div>
+    <br />
+    <center>
+        <textarea id="VisitDescriptionDatarData" placeholder="Visit description.." style="height:14em;width: 85%;margin-top: 15px;"></textarea>
+        <br />
+    </center>
+
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <center>
+            <select id="SelectUserFromScheduleVisit" class="mdl-textfield__input" style="margin-left:8px;margin-right:8px;" ></select>
+        </center>
+    </div>
+    <br /><br />
+    <div>
+            <center>
+        <div style="top:0;">
+        
+                <button data-role="button" onclick="closeModalViewSchedule();"
+                    class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    Create
+                </button>
+                <button data-role="button" onclick="ModalViewSchedulecancel();"
+                    class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    Cancel
+                </button>
+            
+        </div>
+    </center>
+    </div>
+
+    <!--div data-role="footer" style="background-color:grey;display:block !important;"-->
+    <!--/div-->
+</div>
+<script>
+    var StoreScheduleId = '';
+    var StoreScheduleData = [];
+    var ContractScheduleData = [];
+    var OtherScheduleData = [];
+    var NewScheduleData = [];    
+
+    function ModalViewSchedulecancel(){
+        $("#VisitDescriptionScheduleModalview").data("kendoMobileModalView").close();
+        $('#VisitDescriptionDatarData').val('');
+  
+    }
+    function openModalViewSchedule(){
+        $("#VisitDescriptionScheduleModalview").kendoMobileModalView("open");
+        for (var i = 0; i < ScheduleData.length; i++) {
+            if (StoreScheduleId === ScheduleData[i]['Id']) {
+                StoreScheduleData.push(ScheduleData[i]);
+            }
+        }
+        
+        // add dynamic picklist
+        var OptionHTML = '';
+     
+        try {
+            for (var i = 0;i < ResourceData.length;i++) {
+                if (ResourceData[i]["STKR__Status__c"]=== "Available" && ResourceData[i]["STKR__User__c"] == creds.UserID)
+                    OptionHTML+='<option value="' + ResourceData[i]['Id'] + '" id="' + ResourceData[i]['Id'] + '">' + ResourceData[i]['Name'] + '</option>';
+            }
+            for(var i = 0;i < ResourceData.length;i++){
+                   if(ResourceData[i]['Id']===serviceOwner && ResourceData[i]["STKR__User__c"] !== creds.UserID){
+                    OptionHTML+='<option value="' + ResourceData[i]['Id'] + '" id="' + ResourceData[i]['Id'] + '">' + ResourceData[i]['Name'] + '</option>';
+         
+                   }
+            }
+            for(var i = 0;i < ResourceData.length;i++){
+                if(ResourceData[i]['Id']!==serviceOwner && ResourceData[i]["STKR__User__c"] !== creds.UserID){
+                 OptionHTML+='<option value="' + ResourceData[i]['Id'] + '" id="' + ResourceData[i]['Id'] + '">' + ResourceData[i]['Name'] + '</option>';
+      
+                }
+         }
+        } catch (err) {
+           console.log(err);
+        }    
+        $("#SelectUserFromScheduleVisit").html(OptionHTML);
+  
+        // Find the resource...
+      /*   resourceId = '';
+        for (var i = 0; i < ResourceData.length; i++) {
+            if (ResourceData[i]["STKR__User__c"] == creds.UserID) {
+                resourceId = ResourceData[i]['Id'];
+                break;
+            }
+        }  */
+
+        
+    }
+    var DynamicResoruceId ='';
+    function closeModalViewSchedule(){
+        DynamicResoruceId = $('#SelectUserFromScheduleVisit').val();
+        var datatoupload = {};
+        datatoupload['STKR__Due_Date__c'] = duedate;
+        datatoupload['STKR__Due_Finish__c'] = finishdate;
+        datatoupload['STKR__Service__c'] = StoreScheduleId;
+        datatoupload['STKR__Quick_Call_Out__c'] = true;
+        datatoupload['STKR__Account_lkp__c'] = StoreScheduleData[0]['STKR__Account__c'];
+        datatoupload['STKR__Resource__c'] = DynamicResoruceId;
+        datatoupload['STKR__Notes_Long__c'] = $("#VisitDescriptionDatarData").val();
+        datatoupload['STKR__Fixed_Visit__c'] = fixedornot;
+        datatoupload['STKR__Status__c'] = 'Open';
+        try {
+            delete datatoupload['STKR__Visit_Type__c'];
+            delete datatoupload['STKR__Account__c'];
+        } catch (err) { }
+        
+        if (AppIsOnline) {
+            //Device is online
+            jsconn.sobject("STKR__Visit__c").create(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    alert(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                datatoupload['Id'] = ret.id;
+                datatoupload['STKR__Visit_Type__c'] = serviceType;
+                datatoupload['STKR__Account__c'] = name;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                AllVisits.push(datatoupload);
+                app.insertRecord('Visits', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    RecordId: datatoupload['Id']
+                }, function () {
+                });
+                //Rearrange the visits
+                $("#VisitDescriptionScheduleModalview").data("kendoMobileModalView").close();
+                $('#VisitDescriptionDatarData').val('');
+                app.toastMessage('New Visit created', 'long');
+                // Refresh the mobile
+              //  movetoLoadAllData();
+            });
+        } else {
+            var timestamp = new Date().getTime();
+            datatoupload['Id'] = timestamp;
+            datatoupload['STKR__Visit_Type__c'] = serviceType;
+            datatoupload['STKR__Account__c'] = name;
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'STKR__Visit__c',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp
+            }
+            $("#VisitDescriptionScheduleModalview").data("kendoMobileModalView").close();
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage("Visit stored offline", "long");
+            $('#VisitDescriptionDatarData').val('');
+        }
+    
+       
+    }
+    function DataShowSchedules() {
+        //sorting of resource data byname
+        ResourceData.sortBy("Name");
+
+        try {
+            $('#MessageOfSchedules').empty();
+            generateDynamicListItemLayout("STKR__Service__c");
+        } catch (e) {
+            console.log(e);
+        }
+    }
+ 
+    function DataAfterShowSchedules() {
+        if (ScheduleData.length === 0) {
+            var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu.")
+            ShowPlaceholder.css('color', 'grey');
+            ShowPlaceholder.css('position', 'absolute');
+            ShowPlaceholder.css('top', '50%');
+            $('#MessageOfSchedules').html(ShowPlaceholder);
+        }
+    }
+
+    function gotoScheduleVisits(id) {
+        app.navigate('view/ScheduleVisits.html?scheduleid=' + id);
+    }
+    var duedate;
+    var finishdate;
+    var resourceId ='';
+    var fixedornot;
+    var serviceType  ='';
+    var serviceOwner = '';
+    function Schedule_pickdate(name, fixed, type, serviceOwn, data) {
+        serviceType = '';
+        fixedornot  = '';
+        serviceOwner = serviceOwn;
+        fixedornot = fixed;
+        serviceType  = type;
+        StoreScheduleData = [];
+        StoreScheduleId = data.id;
+        var options = {
+            date: new Date(),
+            mode: 'datetime',
+            titleText: 'Create Call Out for Visit',
+            androidTheme: 5
+        };
+        function onSuccess(date) {
+             duedate = date;
+             finishdate = new Date(date.getTime());
+            finishdate.setHours(finishdate.getHours() + 1);
+          
+            openModalViewSchedule(fixed);
+             
+          //  $("#SignatureDisclaimerModalView").kendoMobileModalView("open");
+
+
+          }
+        function onError(error) {
+            console.log('Error: ' + error);
+        }
+        datePicker.show(options, onSuccess, onError);
+    }
+
+    function fn_dynamicTemplate(searchColumns, currentObject) {
+        //console.log(searchColumns, currentObject);
+        ContractScheduleData = [];
+        OtherScheduleData = [];
+        NewScheduleData = [];
+        var template = kendo.template($("#ScheduleListViewItemTemplate").text());
+        var result = template(searchColumns);
+        //Pass the data to the compiled template
+        //$('#parseHTMLforDynamicListItem').html('');
+        $('#parseHTMLforDynamicListItem').html(result);
+        var nodes = $('#parseHTMLforDynamicListItem span.changeToCode');
+
+        for (var i = 0; i < nodes.length; i++) {
+
+            //Jugad
+            let fieldName = '';
+            try {
+                if (/new Date\(.*\)\.toLocaleString\(\)/.test(nodes[i].innerText)) {
+                    fieldName = (nodes[i].innerText).split('new Date(STKR__')[1].split('__c).toLocaleString()')[0]
+                    fieldName = 'STKR__' + fieldName + '__c';
+                }
+            } catch (err) { }
+            if (fieldName)
+                nodes[i].innerHTML = '#try{if('+fieldName+'){#${' + nodes[i].innerText + '}<br/>#}}catch(er){}#';
+            else
+                nodes[i].innerHTML = '#try{#${' + nodes[i].innerText + '}<br/>#}catch(er){}#';
+        }
+        //Replace the currentObject api name
+        String.prototype.replaceAll = function (search, replacement) {
+            var target = this;
+            return target.replace(new RegExp(search, 'g'), replacement);
+        };
+        var mainTemplateContent = '';
+        var cleanHTML = $("#parseHTMLforDynamicListItem").html().replaceAll(currentObject + '.', '');
+        cleanHTML = cleanHTML.replaceAll('toLabel', '');
+        //cleanHTML = cleanHTML.replaceAll(')','');
+        mainTemplateContent += `
+            #var colourClassNameVisit_Schedule = '';
+                        if (STKR__Fix_all_Visits__c) {
+                            colourClassNameVisit_Schedule = 'fixedvisitcolor';
+                        }else if (STKR__Service_Type__c==="Follow-Up") {
+                            colourClassNameVisit_Schedule = 'followupvisitcolor';
+                        }else if (STKR__Service_Type__c==="Call Out") {
+                            colourClassNameVisit_Schedule = 'calloutvisitcolor';
+                        }else if (STKR__Service_Type__c==="Job Schedule") {
+                            colourClassNameVisit_Schedule = 'jobvisitcolor';
+                        }else if (STKR__Service_Type__c==="Routine Visit") {
+                            colourClassNameVisit_Schedule = 'routinevisitcolor';
+                        }else if (STKR__Service_Type__c==="Contract Schedule") {
+                            colourClassNameVisit_Schedule = 'contractvisitcolor';
+                        }try {#
+                          <div onClick="gotoScheduleVisits('`+ '${Id}' + `')" class="` + '${colourClassNameVisit_Schedule}' + `">
+                            <div>`
+            + cleanHTML
+            + ` </div>
+            #if(ButtonSettings.STKR__enableCreatingCallOut__c){#
+            #if(STKR__Service_Type__c == 'Contract Schedule'){#          
+                    <button style="width:50px;height:40px;margin-top:-20%;" id="`+ '${Id}' + `" class="scheduleActionIcon" onClick='Schedule_pickdate("#:STKR__Account__r.Name#","#:STKR__Fix_all_Visits__c#","#:STKR__Service_Type__c#","#:STKR__Service_Owner__c#",this);event.stopPropagation();'>
+                        <img src="img/portfolioaction.svg">
+                     </button> 
+                    #}#
+                    #}#
+                   </div>
+             #}catch(err){}#`;
+        //console.log(mainTemplateContent);
+        return mainTemplateContent;
+    }
+
+    function compareSchedule(a, b) {
+        if (a.STKR__Account__r.ShippingPostalCode === b.STKR__Account__r.ShippingPostalCode)
+            return 0;
+        if (!a.STKR__Account__r.ShippingPostalCode)
+            return 1;
+        if (!b.STKR__Account__r.ShippingPostalCode) {
+            return -1;
+        }
+        if (a.STKR__Account__r.ShippingPostalCode.toLowerCase() < b.STKR__Account__r.ShippingPostalCode.toLowerCase())
+            return -1;
+        if (a.STKR__Account__r.ShippingPostalCode.toLowerCase() > b.STKR__Account__r.ShippingPostalCode.toLowerCase())
+            return 1;
+        return 0;
+        //return a.STKR__Account__r.ShippingPostalCode.localeCompare(b.STKR__Account__r.ShippingPostalCode)
+    }
+
+    function generateDynamicListItemLayout(currentObject, DataToShow, sortfunction) {
+        //Example for currentObject : STKR__Service__c
+        if (AppIsOnline) {
+            jsconn.apex.get("/../../services/data/v43.0/search/layout/?q=" + currentObject, function (err, res) {
+                if (err) { return console.error(err); }
+                if (res.errorMsg) {
+                    alert(res.errorMsg);
+                    return;
+                }
+                var searchColumns = res[0]['searchColumns'];
+                var mainTemplateContent = fn_dynamicTemplate(searchColumns, currentObject);
+                // Render schedule listview now
+                if (DataToShow && DataToShow.length > 0) {
+                    NewScheduleData = [], ContractScheduleData = [], OtherScheduleData = [];
+                    /*for (var k = 0; k < DataToShow.length; k++) {
+                        if (DataToShow[k]['STKR__Contract_Type__c'] === 'Contract') {
+                            ContractScheduleData.push(DataToShow[k]);
+                        } else {
+                            OtherScheduleData.push(DataToShow[k]);
+                        }
+                    }
+
+                    ContractScheduleData.sort(compareSchedule);
+                    OtherScheduleData.sort(compareSchedule);
+                    NewScheduleData = ContractScheduleData.concat(OtherScheduleData);
+                    */
+                    var tempArray = [];
+                    /*for (var q = 0; q < NewScheduleData.length; q++) {
+                        if (NewScheduleData[q]['STKR__Service_Type__c'] != 'Job Schedule' &&
+                            NewScheduleData[q]['STKR__Service_Type__c'] != 'Call Out')
+                            tempArray.push(NewScheduleData[q]);
+                    }
+                    */
+                    if (sortfunction)
+                        tempArray = DataToShow.sort(sortfunction);
+                    else
+                        tempArray = DataToShow.sort(compareSchedule);
+
+
+                    try {
+                        if (device.platform == 'iOS') {
+                            for (var j = 0; j < tempArray.length; j++) {
+                                for (var prop in tempArray[j]) {
+
+                                    if (tempArray[j][prop] && tempArray[j][prop].length == 28 &&
+                                        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{4}/.test(tempArray[j][prop])) {
+
+                                        tempArray[j][prop] = tempArray[j][prop].split('.')[0];
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) { alert(err); }
+
+                    $("#ListViewForSearchSchedules").kendoMobileListView({
+                        template: mainTemplateContent,
+                        dataSource: kendo.data.DataSource.create(tempArray)
+                    });
+                } else {
+                    NewScheduleData = [], ContractScheduleData = [], OtherScheduleData = [];
+                    /*for (var k = 0; k < ScheduleData.length; k++) {
+                        if (ScheduleData[k]['STKR__Contract_Type__c'] === 'Contract') {
+                            ContractScheduleData.push(ScheduleData[k]);
+                        } else {
+                            OtherScheduleData.push(ScheduleData[k]);
+                        }
+                    }
+                    ContractScheduleData.sort(compareSchedule);
+                    OtherScheduleData.sort(compareSchedule);
+                    NewScheduleData = ContractScheduleData.concat(OtherScheduleData);
+                    */
+                    var tempArray;
+                    if (sortfunction)
+                        tempArray = ScheduleData.sort(sortfunction);
+                    else
+                        tempArray = ScheduleData.sort(compareSchedule);
+
+                    /*for (var q = 0; q < NewScheduleData.length; q++) {
+                        if (NewScheduleData[q]['STKR__Service_Type__c'] != 'Job Schedule' &&
+                            NewScheduleData[q]['STKR__Service_Type__c'] != 'Call Out')
+                            tempArray.push(NewScheduleData[q]);
+                    }*/
+                    try {
+                        if (device.platform == 'iOS') {
+                            for (var j = 0; j < tempArray.length; j++) {
+                                for (var prop in tempArray[j]) {
+
+                                    if (tempArray[j][prop] && tempArray[j][prop].length == 28 &&
+                                        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{4}/.test(tempArray[j][prop])) {
+
+
+                                        tempArray[j][prop] = tempArray[j][prop].split('.')[0];
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) { alert(err); }
+
+                    $("#ListViewForSchedules").kendoMobileListView({
+                        template: mainTemplateContent,
+                        dataSource: kendo.data.DataSource.create(tempArray)
+                    });
+                }
+                changeVisitColor();
+            });
+        } else {
+            var storedLayout = window.localStorage.getItem('STKR__Service__c_SearchLayout');
+            if (storedLayout) {
+                storedLayout = JSON.parse(storedLayout);
+                var mainTemplateContent = fn_dynamicTemplate(storedLayout[0]['searchColumns'], currentObject);
+                // Render schedule listview now
+                if (DataToShow && DataToShow.length > 0) {
+                    NewScheduleData = [], ContractScheduleData = [], OtherScheduleData = [];
+                    /*for (var k = 0; k < DataToShow.length; k++) {
+                        if (DataToShow[k]['STKR__Contract_Type__c'] === 'Contract') {
+                            ContractScheduleData.push(DataToShow[k]);
+                        } else {
+                            OtherScheduleData.push(DataToShow[k]);
+                        }
+                    }
+                    ContractScheduleData.sort(compareSchedule);
+                    OtherScheduleData.sort(compareSchedule);
+                    NewScheduleData = ContractScheduleData.concat(OtherScheduleData);
+                    */
+                    var tempArray;
+                    if (sortfunction)
+                        tempArray = DataToShow.sort(sortfunction);
+                    else
+                        tempArray = DataToShow.sort(compareSchedule);
+                    /*for (var q = 0; q < NewScheduleData.length; q++) {
+                        if (NewScheduleData[q]['STKR__Service_Type__c'] != 'Job Schedule' &&
+                            NewScheduleData[q]['STKR__Service_Type__c'] != 'Call Out')
+                            tempArray.push(NewScheduleData[q]);
+                    }
+                    */
+
+                    try {
+                        if (device.platform == 'iOS') {
+                            for (var j = 0; j < tempArray.length; j++) {
+
+                                for (var prop in tempArray[j]) {
+
+                                    if (tempArray[j][prop] && tempArray[j][prop].length == 28 &&
+                                        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{4}/.test(tempArray[j][prop])) {
+
+
+                                        tempArray[j][prop] = tempArray[j][prop].split('.')[0];
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) { alert(err); }
+
+                    $("#ListViewForSearchSchedules").kendoMobileListView({
+                        template: mainTemplateContent,
+                        dataSource: kendo.data.DataSource.create(tempArray)
+                    });
+                } else {
+                    NewScheduleData = [], ContractScheduleData = [], OtherScheduleData = [];
+                    /*for (var k = 0; k < ScheduleData.length; k++) {
+                        if (ScheduleData[k]['STKR__Contract_Type__c'] === 'Contract') {
+                            ContractScheduleData.push(ScheduleData[k]);
+                        } else {
+                            OtherScheduleData.push(ScheduleData[k]);
+                        }
+                    }
+                    ContractScheduleData.sort(compareSchedule);
+                    OtherScheduleData.sort(compareSchedule);
+                    NewScheduleData = ContractScheduleData.concat(OtherScheduleData);
+                    */
+                    var tempArray;
+                    if (sortfunction)
+                        tempArray = ScheduleData.sort(sortfunction)
+                    else
+                        tempArray = ScheduleData.sort(compareSchedule)
+                    /*for (var q = 0; q < NewScheduleData.length; q++) {
+                        if (NewScheduleData[q]['STKR__Service_Type__c'] != 'Job Schedule' &&
+                            NewScheduleData[q]['STKR__Service_Type__c'] != 'Call Out')
+                            tempArray.push(NewScheduleData[q]);
+                    }*/
+                    try {
+                        if (device.platform == 'iOS') {
+                            for (var j = 0; j < tempArray.length; j++) {
+                                for (var prop in tempArray[j]) {
+
+                                    if (tempArray[j][prop] && tempArray[j][prop].length == 28 &&
+                                        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{4}/.test(tempArray[j][prop])) {
+
+
+                                        tempArray[j][prop] = tempArray[j][prop].split('.')[0];
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) { alert(err); }
+
+
+                    $("#ListViewForSchedules").kendoMobileListView({
+                        template: mainTemplateContent,
+                        dataSource: kendo.data.DataSource.create(tempArray)
+                    });
+                }
+                changeVisitColor();
+            }
+        }
+    }
+
+    function OpenScheduleFilter() {
+
+        // Sort by Post Code, Site Name
+        // Add filter to see others visit
+        // Update search logic to search post code or part of post code
+
+        window.plugins.actionsheet.show({
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'buttonLabels': ['Post Code', 'Site Name: Ascending', 'Site Name: Decending'],
+            'title': 'Sort By'
+        }, function (buttonIndex) {
+            if (buttonIndex === 1) {
+                generateDynamicListItemLayout("STKR__Service__c");
+            } else if (buttonIndex === 2) {
+                generateDynamicListItemLayout("STKR__Service__c", null, function (a, b) {
+                    if (a.STKR__Account__r.Name === b.STKR__Account__r.Name)
+                        return 0;
+                    if (!a.STKR__Account__r.Name)
+                        return 1;
+                    if (!b.STKR__Account__r.Name) {
+                        return -1;
+                    }
+                    if (a.STKR__Account__r.Name.toLowerCase() < b.STKR__Account__r.Name.toLowerCase())
+                        return -1;
+                    if (a.STKR__Account__r.Name.toLowerCase() > b.STKR__Account__r.Name.toLowerCase())
+                        return 1;
+                    return 0;
+                });
+            } else if (buttonIndex === 3) {
+                generateDynamicListItemLayout("STKR__Service__c", null, function (a, b) {
+                    if (a.STKR__Account__r.Name === b.STKR__Account__r.Name)
+                        return 0;
+                    if (!a.STKR__Account__r.Name)
+                        return 1;
+                    if (!b.STKR__Account__r.Name) {
+                        return -1;
+                    }
+                    if (a.STKR__Account__r.Name.toLowerCase() < b.STKR__Account__r.Name.toLowerCase())
+                        return 1;
+                    if (a.STKR__Account__r.Name.toLowerCase() > b.STKR__Account__r.Name.toLowerCase())
+                        return -1;
+                    return 0;
+                });
+            }
+        });
+    }
+</script>
+
+<script type="text/x-kendo-template" id="ScheduleListViewItemTemplate">
+
+    #for(var i=0;i<data.length;i++){#
+        <b>#:data[i]["label"]# </b>: <span class="changeToCode">
+            #if(data[i]["format"] == "datetime"){#
+                    new Date(#:data[i]["field"]#).toLocaleString()
+                </span>
+            #}else{#
+                #:data[i]["name"]#</span>
+            #}#
+    #}#
+</script>
+
+<script type="text/x-kendo-template" id="ScheduleListViewTemplate">
+</script>
+
+<style>
+    .scheduleActionIcon {
+        float: right;
+        border: none;
+        background-color: transparent;
+        outline: none;
+        text-align: right;
+    }
+
+    .followupvisitcolor {
+        background-color: #e1bee7;
+    }
+
+    .calloutvisitcolor {
+        background-color: #ff8c8c;
+    }
+
+    .jobvisitcolor {
+        background-color: #E0F2F1;
+    }
+
+    .routinevisitcolor {
+        background-color: #00ffbf;
+    }
+
+    .contractvisitcolor {
+        background-color: #c2d5f4;
+    }
+
+    .fixedvisitcolor {
+        background-color: #fdfd96;
+    }
+</style>

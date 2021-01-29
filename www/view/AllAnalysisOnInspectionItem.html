@@ -1,0 +1,116 @@
+<div data-role="view" data-layout="AnalysisPageLayout_InspectionItem" data-title="Analysis List"
+    data-show="AnalysisDataShow_InspectionItem" data-after-show="AnalysisDataAfterShow_InspectionItem"
+    id="AnaylistPage_InspectionItem" data-use-native-scrolling="true">
+    <div class="mainBody" id="MessageOfAnalysis_InspectionItem"></div>
+    <ul data-role="listview" id="AnalysisListview_InspectionItem"
+        data-template="ListViewForAnalysisTemplate_InspectionItem" data-style="inset">
+    </ul>
+</div>
+
+<div data-id="AnalysisPageLayout_InspectionItem" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();"
+                class="AnalysisListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+</div>
+<script>
+    var AnalysisDataShow_InspectionItem_length = 0;
+    function AnalysisDataShow_InspectionItem(e) {
+        CountNumberOfOflineItem();
+
+        AnalysisDataShow_InspectionItem_length = 0;
+        try {
+            let AnalysisListviewData = [], InspectionIds = [];
+            let InspectionItemId = e.view.params.InspectionItemId;
+
+            console.log(e.view.params.InspectionItemId);
+
+            //Get all the inspections ids on this inspection item
+            for (let i = 0; i < InspectionData.length; i++) {
+                if (InspectionData[i]["STKR__Service_Item__c"] == InspectionItemId) {
+                    InspectionIds.push(InspectionData[i]["Id"]);
+                }
+            }
+
+            //Get all the analysis on anove inspections
+            for (var i = 0; i < AnalysisData.length; i++) {
+                if (InspectionIds.indexOf(AnalysisData[i]['STKR__Inspection__c']) > -1) {
+                    AnalysisListviewData.push(AnalysisData[i]);
+                }
+            }
+            AnalysisDataShow_InspectionItem_length = AnalysisListviewData.length;
+            console.log('Analysis in this inspection', AnalysisListviewData);
+            $("#AnalysisListview_InspectionItem").data("kendoMobileListView").replace(AnalysisListviewData);
+            if (AnalysisListviewData.length === 0) {
+                $('#MessageOfAnalysis').show();
+            } else {
+                $('#MessageOfAnalysis').hide();
+            }
+        } catch (err) {
+            console.error('2. Analysis Inspection Item ' + err);
+        }
+    }
+
+    function AnalysisDataAfterShow_InspectionItem() {
+        if (!AnalysisDataShow_InspectionItem_length) {
+            var AnalysisPlaceholder = $('<p>').text("No Analysis added to visit. Please use the + icon to add an entry.")
+            AnalysisPlaceholder.css('color', 'grey');
+            AnalysisPlaceholder.css('position', 'absolute');
+            AnalysisPlaceholder.css('top', '50%');
+            $('#MessageOfAnalysis_InspectionItem').html(AnalysisPlaceholder);
+        }
+        if (device.platform == "Android") {  componentHandler.upgradeElements(document.getElementsByClassName('AnalysisListMDLClass'));}
+    }
+</script>
+
+<script type="text/x-kendo-template" id="ListViewForAnalysisTemplate_InspectionItem">
+    <a href="view/AnalysisDetailPage.html?RecordTypeId=${RecordTypeId}&AnalysisId=${Id}">
+
+        #for (var i = 0;i < AnalysisRecordTypeDetail.length;i++) {
+            if (AnalysisRecordTypeDetail[i]['AnalysisRecordTypeId']===RecordTypeId) {
+                var AnalysisListviewLayoutdata = AnalysisRecordTypeDetail[i];
+        
+                for (var x = 0;x < AnalysisListviewLayoutdata['editLayoutSections'].length;x++) {
+                    var layoutRows = AnalysisListviewLayoutdata['editLayoutSections'][x]['layoutRows'];
+                    var layoutHeader = AnalysisListviewLayoutdata['editLayoutSections'][x]['heading'];
+        
+                    for (var j = 0;j < layoutRows.length;j++) { 
+                        var layoutItems = layoutRows[j]['layoutItems'];
+                        for (var y = 0;y < layoutItems.length;y++) {
+                            if (layoutItems[y]['editableForUpdate']) {
+                                var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                                try {
+                                    var label = layoutComponents['details']['label'];
+                                    var htmlid = layoutComponents['details']['name'];
+                                    var dataType = layoutComponents['details']['type'];
+                                    var nillable = layoutComponents['details']['nillable'];
+                                    var htmlrequired = nillable?false:true;
+                                    console.log(dataType);
+                                    if (dataType!=='reference') {
+                                        #
+                                        <label style="font-weight:bold;">#:label#</label>:
+        
+                                        #try {#
+                                            <label>#:data[htmlid]#</label><br/>
+                                            #
+                                        }catch (err) {
+                                            console.error('2. Analysis' + err);
+                                        }#
+                                    #}
+                                }catch (e) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }#
+    </a>
+</script>

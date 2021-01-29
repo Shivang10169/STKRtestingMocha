@@ -1,0 +1,281 @@
+<div data-role="view" data-use-native-scrolling="true" data-show="DataShowAddPestAnalysis" data-after-show="DataAfterShowAddPestAnalysis"
+    data-title="Add Analysis" id="AddPestAnalysisPage">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent" id="AddPestAnalysisPageNavbar">
+            <a data-role="button" data-align="left" onclick="window.history.back()">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </header>
+    <ul data-role="listview" id="ListviewForPestAnalysis" data-template="ListviewForPestAnalysisTemplate" data-style="inset"
+        style="width:100%;"></ul>
+    <center>
+        <a data-role="backbutton" style="background-color:grey;color:white;width:35%;">
+            CANCEL
+        </a>
+        <a data-role="button" style="background-color:limegreen;color:white;width:35%;" onclick="CreatePestAnalysis()">
+            SAVE
+        </a>
+    </center>
+    <br />
+</div>
+<style>
+</style>
+<script>
+    var PestsData = [];
+    var RecordIdAnalysis = '';
+
+    function DataShowAddPestAnalysis(e) {
+        CountNumberOfOflineItem();
+        var test = {};
+        try {
+            PestsData = [];
+            RecordIdAnalysis = e.view.params.AnalysisRecordId;
+            $("#ListviewForPestAnalysis").data("kendoMobileListView").refresh();
+        } catch (e) {
+            app.toastMessage('Analysis Id Not found');
+        }
+        /*for (var i = 0; i < AnalysisMetadata['fields'].length; i++) {
+            if (AnalysisMetadata['fields'][i]['name'] === 'STKR__Pests__c') {
+                for (var j = 0; j < AnalysisMetadata['fields'][i]['picklistValues'].length; j++) {
+                    test = {};
+                    test = {
+                        name: AnalysisMetadata['fields'][i]['picklistValues'][j]['label'],
+                        id: j
+                    };
+                    PestsData.push(test);
+                    $("#ListviewForPestAnalysis").data("kendoMobileListView").replace(PestsData);
+                }
+            }
+        }*/
+
+        //Using recordtypeinfo
+        app.db.transaction(function (tx) {
+            tx.executeSql("Select * from AnalysisRecordType where recordid=?", [RecordIdAnalysis],
+                function (tx, rs) {
+                    if (rs.rows.length) {
+                        var Layoutdata = JSON.parse(rs.rows.item(0).jsondata);
+                        // Search for STKR__Pests__c field
+                        var picklistValues = [];
+                        Loop1:
+                        for (var x = 0; x < Layoutdata['editLayoutSections'].length; x++) {
+                            var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+                            for (var j = 0; j < layoutRows.length; j++) {
+                                var layoutItems = layoutRows[j]['layoutItems'];
+                                for (var y = 0; y < layoutItems.length; y++) {
+                                    if (layoutItems[y]['editableForUpdate']) {
+                                        var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                                        var htmlid = layoutComponents['details']['name'];
+                                        if (htmlid == 'STKR__Pests__c') {
+                                            console.log(layoutComponents['details']['picklistValues']);
+                                            picklistValues = layoutComponents['details']['picklistValues'];
+                                            break Loop1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (picklistValues.length) {
+                            for (var j = 0; j < picklistValues.length; j++) {
+                                test = {};
+                                test = {
+                                    name: picklistValues[j]['label'],
+                                    id: j
+                                };
+                                PestsData.push(test);
+                                $("#ListviewForPestAnalysis").data("kendoMobileListView").replace(PestsData);
+                                PestAnalysisSetValues();
+                                /* PestsData.push(AnalysisMetadata['fields'][i]['picklistValues'][j]);
+                                $("#ListviewForPestAnalysis").data("kendoMobileListView").replace(PestsData);*/
+                            }
+                        }
+                    }
+                }, function (tx, error) {
+                });
+        });
+    } 
+
+    function CreatePestAnalysis() {
+        var datatoupload = {}, data = [];
+        for (var i = 0; i < PestsData.length; i++) {
+            if ($('#PestAnalysisQuantity' + i).val() !== '') {
+                datatoupload = {
+                    STKR__Qty__c: $('#PestAnalysisQuantity' + i).val(),
+                    STKR__Pests__c: $('#PestAnalysisLabel' + i).text().trim()
+                };
+                datatoupload['STKR__Inspection__c'] = InspectionPageDetailData['Id'];
+                datatoupload['RecordTypeId'] = RecordIdAnalysis;
+                try {
+                    if ($('#PestAnalysisQuantity' + i)[0].sfid) {
+                        datatoupload['Id'] = $('#PestAnalysisQuantity' + i)[0].sfid;
+                    }
+                } catch (err) {
+                    alert(err);
+                }
+                console.log(datatoupload);
+                data.push(datatoupload);
+            }
+        }
+        console.log('data', data);
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            var toUpdate = [], toInsert = [];
+            for (var index = 0; index < data.length; index++) {
+                try {
+                    if (data[index]['Id'].length === 18) {
+                        toUpdate.push(data[index]);
+                    } else {
+                        toInsert.push(data[index]);
+                    }
+                } catch (err) {
+                    toInsert.push(data[index]);
+                }
+            }
+
+            console.log(toInsert);
+
+            for (var index = 0; index < toInsert.length; index++) {
+                delete toInsert[index]['Id'];
+            }
+
+            console.log(toUpdate);
+
+            if (toInsert.length) {
+                jsconn.sobject("STKR__Chlorination_Results__c").create(toInsert,
+                    function (err, ret) {
+                        if (err) {
+                            app.toastMessage('Error occured, Please check Error log page', 'long');
+                            StoreError(err);
+                            return console.error(err);
+                        }
+                        console.log('insert');
+                        for (var j = 0; j < toInsert.length; j++) {
+                            var datatouploadonline = {};
+                            datatouploadonline = toInsert[j];
+                            console.log('Insert Successfully : ' + ret[j].id);
+                            datatouploadonline['Id'] = ret[j].id;
+                            console.log('datatoupload after creating on salesforce', datatouploadonline);
+                            AnalysisData.push(datatouploadonline);
+                            app.insertRecord('Analysis', {
+                                JsonData: JSON.stringify(datatouploadonline),
+                                Updated: 'false',
+                                UserId: creds.UserID,
+                                AnalysisID: datatouploadonline['Id']
+                            });
+                            app.toastMessage('New Analysis created', 'long');
+                        }
+                        window.history.back();
+                    });
+            }
+            if (toUpdate.length) {
+                jsconn.sobject("STKR__Chlorination_Results__c").update(toUpdate,
+                    function (err, ret) {
+                        if (err) {
+                            app.toastMessage('Error occured, Please check Error log page', 'long');
+                            StoreError(err);
+                            return console.error(err);
+                        }
+                        console.log('update');
+                        for (var j = 0; j < toUpdate.length; j++) {
+                            var datatouploadonline = {};
+                            datatouploadonline = toUpdate[j];
+                            console.log('Updated Successfully : ' + ret[j].id);
+                            try {
+                                datatouploadonline['Id'] = ret[j].id;
+                            } catch (err) { }
+                            console.log('datatoupload after creating on salesforce', datatouploadonline);
+                            for (var k = 0; k < AnalysisData.length; k++) {
+                                if (AnalysisData[k]['Id'] == ret[j].id) {
+                                    console.log('Insdie:', k, ret[j].id);
+                                    AnalysisData.splice(k, 1);
+                                }
+                            }
+                            AnalysisData.push(datatouploadonline);
+                            app.insertRecord('Analysis', {
+                                JsonData: JSON.stringify(datatouploadonline),
+                                Updated: 'false',
+                                UserId: creds.UserID,
+                                AnalysisID: datatouploadonline['Id']
+                            });
+                            app.toastMessage('New Analysis created', 'long');
+                        }
+                        window.history.back();
+                    });
+            }
+
+        } else {
+            for (var j = 0; j < data.length; j++) {
+                var datatouploadoffline = {};
+                datatouploadoffline = data[j];
+                var timestamp = (new Date().getTime()).toString();
+                try {
+                    if ($('#PestAnalysisQuantity' + j)[0].sfid) {
+                        timestamp = $('#PestAnalysisQuantity' + j)[0].sfid;
+                    }
+                } catch (err) {
+                    alert(err);
+                }
+                datatouploadoffline['Id'] = timestamp;
+                AnalysisData.push(datatouploadoffline);
+                var dataoffline = {
+                    JsonData: JSON.stringify(datatouploadoffline),
+                    ObjectName: 'STKR__Chlorination_Results__c',
+                    Updated: 'newRecord',
+                    UserId: creds.UserID,
+                    RecordId: timestamp
+                }
+
+                if (timestamp.length === 18) {
+                    dataoffline['UpdateOrInsert'] = 'update';
+                } else {
+                    dataoffline['UpdateOrInsert'] = 'insert';
+                }
+
+                app.insertRecord('DataToUpdate', dataoffline);
+                app.toastMessage('New Analysis stored offline', 'long');
+            }
+        }
+    }
+
+    function DataAfterShowAddPestAnalysis() {
+        // Set values
+        PestAnalysisSetValues();
+    }
+
+    function PestAnalysisSetValues() {
+        var PestAnalysisHTMLComponent = $("#ListviewForPestAnalysis input");
+        for (var i = 0; i < PestAnalysisHTMLComponent.length; i++) {
+            //Find anaylysis record with this pest type
+            var pestvalue = 0, sfid = '';
+            for (var j = 0; j < AnalysisData.length; j++) {
+                if (AnalysisData[j]['STKR__Inspection__c'] == InspectionId &&
+                    AnalysisData[j]['STKR__Pests__c'] == PestAnalysisHTMLComponent[i].name.trim()) {
+                    console.log(PestAnalysisHTMLComponent[i].name, AnalysisData[j]['STKR__Pests__c']);
+                    pestvalue = AnalysisData[j]['STKR__Qty__c'];
+                    try {
+                        sfid = AnalysisData[j]['Id'];
+                    } catch (er) { }
+                    break;
+                }
+            }
+            if (parseInt(pestvalue)) {
+                console.log(pestvalue, sfid);
+                PestAnalysisHTMLComponent[i].value = pestvalue;
+                PestAnalysisHTMLComponent[i].sfid = sfid;
+            }
+        }
+    }
+</script>
+<script type="text/x-kendo-template" id="ListviewForPestAnalysisTemplate">
+    <div class="collapsible" style="width:100%;">
+        #try {#
+        <div style="padding:2%;">
+            <span style="margin-left:1%;font-size:small;" id="PestAnalysisLabel${id}">#:name# 
+                <input type="number" name="#:name#" sfid="" placeholder="Qty" id="PestAnalysisQuantity${id}" style="width:10%;" float="right"/></span>
+        </div>
+        #} catch (e) {
+        } #
+    </div>
+</script>

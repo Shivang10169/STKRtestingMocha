@@ -1,0 +1,2053 @@
+<div data-role="view" data-title="Inspection Detail Page" data-after-show="DataAfterShowInspectionDetailPage"
+    data-show="DataShowInspectionDetailPage" id="InspectionDetailPage" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent" id="InspectionDetailPageNavbar">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="UpdateValues();"
+                class="InspectionDetailPageMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right"
+                style="border-style:none;margin-top:2%;"
+                class="InspectionListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <button data-align="right" style="margin-top:2%;color:white;border-style:none;"
+                onclick="finditemlocation();"
+                class="InspectionListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">place</i>
+            </button>
+            <button data-align="right" style="margin-top:2%;border-style:none;color:white;" onclick="logItemlocation();"
+                class=" headerIconStyleForAll headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">navigation</i>
+            </button>
+            <button data-align="right" style="margin-top:2%;border-style:none;color:white;"
+                onclick="gotoinspectionitemdetailpage();"
+                class="InspectionListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">edit</i>
+            </button>
+            <span data-role="view-title" style="float:left;"></span>
+        </div>
+    </header>
+    <div id="InspectionItemHeader" style="padding: 10px;background: #2092c8;max-width:97%;color:white"></div>
+    <center><div id="InspectionDetail_Inspected"></div></center>
+    <div  id="InspectionItemActionButton"></div>
+    <div id="Recordtype_Div" class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;">
+        <label style="color:rgb(0,188,212);font-size: 16px;">Record Type</label>
+        <select style="outline:none" id="InspectionDetail_recordtype" onchange="UpdateRecordType(this.value)"
+            class="mdl-textfield__input"></select>
+    </div>
+
+    <div id="CreateMultipleAnalysisHTML">
+    </div>
+
+    <div id="CustomLayout" class="CustomLayout">
+    </div>
+    <div data-role="footer" style="color:#39B7CD;" id="MyVisitsFooter">
+        <div data-role="navbar" style="width:100%;">
+            <center
+                style="display: flex;align-items: center;justify-content: space-evenly;padding-top:2%;padding-bottom:2%;">
+                <i class="fa fa-area-chart headerIconStyleForAll" onClick="NavigateToAnalysis();"
+                    style="border-style:none;color:white;float:left;padding:4px;font-size:larger;"></i>
+                <i class="material-icons headerIconStyleForAll" id="CustomSetting_ActionOnInspection"
+                    onClick="NavigateToAction();" style="border-style:none;color:white;padding:3px;">directions_walk</i>
+                <i class="material-icons headerIconStyleForAll" onclick="gotoShowImageFromInspection()"
+                    style="border-style:none;color:white;padding:3px;">photo_camera</i>
+                <i class="material-icons headerIconStyleForAll" onclick="UpdateInspection_OnAttachmentClick()"
+                    style="border-style:none;color:white;padding:3px;">attach_file</i>
+                <i class="material-icons headerIconStyleForAll" onclick="InspectionHistory()"
+                    style="border-style:none;color:white;padding:3px;">history</i>
+            </center>
+
+            <!--a onClick="NavigateToAnalysis();" data-align="left" style="border-style:none;color:black;" data-role="button">
+                <i class="fa fa-area-chart"></i>
+            </a>
+            <a onClick="NavigateToAction();" data-align="left" style="border-style:none;color:black;" data-role="button">
+                <i class="material-icons">directions_walk</i>
+            </a>
+            <a onclick="gotoShowImageFromInspection()" data-align="center" style="border-style:none;color:black;" data-role="button">
+                <i class="material-icons">photo_camera</i>
+            </a>
+            <a data-role="button" data-align="right" style="transform:rotate(-45deg);border-style:none;color:black;" onclick="UpdateInspection_OnAttachmentClick()">
+                <i class="material-icons">attach_file</i>
+            </a>
+            <a data-role="button" data-align="right" style="border-style:none;color:black;" onclick="InspectionHistory()">
+                <i class="material-icons">history</i>
+            </a-->
+        </div>
+        <center>
+            <span id="InternetStatusInspectionFooter" class="OfflineOnlineMessage"
+                style="font-weight:lighter;font-size:smaller;"></span>
+        </center>
+    </div>
+</div>
+<style>
+    #InspectionDetailPage .km-content {
+        background: #E6E6E6;
+    }
+
+    .InspectionDetailPageMDLName textarea {
+        width: 99%;
+        border: none;
+    }
+
+    .InspectionDetailPageMDLName input[type="text"] {
+        border: none;
+        width: 99%;
+    }
+</style>
+<script>
+    var InspectionId = '';
+    var InspectionPageDetailData = null;
+    var InspectionDetailPageHTML = '';
+    var InspectionIndex = null;
+    var InspectionItemId = '';
+    var InspectionItemDetail = null;
+    var VisitId;
+    var InspectionName;
+    var CurrentRecordType;
+    var AnalysisRecordTypeHardcoded = '';
+    var InspectionMobileUniqueId = '';
+    var InspectionItemDetail_Id = '';
+    var InspectionDetail_DependentPicklistMap = {};
+    var InspectionDetail_PageLayout = [];
+    var InspectName;
+    var recordtypeSelectData = '';
+    var inspectionitemindex_location;
+    var actionCount=0;
+    var InspectionItemActionHTML='';
+    function DataShowInspectionDetailPage(e) {
+        currentLocation = 'InspectionDetail';
+        actionCount=0;
+        InspectionItemActionHTML='';
+        recordtypeSelectData = '';
+        ChangedrecordTypeId = '';
+        UpdatingInspectionRecordType = 0;
+        CountNumberOfOflineItem();
+        try {
+            e.view.scroller.reset();
+        } catch (err) {
+        }
+
+        InspectionDetail_PageLayout = [];
+        AnalysisRecordTypeHardcoded = '';
+        InspectionItemDetail = null;
+        attachToScroller(e);
+        VisitId = e.view.params.VisitId;
+        InspectionDetailPageHTML = '';
+
+        LongPress = 0;
+        try {
+            InspectionId = e.view.params.inspectionid;
+        } catch (e) {
+            app.toastMessage('Inspection Id Not found');
+        }
+        InspectionPageDetailData = null;
+        InspectionIndex = null;
+        InspectionItemId = e.view.params.inspectionitemid;
+        for (var i = 0; i < ActionData.length; i++) {
+           
+            if (InspectionItemId && ActionData[i]['STKR__Service_Item__c'] &&
+                (InspectionItemId === ActionData[i]['STKR__Service_Item__c']) &&
+                ActionData[i]['STKR__Status__c'] === 'Open') {
+               // OpenAction.push(ActionData[i]);
+                actionCount++;
+
+                }
+    }
+
+        if (ButtonSettings.STKR__Show_RecordType_on_Inspection__c) {
+            $("#Recordtype_Div").show();
+        } else {
+            $("#Recordtype_Div").hide();
+        }
+        if (ButtonSettings.STKR__disableActionButton__c) {
+            $("#CustomSetting_ActionOnInspection").show();
+        } else {
+            $("#CustomSetting_ActionOnInspection").hide();
+        }
+
+        if (ButtonSettings.STKR__disablePrepWasteButton__c) {
+            $("#CustomSetting_PrepWasteOnInspection").show();
+        } else {
+            $("#CustomSetting_PrepWasteOnInspection").hide();
+        }
+
+        for (var i = 0; i < InspectionData.length; i++) {
+            if (InspectionData[i]['Id'] === InspectionId) {
+                InspectName = InspectionData[i]['Name'];
+                InspectionPageDetailData = InspectionData[i];
+                InspectionIndex = i;
+                break;
+            }
+        }
+        if(InspectionPageDetailData["STKR__Status__c"]=="Inspected"){
+            $("#InspectionDetail_Inspected").show()
+            $("#InspectionDetail_Inspected").html("Inspected");
+        }else{
+            $("#InspectionDetail_Inspected").hide()
+        }
+        for (i = 0; i < InspectionItemData.length; i++) {
+            if (InspectionItemData[i]['Id'] === InspectionItemId) {
+                InspectionItemDetail = InspectionItemData[i];
+                inspectionitemindex_location = i;
+                break;
+            }
+        }
+        for (var i = 0; i < InspectionRecordType.length; i++) {
+            if (InspectionRecordType[i]['available']) {
+                recordtypeSelectData += '<option value=' + InspectionRecordType[i]['recordTypeId'] + '>' + InspectionRecordType[i]['name'] + '</option>';
+            }
+            $('#InspectionDetail_recordtype').html($(recordtypeSelectData));
+            $('#InspectionDetail_recordtype').val(InspectionPageDetailData['RecordTypeId']);
+        }
+    }
+
+    //scroll
+    function attachToScroller(e) {
+        var scroller = e.view.scroller;
+        var currentPosition = 0;
+        scroller.bind("scroll", function (e) {
+            if (e.scrollTop < 0) {
+                $('div[data-role="footer"]').show();
+            } else if (currentPosition < e.scrollTop) {
+                $('div[data-role="footer"]').hide();
+                currentPosition = e.scrollTop;
+            } else {
+                $('div[data-role="footer"]').show();
+                currentPosition = e.scrollTop;
+            }
+        });
+    }
+
+    function DataAfterShowInspectionDetailPage() {
+        $("#CreateMultipleAnalysisHTML").html('');
+        $("#CreateMultipleAnalysisHTML").empty();
+
+        CurrentRecordType = '';
+        if (AppIsOnline) {
+            InternetStatusFooter = "Network is ONLINE- good data signal is assumed";
+            $('#InternetStatusFooter').html(InternetStatusFooter);
+            $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+            $('#MyVisitsFooter').css("color", "#39B7CD");
+            $('.OfflineOnlineMessage').text(InternetStatusFooter);
+        } else {
+            // Offline
+            InternetStatusFooter = "ServiceTracker is offline. Data is stored for upload when online";
+            $('#InternetStatusFooter').html(InternetStatusFooter);
+            $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+            $('#MyVisitsFooter').css("color", "#ff6666");
+            $(".OfflineOnlineMessage").text(InternetStatusFooter);
+        }
+        var ViewLayoutInspectionDetailPage = $("#InspectionDetailPageNavbar").data("kendoMobileNavBar");
+        try {
+            ViewLayoutInspectionDetailPage.title('Inspection');
+            InspectionName = InspectionPageDetailData['Name'];
+        } catch (ert) {
+        }
+        try {
+            InspectionMobileUniqueId = InspectionPageDetailData['STKR__UniqueId__c'];
+        } catch (er) {
+        }
+        try {
+            $('#DetailPageLocation').text(InspectionItemDetail['STKR__Item_Type__c']);
+        } catch (err) {
+        }
+        try {
+            $('#detailpageType').text(InspectionItemDetail['STKR__Type__c']);
+        } catch (err) {
+        }
+        var inspectionHeaderdate;
+        if (device.platform === 'Android') {
+            try {
+                var dateval = new Date(InspectionItemDetail['STKR__Next_Inspection_Date__c']);
+                var lastdateval = new Date(InspectionItemDetail['STKR__Last_Inspection_Date__c']);
+                var month;
+                var day;
+                var Hours;
+                var Minutes;
+                var month_last;
+                var day_last;
+                var Hours_last;
+                var Minutes_last;
+                var ampm = dateval.getHours() >= 12 ? 'pm' : 'am';
+                var ampm_last = lastdateval.getHours() >= 12 ? 'pm' : 'am';
+                if ((dateval.getMonth() + 1) < 10) {
+                    month = '0' + (dateval.getMonth() + 1)
+                } else {
+                    month = dateval.getMonth() + 1
+                }
+                if (dateval.getDate() < 10) {
+                    day = '0' + dateval.getDate()
+                } else {
+                    day = dateval.getDate()
+                }
+                if (dateval.getHours() < 10) {
+                    Hours = '0' + dateval.getHours();
+                } else {
+                    Hours = dateval.getHours()
+                }
+                if (dateval.getMinutes() < 10) {
+                    Minutes = '0' + dateval.getMinutes();
+                } else {
+                    Minutes = dateval.getMinutes();
+                }
+                if ((lastdateval.getMonth() + 1) < 10) {
+                    month_last = '0' + (lastdateval.getMonth() + 1)
+                } else {
+                    month_last = lastdateval.getMonth() + 1
+                }
+                if (lastdateval.getDate() < 10) {
+                    day_last = '0' + lastdateval.getDate()
+                } else {
+                    day_last = lastdateval.getDate()
+                }
+                if (lastdateval.getHours() < 10) {
+                    Hours_last = '0' + lastdateval.getHours();
+                } else {
+                    Hours_last = lastdateval.getHours()
+                }
+                if (lastdateval.getMinutes() < 10) {
+                    Minutes_last = '0' + lastdateval.getMinutes();
+                } else {
+                    Minutes_last = lastdateval.getMinutes();
+                }
+                inspectionHeaderdate = (day + '/' + (month) + '/' + dateval.getFullYear() + ' ' + Hours + ':' + Minutes + ' ' + ampm.toUpperCase());
+                inspectionHeader_lastdate = (day_last + '/' + (month_last) + '/' + lastdateval.getFullYear() + ' ' + Hours_last + ':' + Minutes_last + ' ' + ampm_last.toUpperCase());
+            } catch (err) {
+                //console.log('date error' + err)
+                inspectionHeaderdate = '';
+                inspectionHeader_lastdate = '';
+            }
+        }
+        if (device.platform === 'iOS') {
+            try {
+                var dateval = new Date(InspectionItemDetail['STKR__Next_Inspection_Date__c'].split('.')[0]);
+                var lastdateval = new Date(InspectionItemDetail['STKR__Last_Inspection_Date__c'].split('.')[0]);
+                var month;
+                var day;
+                var Hours;
+                var Minutes;
+                var month_last;
+                var day_last;
+                var Hours_last;
+                var Minutes_last;
+                var ampm = dateval.getHours() >= 12 ? 'pm' : 'am';
+                var ampm_last = lastdateval.getHours() >= 12 ? 'pm' : 'am';
+                if ((dateval.getMonth() + 1) < 10) {
+                    month = '0' + (dateval.getMonth() + 1)
+                } else {
+                    month = dateval.getMonth() + 1
+                }
+                if (dateval.getDate() < 10) {
+                    day = '0' + dateval.getDate()
+                } else {
+                    day = dateval.getDate()
+                }
+                if (dateval.getHours() < 10) {
+                    Hours = '0' + dateval.getHours();
+                } else {
+                    Hours = dateval.getHours()
+                }
+                if (dateval.getMinutes() < 10) {
+                    Minutes = '0' + dateval.getMinutes();
+                } else {
+                    Minutes = dateval.getMinutes();
+                }
+                if ((lastdateval.getMonth() + 1) < 10) {
+                    month_last = '0' + (lastdateval.getMonth() + 1)
+                } else {
+                    month_last = lastdateval.getMonth() + 1
+                }
+                if (lastdateval.getDate() < 10) {
+                    day_last = '0' + lastdateval.getDate()
+                } else {
+                    day_last = lastdateval.getDate()
+                }
+                if (lastdateval.getHours() < 10) {
+                    Hours_last = '0' + lastdateval.getHours();
+                } else {
+                    Hours_last = lastdateval.getHours()
+                }
+                if (lastdateval.getMinutes() < 10) {
+                    Minutes_last = '0' + lastdateval.getMinutes();
+                } else {
+                    Minutes_last = lastdateval.getMinutes();
+                }
+
+                inspectionHeaderdate = (day + '/' + (month) + '/' + dateval.getFullYear() + ' ' + Hours + ':' + Minutes + ' ' + ampm.toUpperCase());
+                inspectionHeader_lastdate = (day_last + '/' + (month_last) + '/' + lastdateval.getFullYear() + ' ' + Hours_last + ':' + Minutes_last + ' ' + ampm_last.toUpperCase());
+            } catch (err) {
+                inspectionHeaderdate = '';
+                inspectionHeader_lastdate = '';
+            }
+        }
+        if (device.platform === 'Win32NT') {
+            inspectionHeaderdate = new Date((InspectionItemDetail['STKR__Next_Inspection_Date__c'].split('+')[0]) + 'Z');
+            inspectionHeader_lastdate = new Date((InspectionItemDetail['STKR__Last_Inspection_Date__c'].split('+')[0]) + 'Z');
+        }
+
+        var InspectionHeaderHTML = '<div><table style="width:100%;">';
+        try {
+            if (InspectionItemDetail['Name']) {
+                InspectionHeaderHTML += '<tr><td style="width:40%;"><span class="insideInspect">Inspection Item:</span></td>';
+                InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect">' + InspectionItemDetail['Name'] + '</span></td></tr>';
+            }
+        } catch (err) {
+        }
+
+        if (InspectionItemCompactLayout) {
+            for (var i = 0; i < InspectionItemCompactLayout.fieldItems.length; i++) {
+                var fieldLabel = InspectionItemCompactLayout.fieldItems[i]['label'],
+                    fieldAPIName = InspectionItemCompactLayout.fieldItems[i]['layoutComponents'][0]['details']['name'],
+                    fieldType = InspectionItemCompactLayout.fieldItems[i]['layoutComponents'][0]['details']['type'];
+
+                if (InspectionItemDetail[fieldAPIName]) {
+                    if (fieldType == 'date' || fieldType == 'datetime') {
+                        var dateString = '';
+                        var minD = '';
+                        if (device.platform == 'Android') {
+                            var dateValue = new Date(InspectionItemDetail[fieldAPIName]);
+
+                            if (dateValue.getMinutes() < 10) {
+                                minD = dateValue.getMinutes().toString().padStart(2, 0)
+                            } else {
+                                minD = dateValue.getMinutes()
+                            }
+                            dateString = dateValue.getDate() + '/' + (dateValue.getMonth() + 1) + '/' + dateValue.getFullYear() + ' ' + dateValue.getHours() + ':' + minD;
+                        } else {
+                            //iOS
+                            if (typeof InspectionItemDetail[fieldAPIName] == 'object') {
+                                var dateValue = new Date(InspectionItemDetail[fieldAPIName]);
+                                if (dateValue.getMinutes() < 10) {
+                                    minD = dateValue.getMinutes().toString().padStart(2, 0)
+                                } else { minD = dateValue.getMinutes() }
+                                dateString = dateValue.getDate() + '/' + (dateValue.getMonth() + 1) + '/' + dateValue.getFullYear() + ' ' + dateValue.getHours() + ':' + minD;
+                            } else {
+                                var dateValue = new Date(InspectionItemDetail[fieldAPIName].split('.')[0])
+                                if (dateValue.getMinutes() < 10) {
+                                    minD = dateValue.getMinutes().toString().padStart(2, 0)
+                                } else { minD = dateValue.getMinutes() }
+                                dateString = dateValue.getDate() + '/' + (dateValue.getMonth() + 1) + '/' + dateValue.getFullYear() + ' ' + dateValue.getHours() + ':' + minD;
+                            }
+                        }
+                        if (dateString) {
+                            InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">' + fieldLabel + ':</span></td>';
+                            InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect">' + dateString + '</span></td></tr>';
+                        }
+                    } else {
+                        if (fieldAPIName == "RecordTypeId") {
+                            var recordTypeName = "";
+                            if (InspectionItemDetail["RecordType"] && InspectionItemDetail["RecordType"]["Name"]) {
+                                recordTypeName = InspectionItemDetail["RecordType"]["Name"];
+                            }
+
+                            if (!recordTypeName) {
+                                for (var q = 0; q < InspectionItemMetadata.recordTypeInfos.length; q++) {
+                                    if (InspectionItemMetadata.recordTypeInfos[q]["recordTypeId"] == InspectionItemDetail["RecordTypeId"]) {
+                                        recordTypeName = InspectionItemMetadata.recordTypeInfos[q]["name"];
+                                        break;
+                                    }
+                                }
+                            }
+                            InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">' + fieldLabel + ':</span></td>';
+                            InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect">' + recordTypeName + '</span></td></tr>';
+                        } else if (fieldAPIName == "STKR__STKRHRLINE1__c") {
+                            InspectionHeaderHTML += '<tr><td colspan="2"><hr style="margin: 0em;"></td></tr>'
+                        } else {
+                            InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">' + fieldLabel + ':</span></td>';
+                            InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect">' + InspectionItemDetail[fieldAPIName] + '</span></td></tr>';
+                        }
+                    }
+                } else {
+                    // below part is to show hr line when there is no value in compact layout and field api name contains STKRHR
+                    if (fieldAPIName.includes("STKRHR")) {
+                        InspectionHeaderHTML += '<tr><td colspan="2"><hr style="margin: 0em;"></td></tr>'
+                    }
+                }
+            }
+        } else {
+            try {
+                if (InspectionItemDetail['STKR__Item_Type__c']) {
+                    InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Item Type:</span></td>';
+                    InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect1">' + InspectionItemDetail['STKR__Item_Type__c'] + '</span></td></tr>';
+                }
+            } catch (e) {
+            }
+            try {
+                if (InspectionItemDetail['STKR__Location__c']) {
+                    InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Location: </span></td>';
+                    InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect1">: ' + InspectionItemDetail['STKR__Location__c'] + '</span></td></tr>';
+                }
+            } catch (err) {
+            }
+            try {
+                if (InspectionItemDetail['STKR__Access_Details__c']) {
+                    InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Access Details: </span></td>';
+                    InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect1">' + InspectionItemDetail['STKR__Access_Details__c'] + '</span></td></tr>';
+                }
+            } catch (err) {
+            }
+            InspectionHeaderHTML += '<hr style="border-top:3px solid white;margin: 0em;>';
+            try {
+                if (InspectionItemDetail['STKR__Reference__c']) {
+                    InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Reference:</span></td>';
+                    InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect1">' + InspectionItemDetail['STKR__Reference__c'] + '</span></td></tr>';
+                }
+            } catch (err) {
+            }
+
+            try {
+                if (InspectionItemDetail['STKR__Additional_Details__c']) {
+                    InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Additional Details: </span></td>';
+                    InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect1">' + InspectionItemDetail['STKR__Additional_Details__c'] + '</span></td></tr>';
+                }
+            } catch (err) {
+            }
+
+            try {
+                if (InspectionItemDetail['Name']) {
+                    InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Inspection Item: </span></td>';
+                    InspectionHeaderHTML += '<td style="width:60%;"><span class="insideInspect1">' + InspectionItemDetail['Name'] + '</span></td></tr>';
+                }
+            } catch (err) {
+            }
+            InspectionHeaderHTML += '<tr><td style="width:40%;vertical-align: top;"><span class="insideInspect">Last Inspection: ' + inspectionHeader_lastdate + '</span></td>';
+            InspectionHeaderHTML += '<td style="width:60%%;"><span class="insideInspect">Next Inspection: ' + inspectionHeaderdate + '</span></td></tr>';
+        }
+        InspectionHeaderHTML += '</table></div>';
+        if(actionCount){
+            InspectionItemActionHTML += '<button onClick="NavigateToAction()"style="font-weight:bold;left: 100px;margin-top:3%;" class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"><i class="ionicons ion-android-walk largeicons"></i> Open Action  ('+ actionCount +')</button></div>';
+
+        }else{
+            InspectionItemActionHTML += '<button onClick="NavigateToAction()"style="font-weight:bold;left: 100px;margin-top:3%;" class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"><i class="ionicons ion-android-walk largeicons"></i> Open Action (0)  </button></div>';
+
+        }
+        $('#InspectionItemActionButton').html(InspectionItemActionHTML);
+        $('#InspectionItemHeader').html(InspectionHeaderHTML);
+
+        app.db.transaction(function (tx) {
+            tx.executeSql("Select * from InspectionRecordType where recordid=?", [InspectionPageDetailData['RecordTypeId']],
+                function (tx, rs) {
+                    if (rs.rows.length) {
+                        InspectionDetail_PageLayout = JSON.parse(rs.rows.item(0)['jsondata']);
+                        LayoutGenerator(InspectionDetail_PageLayout);
+                    } else {
+                        app.toastMessage('This record type is not found, Please refresh data', 'long');
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                });
+        });
+        AddAnalysisOnInspection()
+    }
+
+    //Detail Page Layout
+    function LayoutGenerator(Layoutdata) {
+        // Dependent picklist values
+        InspectionDetail_DependentPicklistMap = {};
+        //console.log('InspectionMetadata', InspectionMetadata);
+
+        for (var i = 0; i < InspectionMetadata['fields'].length; i++) {
+            if (InspectionMetadata['fields'][i]['controllerName']) {
+                //console.log('controllerName', InspectionMetadata['fields'][i]['controllerName']);
+                // if not already in the  array
+                try {
+                    if (!InspectionDetail_DependentPicklistMap[InspectionMetadata['fields'][i]['controllerName']]) {
+                        InspectionDetail_DependentPicklistMap[InspectionMetadata['fields'][i]['controllerName']] = [];
+                    }
+                    InspectionDetail_DependentPicklistMap[InspectionMetadata['fields'][i]['controllerName']].push(InspectionMetadata['fields'][i]['name']);
+                    //console.log('InspectionDetail_DependentPicklistMap', InspectionDetail_DependentPicklistMap);
+                } catch (err) {
+                    //console.log(err)
+                }
+            }
+        }
+
+        // Dependent Picklist values
+        var CountReadOnlyFields = 0;
+        for (var i = 0; i < (InspectionMetadata.recordTypeInfos).length; i++) {
+            if (InspectionMetadata.recordTypeInfos[i]['recordTypeId'] === InspectionPageDetailData.RecordTypeId) {
+                CurrentRecordType = InspectionMetadata.recordTypeInfos[i]['name'];
+                //console.log(InspectionMetadata.recordTypeInfos[i]['name']);
+            }
+        }
+        InspectionDetailPageHTML += '<center><h5>Additional Information</h5></center>';
+        InspectionDetailPageHTML += '<div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;">';
+
+        for (var i = 1; i < Layoutdata['detailLayoutSections'].length - 1; i++) {
+            var layoutRows = Layoutdata['detailLayoutSections'][i]['layoutRows'];
+            for (var j = 0; j < layoutRows.length; j++) {
+                var layoutItems = layoutRows[j]['layoutItems'];
+                for (var k = 0; k < layoutItems.length; k++) {
+                    var layoutComponents = layoutItems[k]['layoutComponents']
+                    for (var l = 0; l < layoutComponents.length; l++) {
+                        try {
+                            var NotImage = false;
+                            try {
+                                if ((layoutComponents[l]['details']['calculatedFormula'])) {
+                                    if ((layoutComponents[l]['details']['calculatedFormula'].indexOf('IMAGE') === -1)) {
+                                        NotImage = true;
+                                      //  debugger;
+                                        if((layoutComponents[l]['details']['calculatedFormula'].indexOf('HYPERLINK') > -1) && layoutComponents[l]['details']['type']  === 'string'){
+                                            
+                                    console.log('findfind2',layoutComponents[l]);
+                              /*     if($.parseHTML(newDetailValue[0].STKR__FormulaURL__c)[0].nodeName == "A" ){
+
+                                   } else{} */
+                                                                   
+                                                                    var stringtest =  layoutComponents[l]['details']['calculatedFormula'];
+                                                                    var  stringtest1=   stringtest.split('"')[1]
+                                                                    InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                                                            InspectionDetailPageHTML += '<a style="color:#505050;" name1="RemoveThis"  name="createformfield" class="InspectionDetailPageMDLName" id="' +  layoutComponents[l]['details']['name'] + '" >' + stringtest1 + '</a>';
+                                                                       
+                                                                            InspectionDetailPageHTML += '</div><br>';
+                                                                }
+                                    }
+                                } else {
+                                    NotImage = true;
+                                }
+                            } catch (err) {
+                            }
+
+                            if (!(layoutComponents[l]['details']['updateable']) && (NotImage)) {
+                                try {
+                                    var htmlid = layoutComponents[l]['details']['name'];
+                                    var label = layoutComponents[l]['details']['label'];
+                                    var dataType = layoutComponents[l]['details']['type'];
+                                    CountReadOnlyFields++;
+                                    if (dataType === 'string') {
+                                        if((layoutComponents[l]['details']['calculatedFormula'].indexOf('HYPERLINK') > -1)){
+
+                                        } else{
+                                            InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<textarea type="text" name1="RemoveThis" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" disabled></textarea>';
+                                        InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                        }
+                                      
+                                    } else if (dataType === 'email') {
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<input name1="RemoveThis" type="email" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" disabled>';
+                                        InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'reference') {
+                                    } else if (dataType === 'double') {
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<input name1="RemoveThis" type="number" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" disabled>';
+                                        InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'picklist') {
+                                        if (newhtmlrequired === 'required')
+                                            InspectionDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                        else
+                                            InspectionDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<select name1="RemoveThis" name="createformfield" id="' + htmlid + '" class="mdl-textfield__input" disabled>';
+
+                                        InspectionDetailPageHTML += '<option value="" selected>--None--</option>';
+
+                                        for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                            if (layoutComponents['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                                InspectionDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                            } else {
+                                                InspectionDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                            }
+                                        }
+                                        InspectionDetailPageHTML += '</select>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'date') {
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                        InspectionDetailPageHTML += '<input name1="RemoveThis" class="InspectionDetailPageMDLName mdl-textfield__input" type="date" name="createformfield" id="' + htmlid + '" disabled>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'textarea') {
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<textarea name1="RemoveThis" name="createformfield" id="' + htmlid + '" class="mdl-textfield__input" type="text" rows="5" disabled></textarea>';
+                                        InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'datetime') {
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield">';
+                                        InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                        InspectionDetailPageHTML += '<input name1="RemoveThis" class="mdl-textfield__input" type="datetime-local" name="createformfield" id="' + htmlid + '" disabled>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'boolean') {
+                                        if (htmlid === 'STKR__Activity_Found__c') {
+                                            InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">'
+                                            InspectionDetailPageHTML += '<input name1="RemoveThis" name="createformfield" type="checkbox" id="' + htmlid + '" onclick="AddAnalysisOnInspection(this)" disabled>'
+                                            InspectionDetailPageHTML += '<span>' + label + '</span>';
+                                            InspectionDetailPageHTML += '</label><br>';
+                                        } else {
+                                            InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">'
+                                            InspectionDetailPageHTML += '<input name1="RemoveThis" name="createformfield" type="checkbox" id="' + htmlid + '" disabled>'
+                                            InspectionDetailPageHTML += '<span>' + label + '</span>';
+                                            InspectionDetailPageHTML += '</label><br>';
+                                        }
+                                    } else if (dataType === 'multipicklist') {
+                                        if (newhtmlrequired === 'required')
+                                            InspectionDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                        else
+                                            InspectionDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                        InspectionDetailPageHTML += '<div class=" InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<select name1="RemoveThis" class="mdl-textfield__input" name="createformfield" id="' + htmlid + '" multiple disabled>';
+                                        for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                            InspectionDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                        }
+                                        InspectionDetailPageHTML += '</select>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    } else if (dataType === 'currency') {
+                                        InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<textarea type="text" name1="RemoveThis" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" disabled></textarea>';
+                                        InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + "(" + userDefaultCurrency + ")" + '</label>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    }else {
+                                        //console.log('In else', dataType); 
+                                    }
+                                } catch (err) {
+                                    //console.log(err);
+                                }
+                            }
+                        } catch (e) {
+                            //console.log('Inspection create', e)
+                        }
+                    }
+                }
+            }
+        }
+        InspectionDetailPageHTML += '</div>';
+        if (CountReadOnlyFields === 0) {
+            InspectionDetailPageHTML = '';
+        }
+        for (var x = 1; x < Layoutdata['editLayoutSections'].length - 1; x++) {
+            var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+            var layoutHeader = Layoutdata['editLayoutSections'][x]['heading'];
+            if (layoutHeader === 'System Information')
+                continue;
+            InspectionDetailPageHTML += '<div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;">';
+            InspectionDetailPageHTML += '<center><h5>' + layoutHeader + '</h5></center>';
+            for (var j = 0; j < layoutRows.length; j++) {
+                var layoutItems = layoutRows[j]['layoutItems'];
+                for (var y = 0; y < layoutItems.length; y++) {
+                    if (layoutItems[y]['editableForUpdate']) {
+                        var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                        try {
+                            var label = layoutComponents['details']['label'];
+                            var htmlid = layoutComponents['details']['name'];
+                            var dataType = layoutComponents['details']['type'];
+                            var nillable = layoutComponents['details']['nillable'];
+                            var maxlength = layoutComponents['details']['length'];
+                            var htmlrequired = nillable ? '' : 'required';
+                            var newhtmlrequired = layoutItems[y]['required'] ? 'required' : '';
+                            var value = layoutComponents['details']['defaultvalue'];
+                            if (dataType === 'string') {
+                                InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                InspectionDetailPageHTML += '<input type="text" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                InspectionDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'reference') {
+                                if (navigator.onLine) {
+                                    if (htmlid === 'STKR__Assigned_To__c') {
+                                        InspectionDetailPageHTML += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        if (newhtmlrequired === 'required')
+                                            InspectionDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                        else
+                                            InspectionDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                        InspectionDetailPageHTML += '<select name="createformfield" id="' + htmlid + '" class="mdl-textfield__input" ' + newhtmlrequired + '>';
+                                        InspectionDetailPageHTML += '<option value="None">None</option>';
+                                        for (var optionvalues = 0; optionvalues < Userdata.length; optionvalues++) {
+                                            InspectionDetailPageHTML += '<option value="' + Userdata[optionvalues]['Id'] + '">' + Userdata[optionvalues]['Name'] + '</option>';
+                                        }
+                                        InspectionDetailPageHTML += '</select>';
+                                        InspectionDetailPageHTML += '</div><br>';
+                                    }
+                                }
+                            } else if (dataType === 'double') {
+                                InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                if (CurrentRecordType === 'Calorifier') {
+                                    if (htmlid === 'STKR__Flow_Temp__c') {
+                                        InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" value="' + value + '"  min="60" ' + newhtmlrequired + '>';
+                                    } else if (htmlid === 'STKR__Return_Temp__c') {
+                                        InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" min="50" id="' + htmlid + '" value="' + value + '"  ' + newhtmlrequired + '>';
+                                    } else {
+                                        InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" value="' + value + '"  ' + newhtmlrequired + '>';
+                                    }
+                                } else if (htmlid === 'STKR__Cold_Water_Temperature_oC__c') {
+                                    InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" max="19" id="' + htmlid + '" value="' + value + '" ' + newhtmlrequired + '>';
+                                } else if (htmlid === 'STKR__Hot_Water_At_outlet_oC__c') {
+                                    if (CurrentRecordType === 'TMV') {
+                                        InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" max="43" id="' + htmlid + '" value="' + value + '"' + newhtmlrequired + '>';
+                                    } else {
+                                        InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" min="50" id="' + htmlid + '" value="' + value + '"' + newhtmlrequired + '>';
+                                    }
+                                } else if (htmlid === 'STKR__Hot_Water_Pre_TMV_oC__c') {
+                                    if (CurrentRecordType === 'TMV') {
+                                        InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" max="43" id="' + htmlid + '" value="' + value + '"' + newhtmlrequired + '>';
+                                    } else {
+                                        InspectionDetailPageHTML += '<input type="number" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" min="50" id="' + htmlid + '" value="' + value + '"' + newhtmlrequired + '>';
+                                    }
+                                } else {
+                                    InspectionDetailPageHTML += '<input type="number" step="0.01" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" value="' + value + '" ' + newhtmlrequired + '>';
+                                }
+                                InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                InspectionDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'picklist') {
+                                InspectionDetailPageHTML += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                if (newhtmlrequired === 'required')
+                                    InspectionDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                else
+                                    InspectionDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                if (InspectionDetail_DependentPicklistMap[htmlid])
+                                    InspectionDetailPageHTML += '<select onChange="ChangeDependentValuesInspection(\'' + htmlid + '\',\'STKR__Inspection__c\',\'createformfield\')" name="createformfield" id="' + htmlid + '" class="mdl-textfield__input" ' + newhtmlrequired + '>';
+                                else
+                                    InspectionDetailPageHTML += '<select name="createformfield" id="' + htmlid + '" class="mdl-textfield__input" ' + newhtmlrequired + '>';
+
+                                InspectionDetailPageHTML += '<option value="" selected>--None--</option>';
+
+                                for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                    if (layoutComponents['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                        InspectionDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    } else {
+                                        InspectionDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    }
+                                }
+                                InspectionDetailPageHTML += '</select>';
+                                InspectionDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'date') {
+                                InspectionDetailPageHTML += '<input type="date" name="createformfield"  class="mdl-textfield__input" id="' + htmlid + '" ' + newhtmlrequired + '/>';
+                                InspectionDetailPageHTML += '   <label class="mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                            } else if (dataType === 'textarea') {
+                                InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                InspectionDetailPageHTML += '<textarea name="createformfield" id="' + htmlid + '" class="InspectionDetailPageMDLName mdl-textfield__input" type="text" rows="5" maxlength="' + maxlength + '" ' + newhtmlrequired + '></textarea>';
+                                InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                InspectionDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'datetime') {
+                                InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield">';
+                                InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                InspectionDetailPageHTML += '<input class="mdl-textfield__input" type="datetime-local" name="createformfield" id="' + htmlid + '" ' + newhtmlrequired + '/>';
+                                InspectionDetailPageHTML += '</div><br/>'
+                            } else if (dataType === 'boolean') {
+                                if (htmlid === 'STKR__Activity_Found__c') {
+                                    InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">'
+                                    InspectionDetailPageHTML += '<input name="createformfield" type="checkbox" onclick="AddAnalysisOnInspection(this)" id="' + htmlid + '" ' + newhtmlrequired + '>'
+                                    InspectionDetailPageHTML += '<span>' + label + '</span>';
+                                    InspectionDetailPageHTML += '</label><br>';
+                                } else {
+                                    InspectionDetailPageHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">'
+                                    InspectionDetailPageHTML += '<input name="createformfield" type="checkbox"  style="width:25px;height:25px;" id="' + htmlid + '" ' + newhtmlrequired + '>'
+                                    InspectionDetailPageHTML += '<span style="vertical-align: super;">' + label + '</span>';
+                                    InspectionDetailPageHTML += '</label><br>';
+                                }
+                            } else if (dataType === 'multipicklist') {
+                                InspectionDetailPageHTML += '<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                if (newhtmlrequired === 'required')
+                                    InspectionDetailPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                else
+                                    InspectionDetailPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                InspectionDetailPageHTML += '<select class="mdl-textfield__input" name="createformfield" id="' + htmlid + '" multiple ' + newhtmlrequired + '>';
+                                for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                    InspectionDetailPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                }
+                                InspectionDetailPageHTML += '</select>';
+                                InspectionDetailPageHTML += '</div><br>';
+                            } else if (dataType === 'currency') {
+                                InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                InspectionDetailPageHTML += '<input type="number" name="createformfield" class="InspectionDetailPageMDLName mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                InspectionDetailPageHTML += '<label class="InspectionDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + "(" + userDefaultCurrency + ")" + '</label>';
+                                InspectionDetailPageHTML += '</div><br>';
+                            } else if(dataType === 'url'){
+                                InspectionDetailPageHTML += '<div class="InspectionDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                        InspectionDetailPageHTML += '<a style="color:#505050;"   name="createformfield" class="InspectionDetailPageMDLName ST_Clickable_Link mdl-textfield__input" id="' + htmlid + '">' + label + '</a>';
+                          
+                                        InspectionDetailPageHTML += '</div><br>';
+                        } else {
+                                console.error("Inspection Layout : Unhandled field type");
+                            }
+                        } catch (e) {
+                        }
+                    }
+                    else {
+                       // console.log('layoutitems1234', layoutItems[y])
+                        var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                        console.log('layoutcomponentsabc', layoutComponents);
+
+                        try {
+                            if (layoutComponents) {
+                                var spaceType = layoutComponents.type;
+                                if (spaceType === 'EmptySpace') {
+                                    InspectionDetailPageHTML += '<br>';
+                                }
+                                else {
+                                    console.log('In else', dataType);
+                                }
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
+                    }
+                }
+            }
+            InspectionDetailPageHTML += '</div>';
+        }
+        if (navigator.onLine) {
+            try {
+                if (InspectionItemDetail['STKR__Item_Photo__c'] !== null) {
+                    InspectionDetailPageHTML += '<div style="width:initial;background-color:white;margin:5%;"><span style="font-size:large;"><br>&nbsp;&nbsp;&nbsp;&nbsp;Item Photo:</span><br/><br/><center>' + InspectionItemDetail['STKR__Item_Photo__c'].replace('width', 'width="100%" 23').replace('height', 'height="100%" 23') + '</center><br/></div>'
+                }
+            } catch (err) {
+            }
+        }
+
+        if (ButtonSettings.STKR__disablePrepWasteButton__c) {
+            InspectionDetailPageHTML += '<div id= "CustomSetting_PrepWasteOnInspection" class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;">';
+            if (PrepWasteLabel !== 'undefined' && PrepWasteLabel !== undefined && PrepWasteLabel !== 'null' && PrepWasteLabel !== null) {
+                InspectionDetailPageHTML += '<label style="padding-top:2%;float:left;font-weight:bold;" id="PrepWasteLabelOnInspection">' + PrepWasteLabel + '</label>'
+                InspectionDetailPageHTML += '<br/><button style="width:100;margin-bottom:3%;margin-top:5%;" onclick="gotoPrepWasteMgmtInspection(\'' + InspectionId + '\');" data-role="button" class="InspectionDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="PrepWasteButtonOnInspection">' + "Select " + PrepWasteLabel + '</button></div>';
+            } else {
+                InspectionDetailPageHTML += '<label style="padding-top:2%;float:left;font-weight:bold;" id="PrepWasteLabelOnInspection">Prep/Waste Used</label>'
+                InspectionDetailPageHTML += '<button style="width:100;margin-bottom:3%;margin-top:5%;" onclick="gotoPrepWasteMgmtInspection(\'' + InspectionId + '\');" data-role="button" class="InspectionDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="PrepWasteButtonOnInspection">Select Prep/Waste Used</button></div>';
+            }
+        }
+
+        InspectionDetailPageHTML += '<center><button onclick="CompleteInspection();" style="font-weight:bold;color:white;width:90%;margin-bottom:3%;background-color:\#7FE817;" class="InspectionDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">Inspect</button></center>';
+
+        $('#CustomLayout').html(InspectionDetailPageHTML);
+        SetValues();
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('InspectionDetailPageMDLName'));
+
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+
+    }
+
+    function gotoPrepWasteMgmtInspection(id) {
+        /*if (InspectionPageDetailData['Id'].length < 18) {
+            app.toastMessage('This is offline created Inspection, You can\'t create Prep/Waste', 'long');
+            return;
+        }*/
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            app.navigate('view/PrepWasteManagement.html?visitid=' + newDetailValue[0]['Id'] + '&Visitname=' + newDetailValue[0]['Name'] + '&inspectionid=' + id + '&From=Inspection');
+        }
+
+    }
+
+    function ChangeDependentValuesInspection(htmlid, objname, nameattr) {
+        for (var i = 0; i < InspectionDetail_DependentPicklistMap[htmlid].length; i++) {
+            var res = getDependentOptions(objname, htmlid, InspectionDetail_DependentPicklistMap[htmlid][i]);
+            var value = $('#' + htmlid + '[name="' + nameattr + '"]').val();
+            var html = '';
+            // Remove values from picklist depending on the record types.. 
+            for (var j = 0; j < InspectionDetail_PageLayout['editLayoutSections'].length; j++) {
+                for (var k = 0; k < InspectionDetail_PageLayout['editLayoutSections'][j]['layoutRows'].length; k++) {
+                    for (var l = 0; l < InspectionDetail_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'].length; l++) {
+                        for (var m = 0; m < InspectionDetail_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'].length; m++) {
+                            if (InspectionDetail_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'][m]['value'] && InspectionDetail_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'][m]['details']['name'] === InspectionDetail_DependentPicklistMap[htmlid][i]) {
+                                var picklistValues = InspectionDetail_PageLayout['editLayoutSections'][j]['layoutRows'][k]['layoutItems'][l]['layoutComponents'][m]['details']['picklistValues'];
+                                var arraryofval = [];
+                                for (var o = 0; o < picklistValues.length; o++) {
+                                    arraryofval.push(picklistValues[o]['value']);
+                                }
+
+                                var n = res[value].length
+                                while (n--) {
+                                    if (arraryofval.indexOf(res[value][n]) === -1) {
+                                        res[value].splice(n, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (var prop = 0; prop < res[value].length; prop++) {
+                html += "<option value = '" + res[value][prop] + "'>" + res[value][prop] + "</option>"
+            }
+
+            $('[name="' + nameattr + '"]#' + InspectionDetail_DependentPicklistMap[htmlid][i]).html(html);
+        }
+    }
+
+    var htmlComponents;
+
+    function SetValues() {
+        htmlComponents = $("[name='createformfield']");
+        for (var i = 0; i < htmlComponents.length; i++) {
+            if (htmlComponents[i]['tagName'] === 'SELECT') {
+                var values = InspectionPageDetailData[htmlComponents[i]['id']];
+                if (values) {
+                    $.each(values.split(";"), function (x, e) {
+                        $("[name='createformfield']#" + htmlComponents[i]['id'] + " option[value='" + e + "']").prop("selected", true);
+                    });
+                }
+            } else if (htmlComponents[i]['type'] === "checkbox") {
+                $('[name="createformfield"]#' + htmlComponents[i]['id']).prop('checked', InspectionPageDetailData[htmlComponents[i]['id']]);
+            } else if (htmlComponents[i]['type'] === "date") {
+                if (InspectionPageDetailData[htmlComponents[i]['id']]) {
+                    if (device.platform === 'Android') {
+                        var date = new Date(InspectionPageDetailData[htmlComponents[i]['id']]);
+
+                        var month;
+                        var day;
+                        if ((dateval.getMonth() + 1) < 10) {
+                            month = '0' + (dateval.getMonth() + 1)
+                        } else {
+                            month = dateval.getMonth() + 1
+                        }
+                        if (dateval.getDate() < 10) {
+                            day = '0' + dateval.getDate()
+                        } else {
+                            day = dateval.getDate()
+                        }
+                        //console.log($('#' + htmlComponents[i]['id'] + '[name="createformfield"]').val(date.toISOString().split('T')[0]))
+                        $('#' + htmlComponents[i]['id'] + '[name="createformfield"]').val(dateval.getFullYear() + '-' + (month) + '-' + day)
+                    }
+                    if (device.platform === 'iOS') {
+                        //console.log('date in inspection ' + htmlComponents[i]['id'])
+                        var dateval = new Date(InspectionPageDetailData[htmlComponents[i]['id']]);
+                        var month;
+                        var day;
+                        if ((dateval.getMonth() + 1) < 10) {
+                            month = '0' + (dateval.getMonth() + 1)
+                        } else {
+                            month = dateval.getMonth() + 1
+                        }
+                        if (dateval.getDate() < 10) {
+                            day = '0' + dateval.getDate()
+                        } else {
+                            day = dateval.getDate()
+                        }
+                        //console.log(dateval)
+                        $('[name="createformfield"]#' + htmlComponents[i]['id']).val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                    }
+                }
+            } else if (htmlComponents[i]['type'] === "datetime-local") {
+                //console.log('datetime-local values ', InspectionPageDetailData[htmlComponents[i]['id']]);
+                if (InspectionPageDetailData[htmlComponents[i]['id']]) {
+                    if (device.platform === 'Android') {
+                        try {
+                            if (typeof (InspectionPageDetailData[htmlComponents[i]['id']]) === "object") {
+                                $('#' + htmlComponents[i]['id'] + "[name='createformfield']").val((InspectionPageDetailData[htmlComponents[i]['id']].toJSON()).split('Z')[0]);
+                            } else if (typeof (InspectionPageDetailData[htmlComponents[i]['id']]) === "string") {
+                                $('#' + htmlComponents[i]['id'] + "[name='createformfield']").val(InspectionPageDetailData[htmlComponents[i]['id']].split('+')[0]);
+                            }
+                        } catch (err) {
+                            //console.log('date error' + err)
+                            $('[name="createformfield"]#' + htmlComponents[i]['id']).val('');
+                        }
+                    }
+                    if (device.platform === 'iOS') {
+                        try {
+                            if (typeof (InspectionPageDetailData[htmlComponents[i]['id']]) === "object") {
+                                //console.log('HTML DateTime Local : ', htmlComponents[i]['id']);
+                                $('#' + htmlComponents[i]['id'] + "[name='createformfield']").val((InspectionPageDetailData[htmlComponents[i]['id']].toJSON()).split('Z')[0]);
+                            } else if (typeof (InspectionPageDetailData[htmlComponents[i]['id']]) === "string") {
+                                $('#' + htmlComponents[i]['id'] + "[name='createformfield']").val(InspectionPageDetailData[htmlComponents[i]['id']].split('+')[0]);
+                            }
+                        } catch (err) {
+                            //console.log('date error' + err)
+                            $('[name="createformfield"]#' + htmlComponents[i]['id']).val('');
+                        }
+                    }
+                }
+            } else if (htmlComponents[i]['tagName'] == 'A') {
+                console.log('taggggggg22', InspectionPageDetailData[htmlComponents[i]['id']],htmlComponents[i]['id'],InspectionPageDetailData,$.parseHTML(InspectionPageDetailData[htmlComponents[i]['id']]));
+              
+              
+              if($.parseHTML(InspectionPageDetailData[htmlComponents[i]['id']]) != null){
+                if ($.parseHTML(InspectionPageDetailData[htmlComponents[i]['id']])[0].nodeName == "A") {
+                    //$.parseHTML(newDetailValue[0].STKR__FormulaURL__c)[0].href
+                    $("[name='createformfield']" + '#' + htmlComponents[i]['id'])[0].onclick = function (abc) {
+                        console.log('hukins', abc.currentTarget.id);
+
+                        window.open($.parseHTML(InspectionPageDetailData[abc.currentTarget.id])[0].href, '_blank');
+                        preventDefault();
+                    }
+                } else {
+                    $("[name='createformfield']" + '#' + htmlComponents[i]['id'])[0].onclick = function (abc) {
+                        window.open(InspectionPageDetailData[abc.currentTarget.id], '_blank');
+                        preventDefault();
+                    }
+                }
+              }
+              
+            } else {
+                $('[name="createformfield"]#' + htmlComponents[i]['id']).val(InspectionPageDetailData[htmlComponents[i]['id']]);
+            }
+        }
+    }
+
+    function MinMaxValuesOnInspectionDetailPage() {
+        //document.removeEventListener("backbutton", MinMaxValuesOnInspectionDetailPage);
+        if (CurrentRecordType === 'Calorifier') {
+            if (($('#STKR__Flow_Temp__c[name="createformfield"]').val() < 60) || ($('#STKR__Return_Temp__c[name="createformfield"]').val()) < 50) {
+                app.toastMessage('flow temperature should greater than 60 and Return temperature should greater than 50', 'long');
+            } else {
+                UpdateValues();
+            }
+        } else if (CurrentRecordType === 'TMV') {
+            if (($('#STKR__Cold_Water_Temperature_oC__c[name="createformfield"]').val() > 20) || ($('#STKR__Hot_Water_At_outlet_oC__c[name="createformfield"]').val() > 43) || ($('#STKR__Hot_Water_Pre_TMV_oC__c[name="createformfield"]').val() > 43)) {
+                app.toastMessage('Cold temperature should be less than 20 and Hot temprature should be greater then 50', 'long')
+            } else {
+                UpdateValues();
+            }
+        } else {
+            if (($('#STKR__Cold_Water_Temperature_oC__c[name="createformfield"]').val() > 20) || ($('#STKR__Hot_Water_At_outlet_oC__c[name="createformfield"]').val() < 50) || ($('#STKR__Hot_Water_Pre_TMV_oC__c[name="createformfield"]').val() < 50)) {
+                app.toastMessage('Cold temperature should be less than 20 and Hot temprature should be greater then 43', 'long')
+            } else {
+                UpdateValues();
+            }
+        }
+    }
+
+    function UpdateValues(NavigatingForward, OfflineCreatedInspection, UpdateStatus) {
+        var countInputFields = 0;
+        var datatoupload = {};
+        InspectionItemId = '';
+        htmlComponents = $("[name='createformfield'][name1!='RemoveThis']");
+        //console.log('HTML COMPONENTS', htmlComponents);
+        CreateMultipleAnalysis();
+        for (var i = 0; i < htmlComponents.length; i++) {
+            var values = '';
+            if (htmlComponents[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $("#" + htmlComponents[i]['id'] + "[name='createformfield']")[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    //console.log("Select option  value " + selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (htmlComponents[i]['type'] === "checkbox") {
+                values = $('#' + htmlComponents[i]['id'] + "[name='createformfield']").prop('checked');
+            } else if (htmlComponents[i]['type'] === "date") {
+                values = $('#' + htmlComponents[i]['id'] + "[name='createformfield']").val();
+                if (!values) {
+                    values = null;
+                }
+            } else {
+                values = $("#" + htmlComponents[i]['id'] + "[name='createformfield']").val();
+            }
+            datatoupload[htmlComponents[i]['id']] = values;
+            InspectionPageDetailData['STKR__Notes__c'] = $('#STKR__Notes__c[name="createformfield"]').val();
+            //console.log("datatoupload ", datatoupload);
+            if (htmlComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return 'required_field_empty';
+            }
+            // Change status if all fields are filled
+            if ((htmlComponents[i]['type'] === "checkbox" ? values : false) && values.toString()) {
+                countInputFields++;
+            }
+        }
+
+        datatoupload['Id'] = InspectionPageDetailData['Id'];
+
+        if (ChangedrecordTypeId) {
+            datatoupload['RecordTypeId'] = ChangedrecordTypeId;
+        }
+
+         //Issue Fix Start
+         var currentInspectionStatus = InspectionData[InspectionIndex]["STKR__Status__c"];
+         if (UpdateStatus) {
+             datatoupload["STKR__Status__c"] = "Inspected";
+             datatoupload['STKR__Inspection_Date_Time__c'] = new Date();
+ 
+             for (var i = 0; i < NewToInspect.length; i++) {
+                 if (NewToInspect[i]['InspectionId'] === InspectionData[InspectionIndex]["Id"]) {
+                     NewToInspect[i]['Status'] = 'Inspected';
+                     NewInspectedItem.push(NewToInspect.splice(i, 1));
+                     $("#listViewItemToInspect").data("kendoMobileListView").replace(NewToInspect);
+                     $('#listViewItemToInspect li:nth-child(odd)').css('background-color', 'lightblue');
+                     if (NewToInspect.length === 0) {
+                         $('#MessageOfInspected').show();
+                     } else {
+                         $('#MessageOfInspected').hide();
+                     }
+                     break;
+                 }
+             }
+         }
+         //End
+
+        for (var property in datatoupload) {
+            InspectionData[InspectionIndex][property] = datatoupload[property];
+        }
+        //console.log(InspectionData[InspectionIndex]);
+        try {
+            if (OfflineCreatedInspection) {
+                InspectionData[InspectionIndex]['STKR__Inspection_Date_Time__c'] = new Date();
+            }
+        } catch (err) {
+            //alert('Inpsection Detail Page 1 : ' + err);
+        }
+/* this code is already written above
+        if (UpdateStatus) {
+            //change here..
+            datatoupload["STKR__Status__c"] = "Inspected";
+            datatoupload['STKR__Inspection_Date_Time__c'] = new Date();
+        }  */
+
+        // Add Status to the offline created inspection if user click on inspect button
+        if (!AppIsOnline && OfflineCreatedInspection && datatoupload['Id'].length < 18) {
+            InspectionData[InspectionIndex]['STKR__Status__c'] = "Inspected";
+        }
+
+        app.insertRecord('Inspection', {
+            JsonData: JSON.stringify(InspectionData[InspectionIndex]),
+            Updated: 'false',
+            UserId: creds.UserID,
+            VisitID: InspectionData[InspectionIndex]['STKR__Visit__c'],
+            InspectionID: InspectionData[InspectionIndex]['Id']
+        });
+          //Start Issue fix
+       /*   if (currentInspectionStatus !== 'Inspected') {
+            newDetailValue[0]['STKR__Items_to_inspect__c'] = newDetailValue[0]['STKR__Items_to_inspect__c'] - 1;
+            newDetailValue[0]['STKR__Items_Inspected__c'] = newDetailValue[0]['STKR__Items_Inspected__c'] + 1;
+        } */
+        var Visitdata = {
+            JsonData: JSON.stringify(newDetailValue[0]),
+            Updated: 'false',
+            UserId: creds.UserID,
+            VisitID: newDetailValue[0]['Id']
+        }
+        app.insertRecord('Visits', Visitdata);
+        // End issue fix
+
+        // Check whether device is online or not
+        // Added datatoupload['Id'] === 18 to allow only updating those records which are available on salesforce...
+        if (AppIsOnline && datatoupload['Id'].length === 18 && !isCurrentVisitInProgress) {
+            //Device is online
+            jsconn.sobject("STKR__Inspection__c").update(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                //console.log('Updated Successfully : ' + ret.id);
+                app.deleteRecord('DataToUpdate', ret.id);
+                app.toastMessage('Inspection successfully updated', 'long');
+                if (UpdatingInspectionRecordType === 1) {
+                    NavigateToRecentInspection();
+                }
+            });
+        } else {
+            // Device is offline
+            //console.log('Inspection data', InspectionData[InspectionIndex]);
+
+            var data = {
+                JsonData: JSON.stringify(InspectionData[InspectionIndex]),
+                ObjectName: 'STKR__Inspection__c',
+                UserId: creds.UserID,
+                RecordId: InspectionData[InspectionIndex]['Id']
+            }
+
+            if (InspectionData[InspectionIndex]['Id'].length == 18) {
+                // Record is being updated and is already being on salesforce ...
+                data['UpdateOrInsert'] = 'update';
+                data['Updated'] = 'false';
+            } else {
+                // Record is created on mobile device and needs to be created instead of updated... 
+                // When we are creating batch it get converted to upsert...
+                data['UpdateOrInsert'] = 'insert';
+                data['Updated'] = 'newRecord';
+            }
+
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('Inspection successfully stored', 'long');
+            if (UpdatingInspectionRecordType === 1) {
+                NavigateToRecentInspection();
+            }
+
+            //@TODO : delete below code
+            /*try {
+                app.selectFromTable('DataToUpdate', 'recordid', InspectionData[InspectionIndex]['Id'], function (a, rs) {
+                    if (rs.rows.length > 0) {
+                        var updateOrInsert = rs.rows.item(0)['updated'];
+                        var data = {
+                            JsonData: JSON.stringify(InspectionData[InspectionIndex]),
+                            ObjectName: 'STKR__Inspection__c',
+                            UserId: creds.UserID,
+                            RecordId: InspectionData[InspectionIndex]['Id']
+                        }
+                        if (updateOrInsert === 'false' && InspectionData[InspectionIndex]['Id'].length == 18) {
+                            // Record is being updated and is already being on salesforce ...
+                            data['UpdateOrInsert'] = 'update';
+                            data['Updated'] = 'false';
+                        } else if (updateOrInsert === 'newRecord') {
+                            // Record is created on mobile device and needs to be created instead of updated... 
+                            // When we are creating batch it get converted to upsert...
+                            data['UpdateOrInsert'] = 'insert';
+                            data['Updated'] = 'newRecord';
+                        }
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Inspection successfully stored', 'long');
+                        if (UpdatingInspectionRecordType === 1) {
+                            NavigateToRecentInspection();
+                        }
+                    } else {
+                        var data = {
+                            JsonData: JSON.stringify(InspectionData[InspectionIndex]),
+                            ObjectName: 'STKR__Inspection__c',
+                            Updated: 'false',
+                            UpdateOrInsert: 'insert',
+                            UserId: creds.UserID,
+                            RecordId: InspectionData[InspectionIndex]['Id']
+                        }
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Inspection successfully stored', 'long');
+                        if (UpdatingInspectionRecordType === 1) {
+                            NavigateToRecentInspection();
+                        }
+                    }
+                });
+            } catch (err) {
+                var data = {
+                    JsonData: JSON.stringify(InspectionData[InspectionIndex]),
+                    ObjectName: 'STKR__Inspection__c',
+                    Updated: 'false',
+                    UpdateOrInsert: 'insert',
+                    UserId: creds.UserID,
+                    RecordId: InspectionData[InspectionIndex]['Id']
+                }
+                app.insertRecord('DataToUpdate', data);
+                app.toastMessage('Inspection successfully stored', 'long');
+            }
+            */
+        }
+        // Don't navigate back if user clicks on Action/Image/Analysis icons
+        if (NavigatingForward) {
+        } else {
+            window.history.back();
+        }
+    }
+
+    function NavigateToAnalysis() {
+        /*if (InspectionPageDetailData['Id'].length < 18) {
+        app.toastMessage('This is offline created Inspection, You can\'t create Analysis', 'long');
+        return;
+        }*/
+
+        //For Complete Offline
+        //if (InspectionPageDetailData['STKR__Service_Item__c'].length != 18) {
+        //    app.toastMessage("Can't create analysis record on offline inspection item", "long")
+        //    return;
+        //}
+
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            app.navigate("view/Analysis.html?InspectionData=" + InspectionPageDetailData['Id'] + "&InspectionItemData=" + InspectionItemDetail['Id']);
+        }
+    }
+
+    function NavigateToAction() {
+        //if (InspectionPageDetailData['Id'].length < 18) {
+        //    app.toastMessage('This is offline created Inspection, You can\'t create Action', 'long');
+        //    return;
+        //}
+        //var InspectionItemId_temp = InspectionItemId;
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            app.navigate("view/Action.html?ActionVisitId=" + VisitId + "&InspectionItemId=" + InspectionItemDetail['Id'] + "&From=FromInspectionDetail");
+        }
+
+    }
+
+    function UpdateInspection_OnAttachmentClick() {
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            app.navigate('view/AttachmentFolder.html?accountid=' + newDetailValue[0]['STKR__Account_lkp__c'] + '&visitid=' + newDetailValue[0]['Id'] + '&From=DetailPage');
+        }
+    }
+
+    function gotoShowImageFromInspection() {
+
+        /*   if (InspectionPageDetailData['Id'].length < 18) {
+               app.toastMessage('This is offline created Inspection, You can\'t upload images', 'long');
+               return;
+           } */
+
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            if (InspectionName) {
+                app.navigate('view/ShowImage.html?VisitId=' + VisitId + '&InspectionName=' + InspectionName);
+            } else if (InspectionMobileUniqueId) {
+                app.navigate('view/ShowImage.html?VisitId=' + VisitId + '&InspectionName=' + InspectionMobileUniqueId);
+            }
+        }
+    }
+
+    function CompleteInspection() {
+        if (InspectionData[InspectionIndex]['Id'].length === 18) {
+            if (InspectionData[InspectionIndex]["STKR__Status__c"] !== 'Inspected') {
+                console.log('inside');
+                newDetailValue[0]['STKR__Items_to_inspect__c'] = newDetailValue[0]['STKR__Items_to_inspect__c'] - 1;
+                newDetailValue[0]['STKR__Items_Inspected__c'] = newDetailValue[0]['STKR__Items_Inspected__c'] + 1;
+            }
+            var res = UpdateValues(null, null, true);
+            if (res == "required_field_empty") {
+                if (InspectionData[InspectionIndex]["STKR__Status__c"] !== 'Inspected') {
+                    console.log('inside');
+                    newDetailValue[0]['STKR__Items_to_inspect__c'] = newDetailValue[0]['STKR__Items_to_inspect__c'] + 1;
+                    newDetailValue[0]['STKR__Items_Inspected__c'] = newDetailValue[0]['STKR__Items_Inspected__c'] - 1;
+                    var Visitdata = {
+                        JsonData: JSON.stringify(newDetailValue[0]),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+                        VisitID: newDetailValue[0]['Id']
+                    }
+                    app.insertRecord('Visits', Visitdata);
+                }
+                return app.toastMessage("Please fill required fields.", "long");
+            }
+            //Don't call this function as it is replacing the record with only 3 fields..
+
+      
+            //changeStatus(InspectionId, 'Pending', null);
+
+        } else {
+            if (InspectionData[InspectionIndex]["STKR__Status__c"] !== 'Inspected') {
+                newDetailValue[0]['STKR__Items_to_inspect__c'] = newDetailValue[0]['STKR__Items_to_inspect__c'] - 1;
+                newDetailValue[0]['STKR__Items_Inspected__c'] = newDetailValue[0]['STKR__Items_Inspected__c'] + 1;
+            }
+            UpdateValues(null, true, true);
+        }
+    }
+
+    function gotoinspectionitemdetailpage() {
+        //InspectionItemDetail_Id = InspectionItemId;
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            app.navigate("view/InspectionItemDynamicDetailPage.html?InspectionItemDetail_Id=" + InspectionItemDetail['Id']);
+        }
+    }
+
+    var Default_Analysis_Type;
+    var Record_Id_Analysis;
+    var currentElementa;
+
+    //for new multiple analysis feature e155
+
+    function AddAnalysisOnInspection() {
+
+        Record_Id_Analysis = '';
+        var Default_Analysis_Type_Array = [];
+        Default_Analysis_Type = InspectionItemDetail['STKR__Default_Analysis__c'];
+        if (Default_Analysis_Type) {
+            Default_Analysis_Type_Array = Default_Analysis_Type.split(';');
+        }
+        // If there are multiple values in picklist ..
+        if (Default_Analysis_Type_Array.length >= 1) {
+            //UpdateValues(true);
+            DSCreateMultipleAnalysis(Default_Analysis_Type);
+        }
+    }
+
+
+
+    /*
+    function AddAnalysisOnInspection(currentElement) {
+        try {
+            if (!currentElement.checked) {
+                return;
+            }
+        } catch (err) {
+        }
+
+        Record_Id_Analysis = '';
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'buttonLabels': ['Yes', 'No'],
+            'title': 'Field is updated, Do you wish to add analysis ?'
+        };
+        window.plugins.actionsheet.show(options, function (buttonIndex) {
+            if (buttonIndex === 1) {
+                var Default_Analysis_Type_Array = [];
+                Default_Analysis_Type = InspectionItemDetail['STKR__Default_Analysis__c'];
+                if (Default_Analysis_Type) {
+                    Default_Analysis_Type_Array = Default_Analysis_Type.split(';');
+                } else {
+                    //Commented to support v3.0
+                    //if (InspectionPageDetailData['Id'].length < 18) {
+                    //    app.toastMessage('This is offline created Inspection, You can\'t create Analysis', 'long');
+                    //    return;
+                    // }
+                    //app.navigate('view/CreateAnalysis.html#CreateAnalysislistPage');
+                    app.navigate('view/CreateAnalysis.html');
+                    UpdateValues(true);
+                }
+                if (Default_Analysis_Type_Array.length === 1) {
+                    // if there is only one value in picklist ...
+                    for (var i = 0; i < AnalysisRecordTypes.length; i++) {
+                        if (Default_Analysis_Type === AnalysisRecordTypes[i]['name'] && AnalysisRecordTypes[i]['available']) {
+                            Record_Id_Analysis = AnalysisRecordTypes[i]['recordTypeId'];
+                        }
+                    }
+                    if (!Record_Id_Analysis) {
+                        app.toastMessage('This is not valid record type for this user', 'long');
+                        return;
+                    }
+                    if (Default_Analysis_Type === "EFK Analysis" || Default_Analysis_Type === "Pest Analysis") {
+                        //Commented to support v3.0
+                        //if (InspectionPageDetailData['Id'].length < 18) {
+                        //    app.toastMessage('This is offline created Inspection, You can\'t create Analysis', 'long');
+                        //    return;
+                        //}
+                        app.navigate('view/PestAnalysis.html?AnalysisRecordId=' + Record_Id_Analysis);
+                        UpdateValues(true);
+                    } else {
+                        //Commented to support v3.0
+                        // If there is only single value in picklist which is other than EFK and Pest analysis 
+                        //if (InspectionPageDetailData['Id'].length < 18) {
+                        //    app.toastMessage('This is offline created Inspection, You can\'t create Analysis', 'long');
+                        //    return;
+                        //}
+                        app.navigate('view/CreateAnalysisLayout.html?AnalysisRecordId=' + Record_Id_Analysis);
+                        UpdateValues(true);
+                    }
+                }
+                // If there are multiple values in picklist ..
+                if (Default_Analysis_Type_Array.length > 1) {
+                    //Commented to support v3.0
+                    //app.toastMessage('Multiple records are not yet supported', 'long');
+                    //if (InspectionPageDetailData['Id'].length < 18) {
+                    //    app.toastMessage('This is offline created Inspection, You can\'t create Analysis', 'long');
+                    //    return;
+                    //}
+                    UpdateValues(true);
+                    app.navigate('view/CreateAnalysisMultipleDynamic.html?AnalysisRecordId=' + Default_Analysis_Type);
+                }
+            } else if (buttonIndex === 2) {
+            }
+        });
+    }
+*/
+    var ChangedrecordTypeId = '';
+    function UpdateRecordType(value) {
+        ChangedrecordTypeId = '';
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'buttonLabels': ['Yes', 'No'],
+            'title': 'Do you wish to change the Record Type?'
+        };
+        window.plugins.actionsheet.show(options, function (buttonIndex) {
+            if (buttonIndex === 1) {
+                ChangedrecordTypeId = value;
+                UpdatingInspectionRecordType = 1;
+                UpdateValues();
+            } else if (buttonIndex === 2) {
+                $('#InspectionDetail_recordtype').val(InspectionPageDetailData['RecordTypeId']);
+            } else {
+                $('#InspectionDetail_recordtype').val(InspectionPageDetailData['RecordTypeId']);
+            }
+        });
+    }
+
+    function InspectionHistory() {
+        // if(InspectionPageDetailData.STKR__Status__c == "Pending"){
+        //     return app.toastMessage("Status is pending","long");
+        // }
+
+        //InspectionItemDetail_Id = InspectionItemId;
+        var res = UpdateValues(true);
+        if (res != "required_field_empty") {
+            app.navigate("view/InspectionHistoryPage.html?InspectionItemDetail_Id=" + InspectionItemDetail['Id']);
+        }
+
+    }
+
+    function logItemlocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+
+                InspectionItemDetail.STKR__Geolocation__c = position;
+
+                var datatoupload = {
+                    STKR__Geolocation__Latitude__s: position.coords.latitude,
+                    STKR__Geolocation__Longitude__s: position.coords.longitude
+                }
+
+                for (var property in datatoupload) {
+                    InspectionItemData[inspectionitemindex_location][property] = datatoupload[property];
+                }
+                datatoupload['Id'] = InspectionItemData[inspectionitemindex_location]['Id'];
+                app.insertRecord('InspectionItem', {
+                    JsonData: JSON.stringify(InspectionItemData[inspectionitemindex_location]),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    InspectionItemID: InspectionItemData[inspectionitemindex_location]['Id']
+                });
+
+                if (AppIsOnline && !isCurrentVisitInProgress) {
+                    //Device is online
+                    jsconn.sobject("STKR__Service_Item__c").update(datatoupload, function (err, ret) {
+                        if (err || !ret.success) {
+                            StoreError(err);
+                            return console.error(err, ret);
+                        }
+                        app.toastMessage('Location is updated', 'long');
+                        app.deleteRecord('DataToUpdate', ret.id);
+
+                    });
+                } else {
+                    // Device is offline
+                    // Store in DataToUpdate table
+                    // Check if new offline record is being updated 
+
+                    var data = {
+                        JsonData: JSON.stringify(InspectionItemData[inspectionitemindex_location]),
+                        ObjectName: 'STKR__Service_Item__c',
+                        Updated: 'newRecord',
+                        UserId: creds.UserID,
+                        RecordId: InspectionItemData[inspectionitemindex_location]['Id']
+                    }
+
+                    if (InspectionItemData[inspectionitemindex_location]['Id'].length == 18) {
+                        // Record is being updated and is already being on salesforce ...
+                        data['UpdateOrInsert'] = 'update';
+                        data['Updated'] = 'false';
+                    } else {
+                        // Record is created on mobile device and needs to be created instead of updated... 
+                        data['UpdateOrInsert'] = 'insert';
+                        data['Updated'] = 'newRecord';
+                    }
+                    app.insertRecord('DataToUpdate', data);
+                    app.toastMessage('Location is updated', 'long');
+
+
+                    //@todo : delete below code
+                    /*
+                    try {
+                        app.selectFromTable('DataToUpdate', 'recordid', InspectionItemData[inspectionitemindex_location]['Id'], function (a, rs) {
+                            if (rs.rows.length > 0) {
+                                var updateOrInsert = rs.rows.item(0)['updated'];
+                                var data = {
+                                    JsonData: JSON.stringify(InspectionItemData[inspectionitemindex_location]),
+                                    ObjectName: 'STKR__Service_Item__c',
+                                    Updated: 'newRecord',
+                                    UserId: creds.UserID,
+                                    RecordId: InspectionItemData[inspectionitemindex_location]['Id']
+                                }
+                                if (updateOrInsert === 'false' && InspectionItemData[inspectionitemindex_location]['Id'].length == 18) {
+                                    // Record is being updated and is already being on salesforce ...
+                                    data['UpdateOrInsert'] = 'update';
+                                    data['Updated'] = 'false';
+                                } else if (updateOrInsert === 'newRecord') {
+                                    // Record is created on mobile device and needs to be created instead of updated... 
+                                    data['UpdateOrInsert'] = 'insert';
+                                    data['Updated'] = 'newRecord';
+                                }
+                                app.insertRecord('DataToUpdate', data);
+                                app.toastMessage('Location is updated', 'long');
+
+                            } else {
+                                var data = {
+                                    JsonData: JSON.stringify(InspectionItemData[inspectionitemindex_location]),
+                                    ObjectName: 'STKR__Service_Item__c',
+                                    Updated: 'false',
+                                    UpdateOrInsert: 'update',
+                                    UserId: creds.UserID,
+                                    RecordId: InspectionItemData[inspectionitemindex_location]['Id']
+                                }
+                                app.insertRecord('DataToUpdate', data);
+                                app.toastMessage('Location is updated', 'long');
+
+                            }
+                        });
+                    } catch (err) {
+                        var data = {
+                            JsonData: JSON.stringify(InspectionItemData[inspectionitemindex_location]),
+                            ObjectName: 'STKR__Service_Item__c',
+                            Updated: 'false',
+                            UpdateOrInsert: 'upsert',
+                            UserId: creds.UserID,
+                            RecordId: InspectionItemData[inspectionitemindex_location]['Id']
+                        }
+                        app.insertRecord('DataToUpdate', data);
+                        app.toastMessage('Location is updated', 'long');
+
+                    }*/
+                }
+            });
+        }
+    }
+
+    function finditemlocation() {
+        if (AppIsOnline) {
+            app.navigate('view/ShowItemsOnMap.html')
+        } else {
+            app.toastMessage("Device is offline. Please turn on Internet to see the map", 'long');
+        }
+    }
+
+
+    var AnalysisMultipleRecordid = '';
+    var AnalysisMultipleRecordidArray = [], MuplipleAnalysis_backbutton_call = false;
+
+    function DSCreateMultipleAnalysis(e) {
+        MuplipleAnalysis_backbutton_call = false;
+        CountNumberOfOflineItem();
+        try {
+            // e.view.scroller.reset();
+            // $('#CreateMultipleAnalysisHTML').html('');
+        } catch (error) {
+        }
+
+        console.log('On Create Multiple Analysis Layout Page');
+        AnalysisMultipleRecordid = '';
+        try {
+            AnalysisMultipleRecordid = e;
+            AnalysisMultipleRecordidArray = AnalysisMultipleRecordid.split(';');
+            if (AnalysisMultipleRecordidArray.length >= 1) {
+                app.db.transaction(function (tx) {
+                    for (var i = 0; i < AnalysisMultipleRecordidArray.length; i++) {
+                        for (var j = 0; j < AnalysisRecordTypes.length; j++) {
+                            if (AnalysisMultipleRecordidArray[i] === AnalysisRecordTypes[j]['name']) {
+                                function getLayout(AnalysisRecordTypes, RecordTypeName) {
+                                    tx.executeSql("Select * from AnalysisRecordType where recordid=?", [AnalysisRecordTypes],
+                                        function (tx, rs) {
+                                            if (rs.rows.length) {
+                                                console.log(rs.rows.item(0));
+                                                var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                                                console.log('Analysis Record Type Layout', Layoutdata);
+                                                AnalysisMultipleLayoutGenerator(Layoutdata, AnalysisRecordTypes, RecordTypeName);
+                                            } else {
+                                                app.toastMessage('This record type is not found, Please refresh data', 'long');
+                                            }
+                                        }, function (tx, error) {
+                                            StoreError(error);
+                                            alert(error.message)
+                                        });
+                                }
+
+                                getLayout(AnalysisRecordTypes[j]['recordTypeId'], AnalysisMultipleRecordidArray[i]);
+                            }
+                        }
+                    }
+                });
+            } else {
+                app.toastMessage('Only one record type', 'long');
+            }
+        } catch (err) {
+            StoreError(err)
+            console.log('1:' + err);
+        }
+    }
+
+    function AnalysisMultipleLayoutGenerator(Layoutdata, RecordTypeId, RecordTypeName) {
+        var AnalysisLayoutPageHTML = '';
+        var showLayout = false;
+        var countNumber = 0;
+        for (var x = 0; x < Layoutdata['editLayoutSections'].length; x++) {
+            var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+            var layoutHeader = Layoutdata['editLayoutSections'][x]['heading'];
+            if (layoutHeader !== "System Information") {
+                AnalysisLayoutPageHTML += '<div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;">';
+                AnalysisLayoutPageHTML += '<center><h4 style="color:rgb(0,188,212)">' + RecordTypeName + '</h4></center>';
+             //   AnalysisLayoutPageHTML += '<center><h4>' + layoutHeader + '</h4></center>';
+                for (var j = 0; j < layoutRows.length; j++) {
+                    var layoutItems = layoutRows[j]['layoutItems'];
+                    for (var y = 0; y < layoutItems.length; y++) {
+                        if (layoutItems[y]['editableForUpdate']) {
+                            var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                            var htmlid = layoutComponents['details']['name'];
+
+                            try {
+                                if (htmlid == 'STKR__Pests__c') {
+                                    showLayout = true;
+                                    console.log(layoutComponents['details']['picklistValues']);
+                                    for (i = 0; i < layoutComponents['details']['picklistValues'].length; i++) {
+                                        AnalysisLayoutPageHTML += '<table style="width:100%;">'
+                                        AnalysisLayoutPageHTML += '<td style="width:60%;"><span value=' + layoutComponents['details']['picklistValues'][i]['value'] + ' name="AnalysisMultipleLayoutName" id=' + htmlid + RecordTypeId + '  style="margin-left:1%;font-size:small;" id=' + i + '>' + layoutComponents['details']['picklistValues'][i]['label'] + '</span></td>'
+                                        AnalysisLayoutPageHTML += '<td style="float:right;width:40%;"> <input type="number" name="AnalysisMultipleLayoutName"  id="Qty' + countNumber + RecordTypeId + InspectionId + '"  rtid=' + htmlid + RecordTypeId + ' aname="' + layoutComponents['details']['picklistValues'][i]['value'] + '" class=" mdl-textfield__input" placeholder="Qty" value=""  style="width:50%;" float="right"/></input></td>'
+                                        AnalysisLayoutPageHTML += '</table>'
+                                        countNumber++;
+                                    }
+
+                                } else {
+                                    console.log('In else', dataType);
+                                }
+                            } catch (e) {
+                            }
+                        }
+                    }
+                }
+
+                AnalysisLayoutPageHTML += '</div>';
+            }
+        }
+        console.log(AnalysisLayoutPageHTML);
+
+        if (showLayout) {
+            $('#CreateMultipleAnalysisHTML').append(AnalysisLayoutPageHTML);
+            setQtyDataOnInspection();
+        }
+
+        // if (device.platform == "Android")
+        //componentHandler.upgradeElements(document.getElementsByClassName('AnalysisDetailPageMDLName'));
+    }
+
+    function setQtyDataOnInspection() {
+        var PestAnalysisHTMLComponent = $("input[type='number'][name='AnalysisMultipleLayoutName']");
+        for (var i = 0; i < PestAnalysisHTMLComponent.length; i++) {
+            //Find anaylysis record with this pest type
+            var pestvalue = 0, sfid = '';
+            for (var j = 0; j < AnalysisData.length; j++) {
+                if ((AnalysisData[j]['STKR__Inspection__c'] == InspectionId.substr(0, 15) || AnalysisData[j]['STKR__Inspection__c'] == InspectionId) && (AnalysisData[j]['STKR__Pests__c'] === ($(PestAnalysisHTMLComponent[i]).attr('aname'))) && (AnalysisData[j]['RecordTypeId'] === ($(PestAnalysisHTMLComponent[i]).attr('rtid')).split('__c')[1])) {
+                    console.log(AnalysisData[j]['STKR__Pests__c']);
+                    PestAnalysisHTMLComponent[i].value = AnalysisData[j]['STKR__Qty__c'];
+                    PestAnalysisHTMLComponent[i].id = AnalysisData[j]['Id'];;
+                    try {
+                        PestAnalysisHTMLComponent[i].sfid = AnalysisData[j]['Id'];
+
+                    } catch (er) { }
+                    break;
+                }
+            }
+        }
+
+
+    }
+    function CreateMultipleAnalysis() {
+        var ssd = $("[name='AnalysisMultipleLayoutName']");
+        var analysismultipleInput = $("input[type='number'][name='AnalysisMultipleLayoutName']");
+        var AllanalysisInputValue = [];
+        for (i = 0; i < analysismultipleInput.length; i++) {
+            var dataup = {}
+            if (analysismultipleInput[i].value.length > 0) {
+                dataup = {
+                    Id: analysismultipleInput[i].id,
+                    STKR__Pests__c: ($(analysismultipleInput[i]).attr('aname')),
+                    STKR__Qty__c: analysismultipleInput[i].value,
+                    STKR__Inspection__c: InspectionId,
+                    RecordTypeId: ($(analysismultipleInput[i]).attr('rtid')).split('__c')[1]
+                }
+
+                if (dataup['STKR__Inspection__c'] && dataup['STKR__Inspection__c'].length < 18) {
+                    dataup['STKR__Mobile_Unique_Id2__c'] = InspectionPageDetailData['STKR__UniqueId__c'] + ';AnalysisMobile;' + dataup['Id'];
+                } else {
+                    dataup['STKR__Mobile_Unique_Id2__c'] = null;
+                }
+
+                AllanalysisInputValue.push(dataup)
+            }
+
+        }
+
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            var toUpdate = [], toInsert = [];
+            for (var index = 0; index < AllanalysisInputValue.length; index++) {
+                try {
+                    if (AllanalysisInputValue[index]['Id'].length === 18) {
+                        toUpdate.push(AllanalysisInputValue[index]);
+                    } else {
+                        toInsert.push(AllanalysisInputValue[index]);
+                    }
+                } catch (err) {
+                    toInsert.push(AllanalysisInputValue[index]);
+                }
+            }
+
+            console.log(toInsert);
+
+            for (var index = 0; index < toInsert.length; index++) {
+                delete toInsert[index]['Id'];
+            }
+
+            console.log(toUpdate);
+
+            if (toInsert.length) {
+                jsconn.sobject("STKR__Chlorination_Results__c").create(toInsert,
+                    function (err, ret) {
+                        if (err) {
+                            app.toastMessage('Error occured, Please check Error log page', 'long');
+                            StoreError(err);
+                            return console.error(err);
+                        }
+                        console.log('insert');
+                        for (var j = 0; j < toInsert.length; j++) {
+                            var datatouploadonline = {};
+                            datatouploadonline = toInsert[j];
+                            console.log('Insert Successfully : ' + ret[j].id);
+                            datatouploadonline['Id'] = ret[j].id;
+                            console.log('datatoupload after creating on salesforce', datatouploadonline);
+                            AnalysisData.push(datatouploadonline);
+                            app.insertRecord('Analysis', {
+                                JsonData: JSON.stringify(datatouploadonline),
+                                Updated: 'false',
+                                UserId: creds.UserID,
+                                AnalysisID: datatouploadonline['Id']
+                            });
+                            app.toastMessage('New Analysis created', 'long');
+                        }
+                        // $("#CreateMultipleAnalysisHTML").html('');
+                        // $("#CreateMultipleAnalysisHTML").empty();
+
+                        //window.history.back();
+                    });
+            }
+            if (toUpdate.length) {
+                jsconn.sobject("STKR__Chlorination_Results__c").update(toUpdate,
+                    function (err, ret) {
+                        if (err) {
+                            app.toastMessage('Error occured, Please check Error log page', 'long');
+                            StoreError(err);
+                            return console.error(err);
+                        }
+                        console.log('update');
+                        for (var j = 0; j < toUpdate.length; j++) {
+                            var datatouploadonline = {};
+                            datatouploadonline = toUpdate[j];
+                            console.log('Updated Successfully : ' + ret[j].id);
+                            try {
+                                datatouploadonline['Id'] = ret[j].id;
+                            } catch (err) { }
+                            console.log('datatoupload after creating on salesforce', datatouploadonline);
+                            for (var k = 0; k < AnalysisData.length; k++) {
+                                if (AnalysisData[k]['Id'] == ret[j].id) {
+                                    console.log('Insdie:', k, ret[j].id);
+                                    AnalysisData.splice(k, 1);
+                                }
+                            }
+                            AnalysisData.push(datatouploadonline);
+                            app.insertRecord('Analysis', {
+                                JsonData: JSON.stringify(datatouploadonline),
+                                Updated: 'false',
+                                UserId: creds.UserID,
+                                AnalysisID: datatouploadonline['Id']
+                            });
+                            app.toastMessage('New Analysis created', 'long');
+                        }
+                        //$("#CreateMultipleAnalysisHTML").html('');
+                        //$("#CreateMultipleAnalysisHTML").empty();
+
+                        //window.history.back();
+                    });
+            }
+
+        } else {
+            for (var j = 0; j < AllanalysisInputValue.length; j++) {
+                var datatouploadoffline = {};
+                var flag1 = false;
+                var insertIntoTable = false;
+                datatouploadoffline = AllanalysisInputValue[j];
+
+                var timestamp = (new Date().getTime()).toString();
+                try {
+                    if (AllanalysisInputValue[j].Id.length === 18 || AllanalysisInputValue[j].Id.length === 13) {
+                        timestamp = AllanalysisInputValue[j].Id;
+                    }
+                } catch (err) {
+                    alert(err);
+                }
+                for (var ll = 0; ll < AnalysisData.length; ll++) {
+                    if (AnalysisData[ll]['Id'] === AllanalysisInputValue[j].Id) {
+                        console.log('value', AllanalysisInputValue[j], AnalysisData[ll]['STKR__Qty__c'], AllanalysisInputValue[j]['STKR__Qty__c']);
+                        if (AnalysisData[ll]['STKR__Qty__c'] == AllanalysisInputValue[j]['STKR__Qty__c']) {
+                            console.log('matched', ll);
+                            insertIntoTable = true;
+                            break;
+                        }
+                    }
+                }
+                console.log('TimeStamptoUse', timestamp);
+                datatouploadoffline['Id'] = timestamp;
+                console.log('work', AllanalysisInputValue[j]);
+                console.log('kfkf', datatouploadoffline);
+                for (var t = 0; t < AnalysisData.length; t++) {
+
+                    if (AnalysisData[t]['Id'] === AllanalysisInputValue[j].Id) {
+                        flag1 = true;
+                        break;
+                    }
+
+                }
+
+
+                if (flag1) {
+                    var updateOrInsert;
+                    if (AnalysisData[t]['Id'].length === 18)
+                        updateOrInsert = 'false';
+                    else {
+                        updateOrInsert = 'newRecord';
+                    }
+                    console.log('lol', AllanalysisInputValue[j]);
+                    var dataoffline = {
+                        JsonData: JSON.stringify(datatouploadoffline),
+                        ObjectName: 'STKR__Chlorination_Results__c',
+                        Updated: 'newRecord',
+                        UserId: creds.UserID,
+                        RecordId: timestamp
+                    }
+
+                    if (updateOrInsert === 'false') {
+                        // Record is being updated and is already being on salesforce ...
+                        dataoffline['UpdateOrInsert'] = 'update';
+                        dataoffline['Updated'] = 'false';
+                    } else if (updateOrInsert === 'newRecord') {
+                        // Record is created on mobile device and needs to be created instead of updated...
+                        dataoffline['UpdateOrInsert'] = 'insert';
+                        dataoffline['Updated'] = 'newRecord';
+                    }
+
+
+
+
+                    if (!insertIntoTable) {
+                        app.insertRecord('DataToUpdate', dataoffline);
+                        for (var k = 0; k < AnalysisData.length; k++) {
+                            if (AnalysisData[k]['Id'] == AllanalysisInputValue[j].Id) {
+
+                                console.log('Insdie:', k, AllanalysisInputValue[j].Id, AllanalysisInputValue[j]);
+                                AnalysisData.splice(k, 1);
+                            }
+                        }
+                        AnalysisData.push(datatouploadoffline);
+                        app.toastMessage('Location is updated', 'long');
+
+                    }
+
+                } else {
+                    console.log('inelseeeeeeeeee')
+                    var dataoffline = {
+                        JsonData: JSON.stringify(datatouploadoffline),
+                        ObjectName: 'STKR__Chlorination_Results__c',
+                        Updated: 'newRecord',
+                        UpdateOrInsert: 'insert',
+                        UserId: creds.UserID,
+                        RecordId: timestamp
+                    }
+
+                    // to stop adding the value into the datatoupdate table which has not been changed
+
+
+                    if (!insertIntoTable) {
+                        app.insertRecord('DataToUpdate', dataoffline);
+
+                    }
+                    AnalysisData.push(datatouploadoffline);
+                    console.log('ppgya', dataoffline);
+                    app.toastMessage('Location is updated', 'long');
+
+                }
+            }
+
+        }
+        console.log("djdcnisdbcuSDBC")
+        // alert("djdc")
+    }
+
+
+</script>
+<style>
+    #InspectionDetail_Inspected {
+        background-color:green;
+        color: white;
+        font-weight: bold;
+        padding: 2px;
+        border-top-width:2px;
+        font-size: 22px;
+    }
+    </style>

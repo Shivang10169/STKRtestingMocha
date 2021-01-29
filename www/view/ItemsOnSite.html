@@ -1,0 +1,470 @@
+<div data-role="view" data-title="Items on site" data-show="CreateItemList" id="ItemList"
+    data-use-native-scrolling="true" data-init="DI_ItemsOnSite">
+    <div class="mainBody">
+        <ul id="listViewItemlist" data-style="inset" data-template="ItemListtemplate"></ul>
+    </div>
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button data-align="left" data-role="backbutton"
+                class="EventPageMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="CreateNewItem();"
+                class="EventPageMDL headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <button style="float:right;margin-top:2%;border-style:none;"
+                class="EventPageMDL headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" id="button_createMultipleInspections"
+                onclick="CreateMultipleInspections()">
+                <i class="material-icons">done_all</i>
+            </button>
+            <button style="float:right;margin-top:2%;border-style:none;font-size:large;"
+                onclick="openModalViewFilterItemsOnSite()"
+                class="EventPageMDL headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="fa fa-filter"></i>
+            </button><button style="float:right;margin-top:2%;border-style:none;font-size:large;"
+                onclick="app.navigate('view/SearchInspectionItem.html')"
+                class="EventPageMDL headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="fa fa-search"></i>
+            </button>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <span data-role="view-title" style="float:left;margin-left:10%;"></span>
+        </div>
+    </header>
+    <div id="parseHTMLforDynamic_InspectionItemList" style="display: none;"></div>
+    <div id="DivWhenOffline" style="visibility:hidden;">
+        <span>
+            <center style="padding-top:20%;font-weight:bold;font-size:large;">
+                You either Offline or,<br />
+                no items can be found for this site.
+            </center>
+        </span>
+        <span>
+            <center style="padding-top:5%;font-weight:bold;font-size:large;">
+                Please create a new item
+            </center>
+        </span>
+    </div>
+</div>
+
+<div data-role="modalview" id="modalview-filterItemsOnSite" style="width:100%;height:90%">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Items list Filter</span>
+        </div>
+    </div>
+
+    <ul data-role="listview" id="listview-filterItemsOnSite">
+    </ul>
+
+    <div data-role="footer" style="background-color:grey;">
+        <center>
+            <button onClick="filterItemsOnSite()" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CHOOSE</button>
+            <button data-click="closeModalViewFilterItemsOnSite" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CANCEL</button>
+        </center>
+    </div>
+    <br />
+</div>
+<script>
+    var ItemListOnSite = [];
+    var isInspectionItemCreatedOffline = 0;
+    var modalviewFilterData = '';
+    var FilteredData_ItemsOnSite = [];
+
+    function DI_ItemsOnSite() {
+        //get html content using primary compact layout
+        var htmlcontent = compactLayout_dynamicTemplate(InspectionItemCompactLayout, 'STKR__Service_Item__c');
+        $("#listViewItemlist").kendoMobileListView({
+            template: htmlcontent,
+            dataSource: []
+        });
+    }
+
+    function CreateItemList() {
+        CountNumberOfOflineItem();
+        $("#button_createMultipleInspections").attr("disabled", false);
+        modalviewFilterData = '';
+        for (var i = 0; i < InspectionItemRecordType.length; i++) {
+            if (InspectionItemRecordType[i]['available']) {
+                modalviewFilterData += '<li><input type="radio" name="filterItemsOnSite" class="km-radio" value=' + InspectionItemRecordType[i]['recordTypeId'] + ' id=' + InspectionItemRecordType[i]['recordTypeId'] + ' onclick="select_filterItemsOnSite()"><label class="km-radio-label km-label" for=' + InspectionItemRecordType[i]['recordTypeId'] + '>' + InspectionItemRecordType[i]['name'] + '</label></li>';
+            }
+            $('#listview-filterItemsOnSite').html($(modalviewFilterData));
+        }
+        $('#listViewItemlist').data("kendoMobileListView").replace([]);
+        if (navigator.onLine && AppIsOnline ) {
+            app.pane.loader.show();
+            jsconn.sobject('STKR__Service_Item__c')
+                .select('*, RecordType.Name')
+                .where("STKR__Account__c = '" + newDetailValue[0]["STKR__Account_lkp__c"] + "' AND Id not in (Select STKR__Service_Item__c from STKR__Inspection__c where STKR__Visit__c = '" + newDetailValue[0]["Id"] + "')")
+                .execute(function (err, result) {
+                    if (err) {
+                        app.pane.loader.hide();
+                        return console.error(err);
+                    }
+                    //console.log(result);
+                    ItemListOnSite = result;
+                    app.db.transaction(function (tx) {
+                                tx.executeSql("SELECT * FROM DataToUpdate where objectname=?", ['STKR__Service_Item__c'], function (a, b) {
+                                   
+                                    for (var i = 0; i < b.rows.length; i++) {
+                                        var tempJSON = JSON.parse(b.rows.item(i).jsondata);
+                                        console.log('1',tempJSON);
+                                        if (b.rows.item(i)['updateorinsert'] == 'insert') {
+
+                                            ItemListOnSite.push(tempJSON)
+                                        }
+                                    }
+                                    console.log('tst result', ItemListOnSite);
+                                    if (!ItemListOnSite.length) {
+                                        app.toastMessage('No Inspection Item is found on this site for this visit', 'long');
+                                        $("#DivWhenOffline").css("visibility", "visible");
+                                    } else {
+                                        try {
+                                            $('#listViewItemlist').data("kendoMobileListView").replace(ItemListOnSite);
+                                            $("#DivWhenOffline").css("visibility", "hidden");
+                                        } catch (e) {
+                                            console.log('error 1', e);
+                                        }
+                                    }
+                                }, function (c, d) { console.log(c, d); });
+                            });
+                    app.pane.loader.hide();
+                   
+                });
+            $("#DivWhenOffline").css("visibility", "hidden");
+        } else {
+            if (isInspectionItemCreatedOffline) {
+                var newData = [];
+                for (var i = 0; i < InspectionItemData.length; i++) {
+                    if (InspectionItemData[i]['stkr__account__c'] === newDetailValue[0]["STKR__Account_lkp__c"]) {
+                        // Check if this inspection item already exist on Inspection
+                        var alreadyExists = false;
+                        for (var j = 0; j < InspectionData.length; j++) {
+                            if (InspectionData[j]['STKR__Service_Item__c'] === InspectionItemData[i]['Id']) {
+                                alreadyExists = true;
+                            }
+                        }
+                        if (!alreadyExists) {
+                            newData.push(InspectionItemData[i]);
+                        }
+                    }
+                }
+                $('#listViewItemlist').data("kendoMobileListView").replace(newData);
+
+                if (!newData.length) {
+                    $("#DivWhenOffline").css("visibility", "visible");
+                } else {
+                    $("#DivWhenOffline").css("visibility", "hidden");
+                }
+            } else {
+                $("#DivWhenOffline").css("visibility", "visible");
+            }
+        }
+    }
+
+    function CreateNewItem() {
+        app.navigate("view/InspectionItemSelectRecordType.html");
+    }
+
+    function PopupCreateInspection(InspectionItemId, InspectionItemRecordTypeName, InspectionItemRecordTypeId) {
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_LIGHT,
+            'title': 'Are you sure you wish to create an inspection for this Item?',
+            'buttonLabels': ['Yes', 'No'],
+            'androidEnableCancelButton': true,
+            'winphoneEnableCancelButton': true,
+            'addCancelButtonWithLabel': 'Cancel',
+            'position': [20, 40] // for iPad pass in the [x, y] position of the popover
+        };
+        var callback = function (buttonIndex) {
+            if (buttonIndex === 1) {
+                // Store new Inspection data if device is online
+                if (navigator.onLine && AppIsOnline) {
+                    for (var i = 0; i < ItemListOnSite.length; i++) {
+                        if (ItemListOnSite[i]['Id'] === InspectionItemId) {
+                            function asyncdata(data) {
+                                var available = false;
+                                for (var m = 0; m < InspectionItemData.length; m++) {
+                                    if (InspectionItemData[m]['Id'] === data.Id) {
+                                        available = true;
+                                        break;
+                                    }
+                                }
+                                if (!available)
+                                    InspectionItemData.push(data);
+                                app.insertRecord('InspectionItem', {
+                                    JsonData: JSON.stringify(data),
+                                    Updated: 'false',
+                                    UserId: creds.UserID,
+                                    AccountID: data['STKR__Account__c'],
+                                    InspectionItemID: data['Id']
+                                }, function () {
+                                    console.log('Record Inserted into InspectionItem table');
+                                });
+                            }
+                            asyncdata(ItemListOnSite[i]);
+                            break;
+                        }
+                    }
+                }
+                CreateInspectionOnItem(InspectionItemId, InspectionItemRecordTypeName, InspectionItemRecordTypeId);
+            } else if (buttonIndex === 2) {
+                app.toastMessage('No', 'long');
+            } else
+                app.toastMessage('Cancelled', 'long');
+        };
+        window.plugins.actionsheet.show(options, callback);
+    }
+    function CreateInspectionOnItem(InspectionItemId, InspectionItemRecordTypeName, InspectionItemRecordTypeId) {
+
+        // store new Inspection data if device is online
+        if (navigator.onLine && AppIsOnline) {
+            for (var i = 0; i < ItemListOnSite.length; i++) {
+                if (ItemListOnSite[i]['Id'] === InspectionItemId) {
+                    function asyncdata(data) {
+                        var available = false;
+                        for (var m = 0; m < InspectionItemData.length; m++) {
+                            if (InspectionItemData[m]['Id'] === data.Id) {
+                                available = true;
+                                break;
+                            }
+                        }
+                        if (!available)
+                            InspectionItemData.push(data);
+                        app.insertRecord('InspectionItem', {
+                            JsonData: JSON.stringify(data),
+                            Updated: 'false',
+                            UserId: creds.UserID,
+                            AccountID: data['STKR__Account__c'],
+                            InspectionItemID: data['Id']
+                        }, function () {
+                            console.log('Record Inserted into InspectionItem table');
+                        });
+                    }
+                    asyncdata(ItemListOnSite[i]);
+                    break;
+                }
+            }
+        }
+        // end
+        console.log(InspectionItemId, InspectionItemRecordTypeName, InspectionItemRecordTypeId);
+        var datatoupload = {};
+        //datatoupload['RecordType'] = {};
+        if (InspectionItemId.length < 18) {
+            // To see inspection item values on Inspection Detail Page..
+            datatoupload['STKR__Service_Item__c'] = InspectionItemId;
+            for (var i = 0; i < InspectionItemData.length; i++) {
+                if (InspectionItemData[i]['Id'] === InspectionItemId) {
+                    datatoupload['STKR__UniqueId__c'] = InspectionItemId + ';Mobile;' + InspectionItemData[i]['STKR__Type__c'];
+                    break;
+                }
+            }
+        } else {
+            console.log('inspectionitemid is 18', InspectionItemId);
+            datatoupload['STKR__Service_Item__c'] = InspectionItemId;
+            datatoupload['STKR__UniqueId__c'] = '';
+        }
+        datatoupload['STKR__Status__c'] = 'Pending';
+        datatoupload['STKR__Visit__c'] = newDetailValue[0]['Id'];
+        // Assign RecordTypeId to Inspection
+        // Inspection Item have Same name for Record Type and Different Id
+        for (var i = 0; i < InspectionMetadata['recordTypeInfos'].length; i++) {
+            if (InspectionMetadata['recordTypeInfos'][i]['name'] === InspectionItemRecordTypeName) {
+                datatoupload['RecordTypeId'] = InspectionMetadata['recordTypeInfos'][i]['recordTypeId'];
+
+                break;
+            }
+        }
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            datatoupload['STKR__UniqueId__c'] = newDetailValue[0]['Id'] + '_' + InspectionItemId;
+            jsconn.sobject("STKR__Inspection__c").create(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    alert(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Created Successfully : ' + ret.id);
+                datatoupload['Id'] = ret.id;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                InspectionData.push(datatoupload);
+                app.insertRecord('Inspection', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    InspectionID: datatoupload['Id'],
+                    VisitID: newDetailValue[0]['Id']
+                });
+                app.toastMessage('New Inspection created', 'long');
+                // Update Visit table to increment item to inspect value..
+                app.db.transaction(function (tx) {
+                    newDetailValue[0]['STKR__Items_to_inspect__c']++;
+                    console.log('After creating new inspection ', newDetailValue[0]);
+                    tx.executeSql("Update Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(newDetailValue[0]), newDetailValue[0]['Id']], function (a, b) {
+                        console.log(a, b);
+                    }, function (error) {
+                        console.log('error', error);
+                    });
+                });
+                Number_of_Inspections_to_Created++;
+
+                if (Number_of_Inspections_to_Created == Number_of_Inspections_to_Create) {
+                    window.history.back();
+                }
+            });
+        } else {
+            var timestamp = (new Date().getTime()).toString();
+            datatoupload['Id'] = timestamp;
+            if (InspectionItemId.length < 18) {
+                datatoupload['STKR__UniqueId__c'] = InspectionItemId + ';Mobile;' + InspectionItemData[i]['STKR__Type__c'];
+            } else {
+                datatoupload['STKR__Service_Item__c'] = InspectionItemId;
+                datatoupload['STKR__UniqueId__c'] = newDetailValue[0]['Id'] + '_' + timestamp;
+            }
+            //alert("STKR__UniqueId__c :" + InspectionItemId + ';Mobile;' + InspectionItemData[i]['STKR__Type__c']);
+                                             
+            InspectionData.push(datatoupload);
+            app.insertRecord('Inspection', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                InspectionID: timestamp,
+                VisitID: newDetailValue[0]['Id']
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'STKR__Inspection__c',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            // Update Visit table to increment item to inspect value..
+            app.db.transaction(function (tx) {
+                newDetailValue[0]['STKR__Items_to_inspect__c']++;
+                tx.executeSql("Update Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(newDetailValue[0]), newDetailValue[0]['Id']], function (a, b) {
+                    console.log(a, b);
+                }, function (error) {
+                    console.log('error', error);
+                });
+            });
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('New Inspection stored offline', 'long');
+            Number_of_Inspections_to_Created++;
+            if (Number_of_Inspections_to_Created == Number_of_Inspections_to_Create) {
+                window.history.back();
+            }
+
+        }
+    }
+
+    function openModalViewFilterItemsOnSite() {
+        $("#modalview-filterItemsOnSite").kendoMobileModalView("open");
+    }
+
+    function closeModalViewFilterItemsOnSite() {
+        $("#modalview-filterItemsOnSite").kendoMobileModalView("close");
+    }
+
+    function select_filterItemsOnSite() {
+        $('Input[name="filterItemsOnSite"]').prop('checked');
+    }
+
+    function filterItemsOnSite() {
+        $("#modalview-filterItemsOnSite").kendoMobileModalView("close");
+        FilteredData_ItemsOnSite = [];
+        var filtername = $('Input[name="filterItemsOnSite"]:checked').val();
+        for (var i = 0; i < ItemListOnSite.length; i++) {
+            if (ItemListOnSite[i]['RecordTypeId'] === filtername) {
+                FilteredData_ItemsOnSite.push(ItemListOnSite[i]);
+            }
+        }
+        $('#listViewItemlist').data("kendoMobileListView").replace(FilteredData_ItemsOnSite);
+    }
+
+    var Number_of_Inspections_to_Create = 0, Number_of_Inspections_to_Created = 0;
+
+    function CreateMultipleInspections() {
+        Number_of_Inspections_to_Create = 0, Number_of_Inspections_to_Created = 0;
+        for (var i = 0; i < ItemListOnSite.length; i++) {
+            if ($("#ItemsOnSiteCheckbox" + ItemListOnSite[i]['Id']).is(':checked')) {
+                Number_of_Inspections_to_Create++;
+               
+            }
+        }
+        for (var i = 0; i < ItemListOnSite.length; i++) {
+            if ($("#ItemsOnSiteCheckbox" + ItemListOnSite[i]['Id']).is(':checked')) {
+               
+                var Id = ItemListOnSite[i]['Id'];
+                var RecordTypeName = ItemListOnSite[i]['RecordType']['Name'];
+                var RecordTypeId = ItemListOnSite[i]['RecordTypeId'];
+                $("#button_createMultipleInspections").attr("disabled", true);
+                console.log('multple passed value', Id, RecordTypeName, RecordTypeId)
+                CreateInspectionOnItem(Id, RecordTypeName, RecordTypeId);
+            }
+        }
+    }
+</script>
+
+<script type="script/x-kendo-template" id="ItemListtemplate">
+    <div onclick="PopupCreateInspection('${Id}','${RecordType.Name}','${RecordTypeId}')">
+        #try {#
+    <div>
+        <label>
+            <b>#try {#
+                ${STKR__Item_Type__c}
+            # }catch (er) {
+            }# </b>
+            #try {#
+                (${STKR__Inspection_Interval__c} ${STKR__Inspection_Frequency__c})
+            #}catch (e) {
+            }
+            #
+        </label><br>
+        <span >
+            <font size="2" style="color:black;">
+                #try {#
+                    ${STKR__Location__c}
+                #} catch (er) {
+                }
+                #
+            </font>
+        </span><br>
+        <span>
+            <font size="2" style="color:black;">
+                #try {#
+                ${STKR__Type__c}#}catch (er) {
+                }#
+            </font>
+        </span>
+    </div>  
+        #}catch (err) {
+            console.log('Template Error', err);
+        }
+        #   
+    </div>
+</script>
+
+<script type="script/x-kendo-template" id="ItemListTemplate_dynamic">
+
+</script>
+
+<script type="script/x-kendo-template" id="CompactLayoutItemTemplate">
+    #for(var i=0;i<data.fieldItems.length;i++){
+        var label = data.fieldItems[i]['label'], 
+        API_name = data.fieldItems[i]['layoutComponents'][0]['value'],
+        dataType = data.fieldItems[i]['layoutComponents'][0]['details']['type'];#
+        <b>#:label# </b>: <span class="changeToCode">
+        #if(dataType == "datetime"){#
+            new Date(#:API_name#).toLocaleString()</span><br/>
+        #}else{#
+            #:API_name#</span><br/>
+        #}#
+    #}#
+</script>

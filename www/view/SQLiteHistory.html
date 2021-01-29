@@ -1,0 +1,128 @@
+<div data-role="view" data-title="DATA HISTORY" id="SQLiteHistoryPage" data-layout="SQLiteHistoryPageLayout" data-show="DS_SQLiteHistory"
+    data-after-show="DAS_SQLiteHistoryPage" data-use-native-scrolling="true">
+
+    <ul data-role="listview" id="SQLiteHistoryListView" data-style="inset" data-template="SQLiteHistoryListViewTemplate"></ul>
+</div>
+
+<div data-id="SQLiteHistoryPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="OfflineDataMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+</div>
+<script>
+    var SQLiteListItems = [];
+
+    function DS_SQLiteHistory() {
+
+        CountNumberOfOflineItem();
+
+        ListSqliteFiles();
+    }
+
+    function DAS_SQLiteHistoryPage() {
+
+    }
+
+    function ListSqliteFiles() {
+        SQLiteListItems = [];
+        // Listview
+        $("#SQLiteHistoryListView").data("kendoMobileListView").replace([]);
+
+        if (device.platform === 'Android') {
+            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + '/SQLite/', function (dir) {
+                // Get a directory reader
+                var directoryReader = dir.createReader();
+                // Get a list of all the entries in the directory
+                directoryReader.readEntries(function (entries) {
+                    var i;
+                    for (i = 0; i < entries.length; i++) {
+                        console.log(entries[i].name);
+                        if (entries[i].isFile) {
+                            SQLiteListItems.push({ index: i, name: entries[i].name, nativeURL: entries[i].nativeURL });
+                        }
+                    }
+                    $("#SQLiteHistoryListView").data("kendoMobileListView").replace(SQLiteListItems);
+                }, function (error) {
+                    alert("Failed to list directory contents: " + error.code);
+                });
+
+            });
+        } else if (device.platform === "iOS") {
+            window.resolveLocalFileSystemURL(cordova.file.documentsDirectory + '/SQLite/', function (dir) {
+                // Get a directory reader
+                var directoryReader = dir.createReader();
+                // Get a list of all the entries in the directory
+                directoryReader.readEntries(function (entries) {
+                    var i;
+                    for (i = 0; i < entries.length; i++) {
+                        console.log(entries[i].name);
+                        if (entries[i].isFile) {
+                            SQLiteListItems.push({ index: i, name: entries[i].name });
+                        }
+                    }
+                    //alert(SQLiteListItems.length);
+                    $("#SQLiteHistoryListView").data("kendoMobileListView").replace(SQLiteListItems);
+                }, function (error) {
+                    alert("Failed to list directory contents: " + error.code);
+                });
+
+            });
+        }
+    }
+
+    function SQLiteHistory_onClick(itemNumber) {
+        try {
+
+            //SQLiteListItems[itemNumber].nativeURL
+            //SQLiteListItems[itemNumber].name = ServiceTracker <TimeStamp>.db
+            var getTimeStamp = SQLiteListItems[itemNumber].name.split('ServiceTracker ')[1].split('.db')[0];
+            var getDateTime = new Date(parseInt(getTimeStamp));
+            var nativeURL = SQLiteListItems[itemNumber].nativeURL;
+
+            /*window.plugins.socialsharing.share('To : support@servicetracker.uk.com \n\n Dynamic Mobile App database as on ' + getDateTime.toString(),
+                'Dynamic Mobile App Databse',
+                nativeURL, null);*/
+            //New Code 29-10-2018 ~Ashutosh
+            try {
+                console.log('nativeURL',nativeURL);
+                cordova.plugins.email.open({
+                    to: ['support@servicetracker.uk.com'], // email addresses for TO field
+                    cc: null, // email addresses for CC field
+                    bcc: null, // email addresses for BCC field
+                    attachments: [decodeURI(nativeURL)],
+                    subject: 'Dynamic Mobile App Database', // subject of the email
+                    body: 'Dynamic Mobile App database as on ' + new Date().toString() + '\n\n' + 'Username : ' + OrgInfo.username + '\nOrg Id : ' + OrgInfo.organization_id + '\nApp Version : ' + AppVersionNumber, // email body (for HTML, set isHtml to true)
+                    isHtml: false, // indicats if the body is HTML or plain text
+                }, function (a) { });
+            } catch (err) {
+                alert('Error while sending the db : \n' + JSON.stringify(err));
+            }
+            //End
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+
+</script>
+<script type="text/x-kendo-template" id="SQLiteHistoryListViewTemplate">
+    #console.log(data,name,index);#
+    #try {#
+        <span> #:new Date(parseInt((name.split('ServiceTracker ')[1].split('.db')[0]))).toLocaleString()# </span>
+        <button style="float:right;" 
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onclick="SQLiteHistory_onClick(${index});event.cancelBubble=true;">
+            Email
+        </button>
+    #}catch (err) {
+        alert('121'+err);
+    }#   
+</script>

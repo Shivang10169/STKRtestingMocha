@@ -1,0 +1,25 @@
+<div data-role="view" data-show="ClearAllDataShow" id="ClearAllData">
+    Clearing all data
+</div>
+
+<script>
+    function ClearAllDataShow() {
+        //window.localStorage.clear();
+        // "SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name"
+      
+        app.db.transaction(function(tx) {
+            tx.executeSql("SELECT name FROM sqlite_master WHERE type='table' AND name!='android_metadata' order by name", [],
+                          function(tx, res) {
+                              for (var i = 0; i < res.rows.length; i++) { 
+                                  if (!(res.rows.item(i).name==='__WebKitDatabaseInfoTable__')) {
+                                      app.dropTable(res.rows.item(i).name);
+                                  }
+                              }
+                              window.history.back();
+                          } ,
+                          function(tx, res) {
+                              console.error('error: ' + res.message);
+                          });
+        });
+   }    
+</script>

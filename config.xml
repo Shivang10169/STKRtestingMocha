@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget android-versionCode="151" id="com.telerik.ServiceTracker" ios-CFBundleIdentifier="com.ServiceTracker.iOS" version="3.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:gap="http://phonegap.com/ns/1.0">
+    <name>
+        ServiceTracker
+    </name>
+    <description>
+        ServiceTracker
+    </description>
+    <author email="support@servicetracker.uk.com" href="http://www.servicetrackersystems.com/" />
+    <content src="index.html" />
+    <access origin="*" />
+    <plugin name="cordova-plugin-whitelist" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <allow-navigation href="*" />
+    <preference name="Orientation" value="portrait" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="loadUrlTimeoutValue" value="30000" />
+    <preference name="cordova.plugins.diagnostic.modules" value="LOCATION" />
+    <preference name="android-minSdkVersion" value="22" />
+    <preference name="android-targetSdkVersion" value="29" /> 
+    
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <preference name="SplashScreen" value="screen" />
+        <preference name="SplashScreenDelay" value="10000" />
+        <resource-file src="google-services.json" target="app/google-services.json" />
+        <icon src="icon.png" />
+        <splash src="splash.png" />
+        <icon density="ldpi" src="res/screen/android/drawable-ldpi/icon.png" />
+        <icon density="mdpi" src="res/screen/android/drawable-mdpi/icon.png" />
+        <icon density="hdpi" src="res/screen/android/drawable-hdpi/icon.png" />
+        <icon density="xhdpi" src="res/screen/android/drawable-xhdpi/icon.png" />
+        <icon density="xxhdpi" src="res/screen/android/drawable-xxhdpi/icon.png" />
+        <icon density="xxxhdpi" src="res/screen/android/drawable-xxxhdpi/icon.png" />
+        <splash density="port-ldpi" src="res/screen/android/drawable-ldpi/splashscreen.png" />
+        <splash density="port-mdpi" src="res/screen/android/drawable-mdpi/splashscreen.png" />
+        <splash density="port-hdpi" src="res/screen/android/drawable-hdpi/splashscreen.png" />
+        <splash density="port-xhdpi" src="res/screen/android/drawable-xhdpi/splashscreen.png" />
+        <splash density="port-xxhdpi" src="res/screen/android/drawable-xxhdpi/splashscreen.png" />
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:requestLegacyExternalStorage="true" />
+        </edit-config>
+        <splash density="port-xxxhdpi" src="res/screen/android/drawable-xxxhdpi/splashscreen.png" />
+        <config-file parent="/*" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+            <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
+            <uses-permission android:name="android.permission.BIND_PRINT_SERVICE" />
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.VIBRATE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-feature android:name="android.hardware.location.gps" />
+            <uses-permission android:name="android.permission.RECORD_AUDIO" />
+            <uses-permission android:name="android.permission.RECORD_VIDEO" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.READ_CONTACTS" />
+            <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+            <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+            <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+        </config-file>
+    </platform>
+    <platform name="ios">
+       
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+        <icon src="icon.png" />
+        <icon height="1024" src="res/screen/ios/icon-1024.png" width="1024" />
+        <icon height="57" src="res/screen/ios/icon.png" width="57" />
+        <icon height="40" src="res/screen/ios/icon-40.png" width="40" />
+        <icon height="80" src="res/screen/ios/icon-40@2x.png" width="80" />
+        <icon height="40" src="res/screen/ios/icon-40.png" width="40" />
+        <icon height="80" src="res/screen/ios/icon-40@2x.png" width="80" />
+        <icon height="60" src="res/screen/ios/icon-60.png" width="60" />
+        <icon height="120" src="res/screen/ios/icon-60@2x.png" width="120" />
+        <icon height="72" src="res/screen/ios/icon-72.png" width="72" />
+        <icon height="144" src="res/screen/ios/icon-72@2x.png" width="144" />
+        <icon height="76" src="res/screen/ios/icon-76.png" width="76" />
+        <icon height="152" src="res/screen/ios/icon-76@2x.png" width="152" />
+        <icon height="167" src="res/screen/ios/icon-83.5@2x.png" width="167" />
+        <icon height="114" src="res/screen/ios/icon@2x.png" width="114" />
+        <icon height="120" src="res/screen/ios/Icon-40@3x.png" width="120" />
+        <icon height="180" src="res/screen/ios/Icon-60@3x.png" width="180" />
+        <icon height="29" src="res/screen/ios/Icon-Small.png" width="29" />
+        <icon height="50" src="res/screen/ios/Icon-Small-50.png" width="50" />
+        <icon height="100" src="res/screen/ios/Icon-Small-50@2x.png" width="100" />
+        <icon height="58" src="res/screen/ios/Icon-Small@2x.png" width="58" />
+        <icon height="48" src="res/screen/ios/watch-48x48.png" width="48" />
+        <icon height="55" src="res/screen/ios/watch-55x55.png" width="55" />
+        <icon height="58" src="res/screen/ios/watch-58x58.png" width="58" />
+        <icon height="80" src="res/screen/ios/watch-80x80.png" width="80" />
+        <icon height="87" src="res/screen/ios/watch-87x87.png" width="87" />
+        <icon height="88" src="res/screen/ios/watch-88x88.png" width="88" />
+        <icon height="172" src="res/screen/ios/watch-172x172.png" width="172" />
+        <icon height="196" src="res/screen/ios/watch-196x196.png" width="196" />
+        <splash src="res/screen/ios/Default@2x~universal~anyany.png" />
+        <edit-config file="*-Info.plist" mode="merge" target="NSBluetoothPeripheralUsageDescription">
+            <string>This app requires bluetooth for prinitng pdf.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSBluetoothAlwaysUsageDescription">
+            <string>This app requires bluetooth for printing pdf.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSLocationAlwaysAndWhenInUseUsageDescription">
+            <string>To find the location of the visit and to show nearest visit to you.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSLocationAlwaysUsageDescription">
+            <string>To find the location of the visit and to show nearest visit to you.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSLocationWhenInUseUsageDescription">
+            <string>To find the location of the visit and to show nearest visit to you.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSMotionUsageDescription">
+            <string>This app requires motion detection access to function properly.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSPhotoLibraryAddUsageDescription">
+            <string>To select inspections, action and visit photos from library.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSRemindersUsageDescription">
+            <string>This app requires reminders access to function properly.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSCameraUsageDescription">
+            <string>To Capture inspections, action and visit photos.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSMicrophoneUsageDescription">
+            <string>need microphone access to record sounds</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSPhotoLibraryUsageDescription">
+            <string>To select inspections, action and visit photos from library.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSCalendarsUsageDescription">
+            <string>This app requires calendar access to syncing events with your personal calendar.</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSContactsUsageDescription">
+            <string>This app requires contacts access to function properly</string>
+        </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSSpeechRecognitionUsageDescription">
+            <string>need to photo library access to get pictures from there</string>
+        </edit-config>
+    </platform>
+    <plugin name="phonegap-plugin-push" spec="2.1.3" />
+    <plugin name="cordova-plugin-camera" spec="~2.4.1">
+        <param name="CAMERA_USAGE_DESCRIPTION" value="Allow user to scan barcode and take photo for an inspection" />
+        <param name="PHOTOLIBRARY_USAGE_DESCRIPTION" value="Allow user to select photo for an inspection" />
+    </plugin>
+    <plugin name="cordova-plugin-geolocation" spec="~2.4.3">
+        <param name="GEOLOCATION_USAGE_DESCRIPTION" value="To check if field user is on the right visit" />
+    </plugin>
+    <plugin name="cordova-plugin-battery-status" spec="~1.2.5" />
+    <plugin name="cordova-plugin-contacts" spec="~2.3.1">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value=" Allow user to open phone contacts" />
+    </plugin>
+    <plugin name="cordova-plugin-device" spec="~1.1.7">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value=" TO check device info" />
+    </plugin>
+    <plugin name="cordova-plugin-device-motion" spec="~2.0.0">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="To check if the device is in motion or not " />
+    </plugin>
+    <plugin name="cordova-plugin-device-orientation" spec="~2.0.0">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="check the oreintation of the device " />
+    </plugin>
+    <plugin name="cordova-plugin-dialogs" spec="~1.3.4">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="to open dialog box " />
+    </plugin>
+    <plugin name="cordova-plugin-file-transfer">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="allow user to read and write file " />
+    </plugin>
+    <plugin name="cordova-plugin-globalization" spec="~1.0.8">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="allow user to convert string " />
+    </plugin>
+    <plugin name="cordova-plugin-splashscreen" spec="~4.1.0">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="to show splashscreen when app opens " />
+        <param name="MICROPHONE_USAGE_DESCRIPTION" value="to show splashscreen when app opens " />
+    </plugin>
+    <plugin name="cordova-plugin-statusbar">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="to show status bar in app " />
+        <param name="MICROPHONE_USAGE_DESCRIPTION" value="to show status bar in app " />
+    </plugin>
+    <plugin name="cordova-plugin-vibration" spec="~2.1.6">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="to vibrate the app on notification " />
+        <param name="MICROPHONE_USAGE_DESCRIPTION" value=" to vibrate the app on notification" />
+    </plugin>
+    <plugin name="cordova-plugin-calendar">
+        <param name="CALENDAR_USAGE_DESCRIPTION" value="syncing events with your personal calendar" />
+    </plugin>
+    <plugin name="com.telerik.plugins.nativepagetransitions" source="npm" />
+    <plugin name="cordova-plugin-file-opener2" source="npm" spec="~2.0.19" />
+    <plugin name="cordova-plugin-screen-orientation" source="npm" spec="~3.0.1" />
+    <plugin name="cordova-plugin-printer" source="npm" spec="~0.7.3">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="to print pdf " />
+        <param name="MICROPHONE_USAGE_DESCRIPTION" value="to print pdf " />
+    </plugin>
+    <plugin name="cordova-plugin-spinnerdialog" source="npm" spec="~1.3.2" />
+    <plugin name="cordova-plugin-actionsheet" spec="~2.3.3">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="To open actionsheet for confirmation " />
+        <param name="MICROPHONE_USAGE_DESCRIPTION" value="To open actionsheet for confirmation  " />
+    </plugin>
+    <plugin name="cordova-plugin-x-socialsharing" source="npm" spec="5.2.1" />
+    <plugin name="cordova-plugin-x-toast" source="npm" />
+    <plugin name="cordova-plugin-app-version" source="npm" spec="~0.1.9" />
+    <plugin name="cordova-plugin-datepicker" source="npm" spec="~0.9.3" />
+    <plugin name="cordova-plugin-speechrecognition" source="npm" spec="~1.2.0">
+        <param name="CONTACTS_USAGE_DESCRIPTION" value="To recognized voice " />
+        <param name="MICROPHONE_USAGE_DESCRIPTION" value="To recognized voice  " />
+    </plugin>
+    <plugin name="cordova-pdf-generator" source="npm" spec="~2.0.1" />
+    <plugin name="cordova-sqlite-storage" source="git" spec="https://github.com/Telerik-Verified-Plugins/SQLite.git" />
+    <plugin name="cordova.plugins.diagnostic" spec="~4.0.10">
+        <param name="LOCATION_USAGE" value="To check if app is able to access device location while changing the visit status" />
+    </plugin>
+    <plugin name="cordova-plugin-android-permissions" spec="~1.0.0" />
+    <plugin name="cordova-plugin-email-composer" spec="~0.8.15" />
+    
+    <plugin name="cordova-plugin-local-notification" source="git" spec="https://github.com/katzer/cordova-plugin-local-notifications.git"/>
+</widget>

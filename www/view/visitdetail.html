@@ -1,0 +1,3493 @@
+<div data-role="view" id="visitdetails" data-title="Visit Details" data-show="DataShowVisitDetails"
+    data-after-show="DASresonforNoSIgnatureVisitDetail" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" id="visitdetailpagenavbar">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="BackToVisitListView()"
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <span data-role="view-title" style="float:left;margin-left: 10px;"></span>
+            <br />
+            <span id="visitDetailAccountName" class="km-view-subtitle"></span>
+            <button data-align="right" style="border-style:none;" onclick="updateAccountLocation();"
+            class="VisitDetailMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+            <i class="material-icons" style="color:white;">navigation</i>
+        </button>
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right" style="border-style:none;"
+                class="VisitDetailMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <button  onClick="PushAllData()"
+                style="border-style:none;color:white;border-color: white;padding: 0px;" data-align="right"
+                class="VisitDetailMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="fa  fa-upload"></i>
+             </button>
+            <button  onClick="app.navigate('view/TaskList.html');" data-align="right"
+                style="border-style:none;color:white;border-color: white;padding: 0px;"
+                class="VisitDetailMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="fa fa-tasks"></i>
+            </button>
+        </div>
+    </header>
+
+    <ul data-role="listview" id="ViewForVisitdetail" data-template="ViewForVisitTemplate"></ul>
+    <div id="VisitDynamicPart"></div>
+    <ul data-role="listview" id="CompleteButtonVisitDetail" data-template="CompleteButtonVisitTemplate"> </ul><br>
+
+    <div id="VisitDetail_Thumbnail_Local_Div">
+        <br />
+        <b>Local</b>
+        <hr />
+        <div id="VisitDetail_Thumbnail_Local"></div>
+    </div>
+    <div id="VisitDetail_Thumbnail_Online_Div">
+        <br />
+        <b>Online</b>
+        <hr />
+        <div id="VisitDetail_Thumbnail_Online"></div>
+    </div>
+    <div data-role="footer" style="color:#39B7CD;padding:0px;display:block;" id="MyVisitsdetailFooter">
+        <div data-role="navbar">
+            <center style="display: flex;align-items: center;justify-content: space-evenly;padding-top:2%;padding-bottom:2%;">
+                <i class="material-icons headerIconStyleForAll" onclick="gotoSignaturePage()"
+                    style="border-style:none;color:white;padding:3px;">gesture</i>
+                <i class="material-icons headerIconStyleForAll" id="CustomSetting_ActionOnVisit"
+                    onclick="gotoActionPage()"
+                    style="border-style:none;color:white;padding:3px;">directions_walk</i>
+                <i class="material-icons headerIconStyleForAll" onclick="gotoShowImageFromVisitDetail()"
+                    style="border-style:none;color:white;padding:3px;">photo_camera</i>
+                <i class="material-icons headerIconStyleForAll" onclick="UpdateVisitDetail_OnAttachmentClick();"
+                    style="border-style:none;color:white;padding:3px;">attach_file</i>
+                <i class="fa fa-users headerIconStyleForAll" id="FooterContactbutton"
+                    onclick="gotoCOntactPagefromFooter();"
+                    style="border-style:none;color:white;padding:3px;font-size:1.3em;"></i>
+                <i class="material-icons headerIconStyleForAll" id="CustomSetting_QuoteOnVisit"
+                    onclick="GoToQuotationPage();"
+                    style="border-style:none;color:white;padding:3px;">monetization_on</i>
+                <i class="material-icons headerIconStyleForAll" onclick="GoToMapRoutePage();"
+                    style="border-style:none;color:white;padding:3px;">beenhere</i>
+            </center>
+        </div>
+        <center>
+            <span id="InternetStatusVisitDetailFooter" class="OfflineOnlineMessage"
+                style="font-weight:lighter;font-size:smaller;"></span>
+        </center>
+
+    </div>
+</div>
+
+<div data-role="modalview" id="DivChangeStatusOfVisits" style="">
+    <h5 id="headerOfChangeStatusOfVisits" style="margin-top:2%;margin-left:4%"></h5>
+    <p id="MessageOfChangeStatusOfVisits" style="margin-left:4%"></p>
+    <div data-role="footer" style="background-color:white;">
+        <a onClick="UpdateStatusOfVisit()"
+            style="float:left;margin-left:70%;color:rgb(102,178,255);margin-bottom:3%;font-weight:bold;font-size: 1.2em;">Yes</a>
+        <a onclick="$('#DivChangeStatusOfVisits').kendoMobileModalView('close')"
+            style="float:right;margin-right:3%;color:rgb(102,178,255);margin-bottom:3%;font-weight:bold;font-size: 1.2em;">No</a>
+
+    </div>
+</div>
+
+<div data-role="modalview" id="modalview-task" style="width:100%;height:60%">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Create Task</span>
+        </div>
+    </div>
+    <br>
+    <ul data-role="listview">
+        <li>
+            <input type="datetime-local" id="ModelViewDate" style="width:60%;font-size:small;padding:1%;" />
+            <label>Date/Time</label>
+        </li>
+        <li>
+            <label>Subject</label>
+            <select id="ModelViewSubject" style="width:60%;margin-top:-12px;font-size:small;padding:1%;" />
+            <option> Call </option>
+            <option> Email </option>
+            <option> Send Letter </option>
+            <option> Send Quote </option>
+            <option> Other </option>
+            </select>
+            </select>
+        </li>
+        <li>
+            <label>Description</label>
+            <textarea id="ModelViewDescription" style="width:63%;float:right;padding:1%;" /></textarea>
+        </li>
+        <li>
+            <label>Priority</label>
+            <select id="ModelViewPriority" style="width:60%;margin-top:-12px;font-size:small;padding:1%;" />
+            <option> High </option>
+            <option> Normal </option>
+            <option> Low </option>
+            </select>
+        </li>
+        <li>
+            <label>Status</label>
+            <select id="ModelViewStatus" style="width:60%;margin-top:-12px;font-size:small;padding:1%;" />
+            <option> Not Started </option>
+            <option> In Progress </option>
+            <option> Completed </option>
+            <option> Waiting on someone else </option>
+            <option> Deferred </option>
+            </select>
+        </li>
+    </ul>
+    <div data-role="footer" style="background-color:grey;">
+        <center>
+            <button onClick="savetask()" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Ok</button>
+            <button data-click="closeModalViewTask" data-role="button" data-align="right"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">CANCEL</button>
+        </center>
+    </div>
+    <br />
+</div>
+
+<div data-role="modalview" id="RIskAssessmentModal" style="margin-left:0%;width: 100%;">
+    <div data-role="header">
+        <div data-role="navbar">
+
+            <span data-role="data-title" id="titleOfRIskAssessmentModal"></span>
+
+        </div>
+    </div>
+
+    <textarea rows="5" id="RiskTextArea" style="margin-top:3%;margin-left:3%;height:18em;width:90%;border-style:none;"
+        placeholder="Type or dictate your Risk Assessment here"></textarea>
+
+    <!---<div data-role="footer" style="background-color:white; color:rgb(102,178,255);">-->
+
+    <a style="float:left;color:rgb(102,178,255);height:15%;width:5em;margin-left:4%;margin-bottom:2%;font-weight:bold"
+        onclick="CloseRiskAssessmentModal()">CLOSE</a>
+    <a style="float:right;color:rgb(102,178,255);height:15%;width:20%;margin-bottom:2%;font-weight:bold"
+        onclick="BindRiskAssessment()">OK</a>
+    <!--</div>-->
+
+</div>
+
+<div data-role="modalview" style="margin-left:0%;width: 100%;" id="FieldNotesModalView">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span data-role="data-title" id="titleOfFieldNotesModalView"></span>
+        </div>
+
+    </div>
+    <textarea rows="5" id="FieldNotesTextArea"
+        style="margin-top:3%;margin-left:3%;height:18em;width:90%;border-style:none;"
+        placeholder="Type here to type or dictate your findings"></textarea>
+
+    <!-- <div data-role="footer" style="background-color:white; color:rgb(102,178,255);">-->
+    <a style="float:left;height:15%;width:5em;color:rgb(102,178,255);margin-left:4%;margin-bottom:2%;font-weight:bold"
+        onclick="CloseFieldNoteModal()">CLOSE</a>
+    <a style="float:right;height:15%;width:20%;color:rgb(102,178,255);margin-bottom:2%;font-weight:bold"
+        onclick="BindFieldNote()">OK</a>
+    <!--</div>-->
+</div>
+
+<div data-role="modalview" style="margin-left:0%;width: 100%;" id="RecommendationModalView">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span data-role="data-title" id="titleOfRecommendationModalView"></span>
+        </div>
+    </div>
+    <textarea rows="5" id="RecommTextArea" style="margin-top:3%;margin-left:3%;height:18em;width:90%;border-style:none;"
+        placeholder="Type here to type or dictate your findings"></textarea>
+
+    <!--<div data-role="footer" style="background-color:white; color:rgb(102,178,255);">-->
+    <a style="float:left;height:15%;width:5em;color:rgb(102,178,255);margin-left:4%;margin-bottom:2%;font-weight:bold"
+        onclick="CloseRecommendationModal()">CLOSE</a>
+    <a style="float:right;height:15%;width:20%;color:rgb(102,178,255);margin-bottom:2%;font-weight:bold"
+        onclick="BindRecommendation()">OK</a>
+    <!--</div>-->
+</div>
+
+<div data-role="modalview" style="margin-left:0%;width: 100%;" id="OtherPestFoundModalView">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span data-role="data-title" id="titleOfOtherPestFoundModalView"></span>
+        </div>
+    </div>
+    <textarea id="OtherPestFoundModalTextArea"
+        style="margin-top:3%;margin-left:3%;height:18em;width:90%;font-weight:bold"
+        placeholder="Type or dictate any other pest found here"></textarea>
+
+    <a style="float:left;height:15%;width:6em;color:rgb(102,178,255);margin-left:4%;margin-bottom:2%;font-weight:bold"
+        onclick="CloseOtherPestFoundModal()">close</a>
+    <a style="float:right;height:15%;width:20%;color:rgb(102,178,255);margin-bottom:2%;"
+        onclick="BindOtherPestFound()">OK</a>
+
+</div>
+
+<div data-role="modalview" style="height:50%;width:90%;background-color:white" id="PestPicklistModalView">
+    <select id="PestSelectOption" multiple="multiple" style="width:90%;margin:3%;"
+        onChange="PestSelectOptionChanged()"></select>
+
+</div>
+
+<script>
+    var LabelForAPIName = {};
+    var newDetailValue = [];
+    var PestPickList = {};
+    var PestFoundOptions = '';
+    var ParamVisitId;
+    var ParamAccountId;
+    var ParamVisitName;
+    var HealthAndSafetyQuestionsOption = '';
+    var HealthAndSafetyQuestionsVar;
+    var RiskAssessmentQuestionOptions = '';
+    var CompleteVisit = 0;
+    var VisitDetailRecordTypeId = '';
+    var flag_sign = 0;
+    var flag_photo = 0;
+    isDataStoreOffline = 0;
+    var Visit_Detail_Attachment = [];
+    var ChangedUserName = '';
+    var CurrentUserName = '';
+    var ChangedUserId = '';
+
+    var dropdownlist;
+    var taskIntervalId = null;
+    function gotoCOntactPagefromFooter(){
+        app.navigate('view/ContactsList.html?AccountId='+ newDetailValue[0].STKR__Account_lkp__c+ '&VisitId='+newDetailValue[0].Id);
+    }
+    //Added 12/07/2016 by Ashutosh
+
+    function PrintServiceReport() {
+        app.navigate('view/dynamicPrintScreen/PrintServiceReport.html');
+    }
+    // Added 09/05/16
+
+    function GotoMyVisitFromvisitdetai() {
+        try {
+            //  document.removeEventListener("backbutton", GotoMyVisitFromvisitdetai);
+        } catch (e) {
+        }
+
+        app.navigate('view/myvisits.html');
+    }
+    function DASvisitDetail() {
+            VisitReasonFOrNoSignature = [];
+        
+            for (var i = 0; i < VisitMetadata["fields"].length; i++) {
+                if (VisitMetadata["fields"][i]["name"] == "STKR__Reason_for_no_signature__c") {
+                    for (var j = 0; j < VisitMetadata["fields"][i]["picklistValues"].length; j++) {
+                        VisitReasonFOrNoSignature.push(VisitMetadata["fields"][i]["picklistValues"][j]["value"]);
+                    }
+                }
+            }
+        }
+    function GoToMapRoutePage() {
+        app.navigate('view/MapRoutes.html');
+    }
+    var viewProperties;
+    function DataShowVisitDetails(e) {
+        CountNumberOfOflineItem();
+        ChangedUserId = '';
+        StoreVisitId = '';
+        PestFoundOptions = '';
+        PestPickList = [];
+        newDetailValue = [];
+        LabelForAPIName = {};
+        CompleteVisit = 0;
+        Visit_Detail_Attachment = [];
+        flag_sign = 0;
+        flag_photo = 0;
+        isDataStoreOffline = 0;
+        currentLocation = '';
+
+        $('#CompletBtnEnabled').attr("disabled", false);
+        if (ActionMetadata.label) {
+            ActionLabel = ActionMetadata.label;
+        } else if(ActionMetadata[0].label) {
+            ActionLabel = ActionMetadata[0].label;
+        }
+        //For Complete Offline
+        isCurrentVisitInProgress = false;
+       
+        // Reset the scroll
+        try {
+            viewProperties = e;
+            e.view.scroller.reset();
+            if ((window.localStorage.getItem("EventType") === "" || window.localStorage.getItem("EventType") === null || window.localStorage.getItem("EventType") === 'Start')) {
+                app.toastMessage('Please click on Start Work first', 'long');
+            }
+        } catch (err) {
+        }
+
+        //document.removeEventListener("backbutton", this);
+        try {
+            ParamVisitId = e.view.params.visitid;
+            ParamAccountId = e.view.params.accountid;
+            currentTab = e.view.params.currentTab;
+            try {
+                VisitDetailRecordTypeId = e.view.params.VRecordTypeId;
+            } catch (err) {
+                console.log('Err 125', err);
+            }
+            InternalNotesinfo = '';
+            try {
+                for (var i = 0; i < AllVisits.length; i++) {
+                    if (AllVisits[i]['Id'] === e.view.params.visitid) {
+                        InternalNotesinfo = AllVisits[i]['STKR__Internal_Notes__c'];
+                        break;
+                    }
+                }
+            } catch (err) {
+            }
+
+
+            longNotesInfo = '';
+            try {
+                for (var i = 0; i < AllVisits.length; i++) {
+                    if (AllVisits[i]['Id'] === e.view.params.visitid) {
+                        longNotesInfo = AllVisits[i]['STKR__Notes_Long__c'];
+                        break;
+                    }
+                }
+            } catch (err) {
+            }
+            // document.removeEventListener("backbutton", gobacktovisitdetailFromInspection);
+            //document.removeEventListener("backbutton", gotoPreviousPageFromAction);
+        } catch (err) {
+            StoreError(JSON.stringify(err));
+        }
+
+        // Hide the Thumbnail sections
+        try {
+            $("#visitdetail_AssociatedVisits").hide();
+            $("#VisitDetail_Thumbnail_Online_Div").hide();
+            $("#VisitDetail_Thumbnail_Local_Div").hide();
+            $('#VisitDetail_Thumbnail_Local').html('');
+            $('#VisitDetail_Thumbnail_Online').html('');
+        } catch (err) {
+            console.log(err);
+        }
+
+        if (count_AssociatedVisit === 1) {
+            $("#visitdetail_AssociatedVisits").show();
+        }
+        else {
+            $("#visitdetail_AssociatedVisits").hide();
+        }
+
+        if (ButtonSettings.STKR__disableActionButton__c) {
+            $("#CustomSetting_ActionOnVisit").show();
+        } else {
+            $("#CustomSetting_ActionOnVisit").hide();
+        }
+
+        if (ButtonSettings.STKR__disablePrepWasteButton__c) {
+            $("#CustomSetting_PrepWasteOnInspection").show();
+        } else {
+            $("#CustomSetting_PrepWasteOnInspection").hide();
+        }
+
+        if (ButtonSettings.STKR__disableQuoteButton__c) {
+            $("#CustomSetting_QuoteOnVisit").show();
+        } else {
+            $("#CustomSetting_QuoteOnVisit").hide();
+        }
+
+        //online
+        if (AppIsOnline) {
+            InternetStatusFooter = "Network is ONLINE- good data signal is assumed";
+            $('#InternetStatusFooter').html(InternetStatusFooter);
+            $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+            $('#MyVisitsFooter').css("color", "#39B7CD");
+            $('.OfflineOnlineMessage').text(InternetStatusFooter);
+
+        } else {
+            // Offline
+            InternetStatusFooter = "ServiceTracker is offline. Data is stored for upload when online";
+            $('#InternetStatusFooter').html(InternetStatusFooter);
+            $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+            $('#MyVisitsFooter').css("color", "#ff6666");
+            $(".OfflineOnlineMessage").text(InternetStatusFooter);
+        }
+
+        // Two options are available either use data to fetch visit and other details or search on array 
+        app.db.transaction(function (tx) {
+            tx.executeSql("Select jsondata from Visits where visitid=?", [ParamVisitId],
+                function (tx, rs) {
+                    var detailvalue = JSON.parse(rs.rows.item(0)['jsondata']);
+                    newDetailValue.push(detailvalue);
+                    $("#ViewForVisitdetail").data("kendoMobileListView").replace(newDetailValue);
+                    $("#CompleteButtonVisitDetail").data("kendoMobileListView").replace(newDetailValue);
+                    try {
+                        if (newDetailValue[0]['STKR__Fixed_Visit__c']) {
+                            $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+                        } else {
+                            $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                        }
+                    } catch (err) {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                    }
+                    try {
+                        if (newDetailValue[0]['STKR__Aborted_Visit__c']) {
+                            $('#STKR__Aborted_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+                        } else {
+                            $('#STKR__Aborted_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                        }
+                    } catch (err) {
+                        $('#STKR__Aborted_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                    }
+
+                    try {
+                        if (newDetailValue[0]['STKR__Internal_Notes__c']) {
+                            $('#STKR__Internal_Notes__c[name="VisitLayoutName"]').val(newDetailValue[0]['STKR__Internal_Notes__c']);
+                        } else {
+                            $('#STKR__Internal_Notes__c[name="VisitLayoutName"]').val('');
+                        }
+                    } catch (err) {
+                        $('#STKR__Internal_Notes__c[name="VisitLayoutName"]').val('');
+                    }
+
+                    //For Complete offline
+                    if (newDetailValue[0]["STKR__Status__c"] === "In Progress")
+                        isCurrentVisitInProgress = true;
+                    else
+                        isCurrentVisitInProgress = false;
+
+                    //END
+
+                    try {
+                        if (newDetailValue[0]['STKR__Notes_Long__c']) {
+                            $('#STKR__Notes_Long__c[name="VisitLayoutName"]').val(newDetailValue[0]['STKR__Notes_Long__c']);
+                        } else {
+                            $('#STKR__Notes_Long__c[name="VisitLayoutName"]').val('');
+                        }
+                    } catch (err) {
+                        $('#STKR__Notes_Long__c[name="VisitLayoutName"]').val('');
+                    }
+
+                    DataAfterShowVisitDetails();
+                }, function (tx, error) {
+                    StoreError(JSON.stringify(error));
+                    alert(error.message)
+                });
+        });
+    }
+
+    function DASresonforNoSIgnatureVisitDetail() {
+        VisitReasonFOrNoSignature = [];
+        for (var i = 0; i < VisitMetadata["fields"].length; i++) {
+            if (VisitMetadata["fields"][i]["name"] == "STKR__Reason_for_no_signature__c") {
+                for (var j = 0; j < VisitMetadata["fields"][i]["picklistValues"].length; j++) {
+                    VisitReasonFOrNoSignature.push(VisitMetadata["fields"][i]["picklistValues"][j]["value"]);
+                }
+            }
+        }
+    }
+    function BackToVisitListView() {
+        StoreVisitId = newDetailValue[0]['Id'];
+        window.localStorage.setItem('StoreVisitId', newDetailValue[0]['Id']);
+        window.history.back();
+    }
+
+    function UpdateVisitDetail_OnAttachmentClick() {
+        app.navigate('view/AttachmentFolder.html?accountid=' + newDetailValue[0]['STKR__Account_lkp__c'] + '&visitid=' + newDetailValue[0]['Id'] + '&From=DetailPage');
+        updateVisit();
+    }
+
+    function DataAfterShowVisitDetails() {
+        var VisitDetailPageLayout;
+        VisitDetailRecordTypeId = newDetailValue[0]["RecordTypeId"];
+        for (var i = 0; i < AllVisitPageLayout.length; i++) {
+            if (AllVisitPageLayout[i]['RecordTypeId'] === VisitDetailRecordTypeId) {
+                VisitDetailPageLayout = AllVisitPageLayout[i];
+            }
+        }
+        var VisitHTML = VisitLayoutGenerator(VisitDetailPageLayout);
+        $('#VisitDynamicPart').html(VisitHTML);
+        var VisitDynamicComponent = $("[name='VisitLayoutName']:not(#STKR__Aborted_Visit__c,#STKR__Fixed_Visit__c,#STKR__Internal_Notes__c,#STKR__Notes_Long__c)");
+
+        //Set Values
+        for (var i = 0; i < VisitDynamicComponent.length; i++) {
+            if (VisitDynamicComponent[i]['tagName'] === 'SELECT') {
+                var values = newDetailValue[0][VisitDynamicComponent[i]['id']];
+                if (values) {
+                    $.each(values.split(";"), function (x, e) {
+                        $("[name='VisitLayoutName']" + "#" + VisitDynamicComponent[i]['id'] + " option[value='" + e + "']").prop("selected", true);
+                    });
+                }
+            } else if (VisitDynamicComponent[i]['type'] === "checkbox") {
+                $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).prop('checked', newDetailValue[0][VisitDynamicComponent[i]['id']]);
+            } else if (VisitDynamicComponent[i]['type'] === "date") {
+                if (newDetailValue[0][VisitDynamicComponent[i]['id']]) {
+                    if (device.platform === 'Android') {
+                        try {
+                            var dateval = new Date(newDetailValue[0][VisitDynamicComponent[i]['id']]);
+                            var month;
+                            var day;
+                            if ((dateval.getMonth() + 1) < 10) {
+                                month = '0' + (dateval.getMonth() + 1)
+                            } else {
+                                month = dateval.getMonth() + 1
+                            }
+                            if (dateval.getDate() < 10) {
+                                day = '0' + dateval.getDate()
+                            } else {
+                                day = dateval.getDate()
+                            }
+                            $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                        } catch (err) {
+                            $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val('');
+                        }
+                    }
+                    if (device.platform === 'iOS') {
+                        try {
+                            var dateval = new Date(newDetailValue[0][VisitDynamicComponent[i]['id']].split('.')[0]);
+                            var month;
+                            var day;
+                            if ((dateval.getMonth() + 1) < 10) {
+                                month = '0' + (dateval.getMonth() + 1)
+                            } else {
+                                month = dateval.getMonth() + 1
+                            }
+                            if (dateval.getDate() < 10) {
+                                day = '0' + dateval.getDate()
+                            } else {
+                                day = dateval.getDate()
+                            }
+                            $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                        } catch (err) {
+                            $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val('');
+                        }
+                    }
+                }
+            } else if (VisitDynamicComponent[i]['type'] === "datetime-local") {
+                if (newDetailValue[0][VisitDynamicComponent[i]['id']]) {
+                    if (device.platform === 'Android') {
+                        var dateval = new Date(newDetailValue[0][VisitDynamicComponent[i]['id']]);
+                        var month;
+                        var day;
+                        var Hours;
+                        var Minutes;
+                        var Seconds;
+                        if ((dateval.getMonth() + 1) < 10) {
+                            month = '0' + (dateval.getMonth() + 1)
+                        } else {
+                            month = dateval.getMonth() + 1
+                        }
+                        if (dateval.getDate() < 10) {
+                            day = '0' + dateval.getDate()
+                        } else {
+                            day = dateval.getDate()
+                        }
+                        if (dateval.getHours() < 10) {
+                            Hours = '0' + dateval.getHours();
+                        } else {
+                            Hours = dateval.getHours()
+                        }
+
+                        if (dateval.getMinutes() < 10) {
+                            Minutes = '0' + dateval.getMinutes();
+                        } else {
+                            Minutes = dateval.getMinutes();
+                        }
+                        if (dateval.getSeconds() < 10) {
+                            Seconds = '0' + dateval.getSeconds();
+                        } else {
+                            Seconds = dateval.getSeconds();
+                        }
+                        $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val(dateval.getFullYear() + '-' + (month) + '-' + day + "T" + Hours + ':' + Minutes + ':' + Seconds);
+                    }
+                    if (device.platform === 'iOS') {
+                        try {
+                            var dateval = new Date(newDetailValue[0][VisitDynamicComponent[i]['id']].split('.')[0]);
+                            var month;
+                            var day;
+                            var Hours;
+                            var Minutes;
+                            var Seconds;
+                            if ((dateval.getMonth() + 1) < 10) {
+                                month = '0' + (dateval.getMonth() + 1)
+                            } else {
+                                month = dateval.getMonth() + 1
+                            }
+                            if (dateval.getDate() < 10) {
+                                day = '0' + dateval.getDate()
+                            } else {
+                                day = dateval.getDate()
+                            }
+                            if (dateval.getHours() < 10) {
+                                Hours = '0' + dateval.getHours();
+                            } else {
+                                Hours = dateval.getHours()
+                            }
+
+                            if (dateval.getMinutes() < 10) {
+                                Minutes = '0' + dateval.getMinutes();
+                            } else {
+                                Minutes = dateval.getMinutes();
+                            }
+                            if (dateval.getSeconds() < 10) {
+                                Seconds = '0' + dateval.getSeconds();
+                            } else {
+                                Seconds = dateval.getSeconds();
+                            }
+
+                            $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val(dateval.getFullYear() + '-' + (month) + '-' + day + "T" + Hours + ':' + Minutes + ':' + Seconds);
+                        } catch (err) {
+                            $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val('');
+                        }
+                    }
+                }
+            } else if (VisitDynamicComponent[i]['tagName'] == 'A') {
+                console.log('taggggggg', newDetailValue[0][VisitDynamicComponent[i]['id']],$.parseHTML(newDetailValue[0][VisitDynamicComponent[i]['id']]));
+                if($.parseHTML(newDetailValue[0][VisitDynamicComponent[i]['id']]) != null){
+                    if ($.parseHTML(newDetailValue[0][VisitDynamicComponent[i]['id']])[0].nodeName == "A") {
+                    //$.parseHTML(newDetailValue[0].STKR__FormulaURL__c)[0].href
+                    $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id'])[0].onclick = function (abc) {
+                        console.log('huk', abc.currentTarget.id);
+
+                        window.open($.parseHTML(newDetailValue[0][abc.currentTarget.id])[0].href, '_blank');
+                        preventDefault();
+                    }
+                } else {
+                    $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id'])[0].onclick = function (abc) {
+                        window.open(newDetailValue[0][abc.currentTarget.id], '_blank');
+                        preventDefault();
+                    }
+                }
+                }
+       
+            } else {
+                $("[name='VisitLayoutName']" + '#' + VisitDynamicComponent[i]['id']).val(newDetailValue[0][VisitDynamicComponent[i]['id']]);
+            }
+        }
+
+        //Change Header
+        var ViewLayoutVisitDetailPage = $("#visitdetailpagenavbar").data("kendoMobileNavBar");
+        ViewLayoutVisitDetailPage.title('Visit:' + newDetailValue[0].Name);
+        ParamVisitName = newDetailValue[0].Name;
+
+        /* For Title on ModalView
+        $('#titleOfOtherPestFoundModalView').text(LabelForAPIName['STKR__Other_Pests_Found__c']);
+        // For Title on ModalView
+        $('#titleOfRIskAssessmentModal').text(LabelForAPIName['STKR__Risk_Assessment__c']);
+        // For Title on ModalView
+        $('#titleOfFieldNotesModalView').text(LabelForAPIName['STKR__Field_Notes__c']);
+        // For Title on ModalView
+        $('#titleOfRecommendationModalView').text(LabelForAPIName['STKR__Recommendations__c']);
+        */
+        app.db.transaction(function (tx) {
+            tx.executeSql("SELECT * FROM Schedule WHERE scheduleid=?", [newDetailValue[0]['STKR__Service__c']],
+                function (a, b) {
+                    var parsedScheduleValue = JSON.parse(b.rows.item(0)['jsondata']);
+
+                    if (parsedScheduleValue['STKR__Business_Type__c'] !== 'Pest') {
+                        $('#VisitDetail_ServiceReport').css('display', 'none');
+                    } else {
+                        if (newDetailValue[0]['STKR__Status__c'] === 'Complete')
+                            $('#VisitDetail_ServiceReport').css('display', 'block');
+                    }
+
+                    if (parsedScheduleValue['STKR__Last_Visit__c']) {
+                        $("#Label_LastVisitVisitDetail").css('display', 'block');
+                        $('#LastVisitVisitDetail' + newDetailValue[0]['Id']).css('display', 'block');
+                        if (device.platform.toLowerCase() === 'ios') {
+                            var Oldlastvisitdate = new Date(parsedScheduleValue['STKR__Last_Visit__c'].split('+')[0]);
+                            var LastVisitampm = Oldlastvisitdate.getHours() >= 12 ? 'pm' : 'am';
+                            var LastVisitHour = (Oldlastvisitdate.getHours() < 10 ? '0' : '') + Oldlastvisitdate.getHours();
+                            var LastVisitminute = (Oldlastvisitdate.getMinutes() < 10 ? '0' : '') + Oldlastvisitdate.getMinutes();
+                            var LastVisitday = (Oldlastvisitdate.getDate() < 10 ? '0' : '') + Oldlastvisitdate.getDate();
+                            var LastVisitmonth = parseInt((Oldlastvisitdate.getMonth() < 9 ? '0' : '') + Oldlastvisitdate.getMonth()) + 1;
+                            if (Oldlastvisitdate) {
+                                // ' ' + LastVisitampm.toUpperCase()
+                                $('#LastVisitVisitDetail' + newDetailValue[0]['Id']).html(LastVisitday + '/' + LastVisitmonth + '/' + Oldlastvisitdate.getFullYear() + ' ' + LastVisitHour + ':' + LastVisitminute);
+                            }
+                        } else {
+                            var Oldlastvisitdate = new Date(parsedScheduleValue['STKR__Last_Visit__c']);
+                            var LastVisitampm = Oldlastvisitdate.getHours() >= 12 ? 'pm' : 'am';
+                            var LastVisitHour = (Oldlastvisitdate.getHours() < 10 ? '0' : '') + Oldlastvisitdate.getHours();
+                            var LastVisitminute = (Oldlastvisitdate.getMinutes() < 10 ? '0' : '') + Oldlastvisitdate.getMinutes();
+                            var LastVisitday = (Oldlastvisitdate.getDate() < 10 ? '0' : '') + Oldlastvisitdate.getDate();
+                            var LastVisitmonth = parseInt((Oldlastvisitdate.getMonth() < 9 ? '0' : '') + Oldlastvisitdate.getMonth()) + 1;
+                            if (Oldlastvisitdate) {
+                                // + ' ' + LastVisitampm.toUpperCase()
+                                $('#LastVisitVisitDetail' + newDetailValue[0]['Id']).html(LastVisitday + '/' + LastVisitmonth + '/' + Oldlastvisitdate.getFullYear() + ' ' + LastVisitHour + ':' + LastVisitminute);
+                            }
+                        }
+                    } else{
+                        $("#Label_LastVisitVisitDetail").css('display', 'none');
+                        $('#LastVisitVisitDetail' + newDetailValue[0]['Id']).css('display', 'none');
+                    }
+
+                    if (parsedScheduleValue['STKR__Contract_Ref_PO__c']) {
+                        $("#Label_refVisitDetail").css('visibility', 'visible');
+                        $('#' + newDetailValue[0]['Id'] + 'refVisitDetail').html(parsedScheduleValue['STKR__Contract_Ref_PO__c']);
+                    }
+                    if (parsedScheduleValue['STKR__Number_of_Visit_Per_Year__c'] || parsedScheduleValue['STKR__Current_Visit_Number__c']) {
+                        $('#' + newDetailValue[0]['Id'] + 'CurrentVisitOfVisitPeryearVisitDetail').html( parsedScheduleValue['STKR__Current_Visit_Number__c'] + ' of ' + parsedScheduleValue['STKR__Number_of_Visit_Per_Year__c']);
+                    }
+                    if (parsedScheduleValue['STKR__Frequency__c']) {
+                        $('#' + newDetailValue[0]['Id'] + 'VisitFrequencyVisitDetail').html(parsedScheduleValue['STKR__Frequency__c']);
+                    }
+                },
+                function (tx, err) {
+                    StoreError(JSON.stringify(err));
+                    alert(err.message);
+                });
+
+            tx.executeSql("Select jsondata from Account where accountid=?", [ParamAccountId],
+                function (tx, rs) {
+                    var accountdetail = JSON.parse(rs.rows.item(0)['jsondata']);
+
+                    var AddressofAccount = '';
+                    if (accountdetail['ShippingStreet'])
+                        AddressofAccount += accountdetail['ShippingStreet'];
+                    if (accountdetail['ShippingCity'])
+                        AddressofAccount += ' ' + accountdetail['ShippingCity'];
+                    if (accountdetail['ShippingState'])
+                        AddressofAccount += ' ' + accountdetail['ShippingState'];
+                    if (accountdetail['ShippingPostalCode'])
+                        AddressofAccount += ' ' + accountdetail['ShippingPostalCode'];
+
+                    if (AddressofAccount) {
+                        $('#AddressOfAccountVisitDetail').html(AddressofAccount);
+                    }
+                    if (accountdetail['Phone']) {
+                        $("#Label_AccountPhoneVisitDetail").css('display', 'block');
+                        $("#AccountPhoneVisitDetail").prop('href', 'tel:' + accountdetail['Phone']);
+                        $("#AccountPhoneVisitDetail").html(accountdetail['Phone']);
+                    }
+                    if (accountdetail['Fax']) {
+                        $("#Label_AccountMobileVisitDetail").css('display', 'block');
+                        $("#AccountMobileVisitDetail").prop('href', 'tel:' + accountdetail['Fax']);
+                        $("#AccountMobileVisitDetail").html(accountdetail['Fax']);
+                    }
+                    var ParentName;
+                    for(k=0;k<AllAccounts.length;k++){
+                        console.log(k)
+                        if(AllAccounts[k].Id == newDetailValue[0].STKR__ParentId__c ){
+                                ParentName = AllAccounts[k].Name; 
+                                console.log(ParentName)
+                        }
+                    }
+                    if(accountdetail['Name'] && ParentName){
+                        $("#Label_AccountParentVisitDetail").css('display', 'block');
+                        $("#AccountParentVisitDetail").html(ParentName);
+                    }
+                     
+                        
+                    
+                }, function (tx, error) {
+                    StoreError(JSON.stringify(error));
+                    console.error(error.message)
+                });
+        });
+
+        // Mark Fields Readonly if status is not in progress
+
+        if (newDetailValue[0]['STKR__Status__c'] === 'Open' ||
+            newDetailValue[0]['STKR__Status__c'] === 'Journey Started' ||
+            newDetailValue[0]['STKR__Status__c'] === 'Accepted' ||
+            newDetailValue[0]['STKR__Status__c'] === 'Paused' ||
+            (window.localStorage.getItem("EventType") === "" ||
+                window.localStorage.getItem("EventType") === null ||
+                window.localStorage.getItem("EventType") === 'Start')) {
+            $('#PrepWasteButton').attr("disabled", true);
+            for (var i = 0; i < VisitDynamicComponent.length; i++) {
+                try {
+                    $('#' + VisitDynamicComponent[i]['id']).removeAttr('onBlur');
+                } catch (err) {
+                }
+                try {
+                    if (!($('#' + VisitDynamicComponent[i]['id']) === 'STKR__Fixed_Visit__c')) {
+                        $('#' + VisitDynamicComponent[i]['id']).attr("disabled", true);
+                    }
+                } catch (err) {
+                }
+                try {
+                    $('#' + VisitDynamicComponent[i]['id']).removeAttr('onchange');
+                } catch (err) {
+                }
+            }
+        }
+        if ((window.localStorage.getItem("EventType") === "" || window.localStorage.getItem("EventType") === null || window.localStorage.getItem("EventType") === 'Start') && newDetailValue[0]['STKR__Status__c'] === "In Progress") {
+            $('#PrepWasteButton').attr("disabled", false);
+        }
+
+        // Register dom for material design
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('VisitDetailPageMDLName'));
+            componentHandler.upgradeElements(document.getElementsByClassName('VisitDetailMDLClass'));
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+        valueOfVisitPeyear = $("#CurrentVisitOfVisitPeryear").text();
+        ShowRemoteThumbnail(newDetailValue[0]['Id']);
+        ShowLocalThumbnail(newDetailValue[0]['Id']);
+    }
+
+    // Risk Assessment Modal View
+    function openRiskAssessmentModal(data) {
+        if (!(data === 'null')) {
+            $('#RiskTextArea').val(data);
+        }
+        $("#RIskAssessmentModal").kendoMobileModalView("open");
+
+        $('#RIskAssessmentModal').data('kendoMobileModalView').scroller.reset()
+    }
+    // Close Risk Assessment Modal View
+    function CloseRiskAssessmentModal() {
+        $("#RIskAssessmentModal").kendoMobileModalView("close");
+    }
+
+    // Pest Found Modal View
+    function openPestFoundModal(data) {
+        if (!(data === 'null')) {
+            $('#PestTextArea').val(data);
+        }
+
+        $("#PestfoundModal").kendoMobileModalView("open");
+    }
+    // Close pest found modalview
+    function ClosePestFoundModal() {
+        $("#PestfoundModal").kendoMobileModalView("close");
+    }
+
+    // Note ModalView
+    function openFieldNoteModal(data) {
+        if (!(data === 'null')) {
+            $('#FieldNotesTextArea').val(data);
+        }
+
+        $("#FieldNotesModalView").kendoMobileModalView("open");
+        $('#FieldNotesModalView').data('kendoMobileModalView').scroller.reset();
+    }
+    // Close Note ModalView
+    function CloseFieldNoteModal() {
+        $("#FieldNotesModalView").kendoMobileModalView("close");
+    }
+
+    // Open Recommendation ModalView
+    function openRecommendationModal(data) {
+        if (!(data === 'null')) {
+            $('#OtherPestFoundModalTextArea').val(data);
+        }
+
+        $("#RecommendationModalView").kendoMobileModalView("open");
+    }
+    // Close Recommendation ModalView
+    function CloseRecommendationModal() {
+        $("#RecommendationModalView").kendoMobileModalView("close");
+    }
+
+    // Set Value of Note field and save to salesforce.
+    function BindFieldNote() {
+        $('#TemplateFieldNoteTextArea').val($('#FieldNotesTextArea').val());
+        CloseFieldNoteModal();
+        updateVisit();
+    }
+
+    // Set value of recommendation field and update salesforce data
+    function BindRecommendation() {
+        $('#TemplateRecommendationTextarea').val($('#RecommTextArea').val());
+        $('#RecommTextArea').val()
+        CloseRecommendationModal();
+        updateVisit();
+    }
+
+    var Visitname;
+    var visitid;
+
+    function gotoPrepWasteMgmt(id, name) {
+        app.navigate('view/PrepWasteManagement.html?visitid=' + id + '&Visitname=' + name + '&inspectionid=&From=Visit');
+    }
+
+    // Found Pest; Save values to salesforce
+    function PestSelectOptionChanged() {
+        $("#PestSelectOption").hide();
+        var OptionsSelected = $('#PestSelectOption').val();
+        $('#VisitDetail_selectedPests').text(OptionsSelected);
+        //$('#PestSelectOption').hide()
+        updateVisit();
+    }
+
+    // Open Other Pest ModalView
+    function OpenOtherPestFoundModal(data) {
+        if (!(data === 'null')) {
+            $('#OtherPestFoundModalTextArea').val(data);
+        }
+
+        $("#OtherPestFoundModalView").kendoMobileModalView("open");
+    }
+    // Close other pest modalView
+    function CloseOtherPestFoundModal() {
+        $("#OtherPestFoundModalView").kendoMobileModalView("close");
+    }
+    // Bind data to Other Pest modalView d
+    function BindOtherPestFound() {
+        $('#TemplateOtherPestFoundTextarea').val($('#OtherPestFoundModalTextArea').val());
+        $('#OtherPestFoundModalTextArea').val('');
+        CloseOtherPestFoundModal();
+        updateVisit();
+    }
+
+    // Bind Risk Assessment
+    function BindRiskAssessment() {
+        $('#TemplateRiskAssessmentTextarea').val($('#RiskTextArea').val());
+        $('#RiskTextArea').val('');
+        CloseRiskAssessmentModal();
+        updateVisit();
+    }
+
+    //update visit
+
+
+    function updateVisit(...SignatureReason) {
+        //console.log('vsdetails1', e);
+        var VisitDynamicComponent = $("[name='VisitLayoutName'][name1!='RemoveThis']");
+        var Visitdata = {};
+        for (var i = 0; i < VisitDynamicComponent.length; i++) {
+            var values = '';
+            if (VisitDynamicComponent[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $('#' + VisitDynamicComponent[i]['id'] + "[name='VisitLayoutName']")[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (VisitDynamicComponent[i]['type'] === "checkbox") {
+                values = $('#' + VisitDynamicComponent[i]['id'] + "[name='VisitLayoutName']").prop('checked');
+            } else if (VisitDynamicComponent[i]['type'] === "date") {
+                values = $('#' + VisitDynamicComponent[i]['id'] + "[name='VisitLayoutName']").val();
+                if (values === '') {
+                    values = null;
+                }
+            } else if (VisitDynamicComponent[i]['type'] === "datetime-local") {
+                values = $('#' + VisitDynamicComponent[i]['id'] + "[name='VisitLayoutName']").val();
+                if (values === '') {
+                    values = null;
+                } else {
+                    try {
+                        values = new Date(values);
+                    } catch (dateErr) {
+                        console.log('DateError ' + dateErr);
+                    }
+                }
+            } else {
+                values = $('#' + VisitDynamicComponent[i]['id'] + '[name="VisitLayoutName"]').val()
+            }
+            Visitdata[VisitDynamicComponent[i]['id']] = values;
+
+            /*if (!newDetailValue['STKR__Fixed_Visit__c']) {
+            Visitdata['STKR__Fixed_Visit__c'] = true ; 
+            }*/
+
+            /*try {
+            Visitdata['STKR__Notes_Long__c'] = VisDesTrim;
+            } catch (err) {
+            }*/
+        }
+        Visitdata['STKR__visitTimer__c']=newDetailValue[0].STKR__visitTimer__c
+        Visitdata['STKR__startDate__c']=newDetailValue[0].STKR__startDate__c
+        Visitdata['STKR__endDate__c']=newDetailValue[0].STKR__endDate__c
+
+        //can be commented..
+        if (device.platform == "iOS") {
+            let da = $('#startdateeditable').val().split("T");
+            da[0] = da[0].split("-");
+            da[1] = da[1].split(":");
+            Visitdata['STKR__Due_Date__c'] = new Date(da[0][0], parseInt(da[0][1]) - 1, da[0][2], da[1][0], da[1][1]);
+        } else {
+            Visitdata['STKR__Due_Date__c'] = new Date($('#startdateeditable').val());
+        }
+         console.log('internalnoteschangecalled22',$("#STKR__Internal_Notes__c[name='VisitLayoutName']").val());
+         console.log('visit description22',$("#STKR__Notes_Long__c[name='VisitLayoutName']").val());
+        try {
+            if ($("#STKR__Notes_Long__c[name='VisitLayoutName']").length) {
+                Visitdata['STKR__Notes_Long__c'] = $("#STKR__Notes_Long__c[name='VisitLayoutName']").val();
+                longNotesInfo = $("#STKR__Notes_Long__c[name='VisitLayoutName']").val();
+                   if(longNotesInfo.length>0){
+                    $("#spanForlongNotes").empty();
+                   $("#spanForlongNotes").html('Visit Description <br/>');
+                   $('#spanForlongNotes').append("<p style=line-height:100%;margin-left:4%; id=STKRLongNotes ></p>");
+                    $('#STKRLongNotes').text(longNotesInfo);
+                    $("#STKRLongNotes").append("<a onclick=ShowVisitDescriptionModal(newDetailValue[0],newDetailValue[0]['Id']); style=color:rgb(102,178,255);margin-left:5px;>Edit</a>");
+                   }else{
+                       $("#spanForlongNotes").empty();
+                       $("#spanForlongNotes").html('Visit Description <br/>');
+                    $('#spanForlongNotes').append("<p id=visitItalicLable onclick=ShowVisitDescriptionModal(newDetailValue[0],newDetailValue[0]['Id']); style=color:grey;margin-left:4%;font-style:italic;> Tap to add a Visit description</p><br/>");
+                   }
+                }
+        } catch (err) { }
+
+        try {
+            if ($("#STKR__Internal_Notes__c[name='VisitLayoutName']").length) {
+                console.log("jiuyuvgdyfy")
+                Visitdata['STKR__Internal_Notes__c'] = $("#STKR__Internal_Notes__c[name='VisitLayoutName']").val();
+                InternalNotesinfo = $("#STKR__Internal_Notes__c[name='VisitLayoutName']").val();
+
+                if (InternalNotesinfo.length >0) {
+                    
+                    $("#spanForInternalNotes").empty();
+                   $("#spanForInternalNotes").html('Internal Notes<br/>');
+                    $('#spanForInternalNotes').append("<p style=line-height:100%;margin-left:4%; id=STKRInternalNotes ></p>");
+                    
+                    $('#STKRInternalNotes').text(InternalNotesinfo);
+                   $("#STKRInternalNotes").append("<a onclick=ShowInternalNotesDescriptionModal(newDetailValue[0]['Id']); style=color:rgb(102,178,255);margin-left:5px;>Edit</a>");
+                }else{
+                    $("#spanForInternalNotes").empty();
+                   $("#spanForInternalNotes").html('Internal Notes<br/>');
+                   $("#spanForInternalNotes").append("<p id=visitInternalItalicLable style=color:grey;margin-left:4%;font-style:italic; onclick=ShowInternalNotesDescriptionModal(newDetailValue[0]['Id']);> Tap to add Internal notes</p>");
+
+                }
+
+            }
+        } catch (err) { }
+
+        getcartdescription(ParamVisitId);
+        // Comment this as this is coming from form itself
+        //Visitdata['STKR__Heath_And_Safety__c'] = HealthAndSafetyQuestionsVar;
+        if (ChangedUserId) {
+            for (var x = 0; x < ResourceData.length; x++) {
+                if (ResourceData[x]['STKR__User__c'] == ChangedUserId) {
+                    Visitdata['STKR__Assign_To_User__c'] = ResourceData[x]['Id'];
+                    Visitdata['STKR__Resource__c'] = ResourceData[x]['Id'];
+                }
+            }
+
+        }
+
+        Visitdata['Id'] = ParamVisitId;
+
+        // Update local variable
+        for (var property in Visitdata) {
+            newDetailValue[0][property] = Visitdata[property];
+        }
+
+        if (CompleteVisit === 1) {
+            Visitdata['STKR__Accepted__c'] = newDetailValue[0]['STKR__Accepted__c'];
+            Visitdata['STKR__Journey_Start__c'] = newDetailValue[0]['STKR__Journey_Start__c'];
+            Visitdata['STKR__Arrival_Time__c'] = newDetailValue[0]['STKR__Arrival_Time__c'];
+        }
+
+
+        console.log('vsdetails2', Visitdata);
+        Visitdata['STKR__Reason_for_no_signature__c'] = SignatureReason[0];
+
+          
+
+        if (AppIsOnline && (/*CompleteVisit == 1 ||*/ !isCurrentVisitInProgress)) {
+            
+            if (CompleteVisit === 1) {
+                // CompleteVisit=1 mean visit needs to be complete, Send Competion Time First to ensure trigger don't cause any problem                   
+                if (newDetailValue[0]['STKR__Status__c'] !== "Complete") {
+                    Visitdata['STKR__Completion_Time__c'] = new Date();
+                    newDetailValue[0]['STKR__Completion_Time__c'] = Visitdata['STKR__Completion_Time__c'];
+                }
+
+                Visitdata.STKR__Status__c = 'Complete';
+                console.log('vsdetails3', Visitdata);
+                
+                jsconn.sobject("STKR__Visit__c").update(Visitdata, function (err, ret) {
+                    if (err || !ret.success) {
+                        try {
+                            StoreError(err + '\n VisitName : ' + newDetailValue[0]['Name'] + ' \n STKR__Accepted__c:' + newDetailValue[0]['STKR__Accepted__c'] + '\n STKR__Arrival_Time__c :' + newDetailValue[0]['STKR__Arrival_Time__c'] + '\n STKR__Journey_Start__c : ' + newDetailValue[0]['STKR__Journey_Start__c'] + 'STKR__Completion_Time__c :' + newDetailValue[0]['STKR__Completion_Time__c']);
+                        } catch (e) {
+                            alert(e);
+                        }
+                        app.toastMessage('This updated record could not be uploaded to ServiceTracker. Please use the View Error Log option on the menu to see the related error message.', 'long');
+                        console.error(err, ret);
+                        return null;
+                    }
+                    app.toastMessage('Visit data updated successfully', 'long');
+                    newDetailValue[0]['STKR__Status__c'] = 'Complete';
+                    app.insertRecord('Visits', {
+                        JsonData: JSON.stringify(newDetailValue[0]),
+                        Updated: 'false',
+                        UserId: creds.UserId,
+                        VisitID: ParamVisitId
+                    }, function (err, a) {
+                    });
+                    UpdateArray();
+                    app.deleteRecord('DataToUpdate', ret.id);
+                    app.navigate("#:back");
+                    // DataShowVisitDetails(viewProperties);
+
+                });
+            } else {
+                if (newDetailValue[0]['STKR__Status__c'] !== "Complete") {
+                    
+                    try {
+                        Visitdata['STKR__Completion_Time__c'] = newDetailValue[0]['STKR__Completion_Time__c'];
+                        //Visitdata['STKR__Completion_Time__c'] = null;
+                    } catch (error) {
+                        Visitdata['STKR__Completion_Time__c'] = null;
+                    }
+                }
+                console.log('123456',Visitdata,newDetailValue[0]['STKR__Status__c']);
+               
+                jsconn.sobject("STKR__Visit__c").update(Visitdata, function (err, ret) {
+                    if (err || !ret.success) {
+                        try {
+                            StoreError(err + '\n VisitName : ' + newDetailValue[0]['Name'] + ' \n STKR__Accepted__c:' + newDetailValue[0]['STKR__Accepted__c'] + '\n STKR__Arrival_Time__c :' + newDetailValue[0]['STKR__Arrival_Time__c'] + '\n STKR__Journey_Start__c : ' + newDetailValue[0]['STKR__Journey_Start__c'] + 'STKR__Completion_Time__c :' + newDetailValue[0]['STKR__Completion_Time__c']);
+                        } catch (e) {
+                        }
+                        app.toastMessage('This updated record could not be uploaded to ServiceTracker. Please use the View Error Log option on the menu to see the related error message.', 'long');
+                        console.error(err, ret);
+                        return null;
+                    }
+                    app.toastMessage('visit data updated', 'long');
+                    var datatoupload = {
+                        JsonData: JSON.stringify(newDetailValue[0]),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+                        VisitID: newDetailValue[0].Id
+                    };
+                    app.insertRecord('Visits',
+                        datatoupload,
+                        function (err, a) {
+                        });
+
+                    app.deleteRecord('DataToUpdate', ret.id);
+
+                    //   if (SignatureReason[1] == true) {	
+                    //  DataShowVisitDetails(viewProperties);	
+                    // } 
+                });
+            }
+        } else {
+            isDataStoreOffline = 0;
+
+            // Issue fixed here ... blank Completion_Time__c is being uploaded to salesforce...
+            if (CompleteVisit === 1) {
+                if (newDetailValue[0]['STKR__Status__c'] !== "Complete") {
+                    Visitdata['STKR__Completion_Time__c'] = new Date();
+                    newDetailValue[0]['STKR__Completion_Time__c'] = Visitdata['STKR__Completion_Time__c'];
+                }
+                newDetailValue[0]['STKR__Status__c'] = 'Complete';
+            } else {
+                try {
+                    Visitdata['STKR__Completion_Time__c'] = newDetailValue[0]['STKR__Completion_Time__c'];
+                } catch (err) {
+                    Visitdata['STKR__Completion_Time__c'] = null;
+                }
+            }
+           
+            if (CompleteVisit === 1) {
+                var newdata2 = jQuery.extend({}, newDetailValue[0]);
+                var returnedGeolocation =  UpdateGeolocation(newdata2);
+                newDetailValue[0] = returnedGeolocation;
+            }
+console.log('afterreturn', newDetailValue[0]);
+            // Insert updated values into visit
+            app.insertRecord('Visits', {
+                JsonData: JSON.stringify(newDetailValue[0]),
+                Updated: 'false',
+                UserId: creds.UserID,
+                VisitID: newDetailValue[0].Id
+            }, function () {
+                app.toastMessage('Offline Database updated', 'long');
+                isDataStoreOffline++;
+                if (isDataStoreOffline === 2) {
+                    if (CompleteVisit == 1) {
+                        PushAllData();
+                    }
+                    //NetworkChangePopup();
+                }
+            });
+            var datatoupload = {
+                JsonData: JSON.stringify(newDetailValue[0]),
+                ObjectName: 'STKR__Visit__c',
+                Updated: 'false',
+                UpdateOrInsert: 'update',
+                UserId: creds.UserID,
+                RecordId: ParamVisitId
+            };
+
+            // Insert for data sync
+            app.insertRecord('DataToUpdate', datatoupload, function () {
+                isDataStoreOffline++;
+                if (isDataStoreOffline === 2) {
+                    if (CompleteVisit == 1) {
+                        PushAllData();
+                    }
+                    //NetworkChangePopup();
+                }
+            });
+
+            if (CompleteVisit === 1) {
+                UpdateArray();
+                app.navigate("#:back");
+                //DataShowVisitDetails(viewProperties);
+            }
+            // if (SignatureReason[1] == true) { DataShowVisitDetails(viewProperties); }
+        }
+    }
+
+    function ShowCurrentVisitOnMap() {
+        GotomapWithparam(newDetailValue[0]['Name'], newDetailValue[0]['STKR__Account_lkp__c']);
+    }
+
+    function ShowAccountLocationFromVisitCart() {
+            var flag = 0;
+            const geocoder = new google.maps.Geocoder();
+            for (var i = 0; i < AllAccounts.length; i++) {
+                if (newDetailValue[0]["STKR__Account_lkp__c"] === AllAccounts[i]['Id']) {
+                    var location = AllAccounts[i].ShippingStreet + ', ' +
+                        AllAccounts[i].ShippingCity + ', ' +
+                        AllAccounts[i].ShippingPostalCode + ', ' +
+                        AllAccounts[i].ShippingState;
+                    console.log('location', location);
+                    geocoder.geocode({ address: location }, (results, status) => {
+                        if (status === "OK") {
+                            console.log(results[0].geometry.location.lat(), results);
+                            if (device.platform === "Android") {
+                                window.open('google.navigation:q=' + results[0].geometry.location.lat() + ',' + results[0].geometry.location.lng() + '&mode=d', '_system');
+                            } else if (device.platform === "iOS") {
+                                window.open('http://google.com/maps/?@saddr=&daddr=' + results[0].geometry.location.lat() + ',' + results[0].geometry.location.lng() + '&directionsmode=transit' , '_blank');
+                            }
+                        } else {
+                            console.log("Geocode was not successful for the following reason: " + status);
+                        }
+                    });
+                }
+            }
+
+        }
+
+    function gotoSignaturePage() {
+        app.navigate('view/Signature.html?VisitId=' + ParamVisitId + '&VisitName=' + ParamVisitName + '&AccountId=' + ParamAccountId);
+    }
+
+    function VisitDetail_RemoveRecord() {
+        if (currentTab === 'Overdue') {
+            for (var i = 0; i < VisitOverdue.length; i++) {
+                if (VisitOverdue[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitOverdue.splice(i, 1);
+                    break;
+                }
+            }
+        } else if (currentTab === 'Today') {
+            for (var i = 0; i < VisitToday.length; i++) {
+                if (VisitToday[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitToday.splice(i, 1);
+                    break;
+                }
+            }
+        } else if (currentTab === 'This Week') {
+            for (var i = 0; i < VisitThisWeek.length; i++) {
+                if (VisitThisWeek[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitThisWeek.splice(i, 1);
+                    break;
+                }
+            }
+        } else if (currentTab === 'Within 45') {
+            for (var i = 0; i < VisitWithin45.length; i++) {
+                if (VisitWithin45[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitWithin45.splice(i, 1);
+                    break;
+                }
+            }
+        } else {
+            for (var i = 0; i < VisitOverdue.length; i++) {
+                if (VisitOverdue[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitOverdue.splice(i, 1);
+                    break;
+                }
+            }
+            for (var i = 0; i < VisitToday.length; i++) {
+                if (VisitToday[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitToday.splice(i, 1);
+                    break;
+                }
+            }
+            for (var i = 0; i < VisitThisWeek.length; i++) {
+                if (VisitThisWeek[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitThisWeek.splice(i, 1);
+                    break;
+                }
+            }
+            for (var i = 0; i < VisitWithin45.length; i++) {
+                if (VisitWithin45[i]['Id'] === newDetailValue[0]['Id']) {
+                    VisitWithin45.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+    }
+
+    //to add visit in the Complete Tab
+    function UpdateArray(UserName) {
+
+        // TODO : Update function to re-render the visit listviews when due start date changes...
+
+        var StoreUserName = UserName;
+        var alreadyCompleted = false;
+        for (var i = 0; i < AllVisits.length; i++) {
+            if (newDetailValue[0]['Id'] === AllVisits[i]['Id']) {
+                AllVisits[i]['STKR__Status__c'] = 'Complete';
+                break;
+            }
+        }
+
+        VisitDetail_RemoveRecord();
+
+        for (var i = 0; i < VisitCompleted.length; i++) {
+            if (VisitCompleted[i]['Id'] === newDetailValue[0]['Id']) {
+                alreadyCompleted = true;
+                break;
+            }
+        }
+
+        if (StoreUserName) {
+            app.toastMessage('Visit ' + newDetailValue[0]['Name'] + ' reassigned', 'long');
+        } else {
+            if (!alreadyCompleted)
+                VisitCompleted.push(newDetailValue[0]);
+            app.toastMessage('Visit ' + newDetailValue[0]['Name'] + ' Completed', 'long');
+        }
+    }
+
+    function gotoShowImageFromVisitDetail() {
+        app.navigate('view/ShowImage.html?VisitId=' + ParamVisitId)
+    }
+
+    function gotoActionPage(For) {
+        // We show site action on visit detail static part button click
+        // we show action on visit when user click on action button at footer
+        if (For === 'SiteActions') {
+            app.navigate("view/Action.html?ActionVisitId=" + newDetailValue[0]['Id'] + "&From=ForSiteActions");
+        } else {
+            app.navigate("view/Action.html?ActionVisitId=" + newDetailValue[0]['Id'] + "&From=FromVisitDetail");
+        }
+        // need only inpsection item id
+    }
+
+    function GoToQuotationPage() {
+        if(ButtonSettings != undefined && ButtonSettings.STKR__Exclude_Schedules__c != undefined && !ButtonSettings.STKR__Exclude_Schedules__c){
+            app.navigate('view/ListQuotations.html');
+        } else{
+            app.toastMessage('This feature is not enabled, please contact ServiceTracker', 'long');
+        }
+        
+    }
+    // Confirmation message to complete visit
+    function OpenConfirmCompleteVisit(name) {
+        newDetailValue[0].STKR__endDate__c=new Date().toJSON(); 
+        newDetailValue[0].STKR__visitTimer__c=newDetailValue[0].STKR__visitTimer__c+diff_minutes(newDetailValue[0].STKR__endDate__c,newDetailValue[0].STKR__startDate__c)
+        // Disable the complete this visit button once clicked
+        $('#CompletBtnEnabled').attr("disabled", true);
+        setTimeout(function () { $('#CompletBtnEnabled').attr("disabled", false); }, 1500);
+        try {
+            // If Start work is enabled ...
+            if (window.localStorage.getItem("EventType") === "" || window.localStorage.getItem("EventType") === null || window.localStorage.getItem("EventType") === 'Start') {
+                app.toastMessage('Please click on Start Work first', 'long');
+                return;
+            }
+        } catch (Error) {
+            console.log(Error);
+        }
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'buttonLabels': ['Yes', 'No']
+        };
+        if (newDetailValue[0]['STKR__Items_to_inspect__c'] <= 0) {
+            options['title'] = 'Are you sure you want to complete Visit ' + name;
+        } else {
+            options['title'] = 'The visit still has ' + newDetailValue[0]['STKR__Items_to_inspect__c'] + ' items to be inspected.';
+            if (device.platform === 'iOS') {
+                options['subtitle'] = 'Are you sure you want to complete Visit ' + name;
+            } else if (device.platform === 'Android') {
+                options['title'] += 'Are you sure you want to complete Visit ' + name;
+            }
+        }
+        window.plugins.actionsheet.show(options, function (buttonIndex) {
+            if (buttonIndex === 1) {
+                OpenHealthAndSafetyModalview();
+            } else if (buttonIndex === 2) {
+            }
+        });
+    }
+
+    // Health and Safety Question Modal View
+    function OpenHealthAndSafetyModalview() {
+        // Do not remove this comment
+        // Create option tag and show it for health and safety 
+        /*var Layoutdata = VisitMetadata;
+        for (var x = 0;x < Layoutdata['editLayoutSections'].length;x++) {
+        var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+        for (var j = 0;j < layoutRows.length;j++) {
+        var layoutItems = layoutRows[j]['layoutItems'];
+        for (var y = 0;y < layoutItems.length;y++) {
+        if (layoutItems[y]['editableForUpdate']) {
+        var layoutComponents = layoutItems[y]['layoutComponents'][0];
+        try {
+        var htmlid = layoutComponents['details']['name'];
+        var dataType = layoutComponents['details']['type'];
+        if (dataType === 'picklist' && htmlid==="STKR__Heath_And_Safety__c") {
+        htmlforHealthandSafety+='<select id="HealthAndSafetyQuestionHTML">';
+        htmlforHealthandSafety+='<option value=" ">None</option>';
+        for (var optionvalues = 0;optionvalues < layoutComponents['details']['picklistValues'].length;optionvalues++) {
+        htmlforHealthandSafety+='<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';                                
+        }     
+        htmlforHealthandSafety+='</select>';
+        } 
+        }catch (e) {
+        }
+        }
+        }
+        }
+        }*/
+
+        // below code is commented on 4-03-2020 for new flow of signaute and image upload
+        /*    for (var j = 0; j < AllAccounts.length; j++) {
+                if (AllAccounts[j]['Id'] === newDetailValue[0]['STKR__Account_lkp__c']) {
+                    if (AllAccounts[j]['STKR__StandardCompliance__c'] === true) {
+                        try {
+                            if (newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length) {
+                                for (var l = 0; l < newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length; l++) {
+                                    if (newDetailValue[0]['AttachmentThumbnail']['onlineUrls'][l].toLowerCase().indexOf('signature') > -1) {
+                                        flag_sign = 1;
+                                    } else {
+                                        flag_photo = 1;
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.log('Error Standard Compliance', err);
+                        }
+                        try {
+                            if (Visit_Detail_Attachment.length) {
+                                for (var l = 0; l < Visit_Detail_Attachment.length; l++) {
+                                    if (Visit_Detail_Attachment[l]['Name'].toLowerCase().indexOf('signature') > -1) {
+                                        flag_sign = 1;
+                                    } else {
+                                        flag_photo = 1;
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                        }
+    
+                        try {
+                            if (newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'].length) {
+                                for (var m = 0; m < newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'].length; m++) {
+                                    if (newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'][m].toLowerCase().indexOf('signature') > -1) {
+                                        flag_sign = 1;
+                                    } else {
+                                        flag_photo = 1;
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.log('Error Standard Compliance', err);
+                        }
+    
+                        //if STKR__Reason_for_no_signature__c has value then allow visit to complete without signature
+                        if (newDetailValue[0]['STKR__Reason_for_no_signature__c']) {
+                            flag_sign = 1;
+                        }
+                        CompleteVisit_UploadSignAndPhoto();
+                    } else {
+                        CompleteVisit = 1;
+                        updateVisit();
+                    }
+                }
+            }
+       */
+
+        if (newDetailValue[0]["STKR__Assisted_Visit__c"] == true) {
+            //console.log(AllAccounts[j]['STKR__Assisted_Visit__c'])
+            flag_sign = 0;
+            flag_photo = 0;
+            CompleteVisit = 1;
+            updateVisit();
+        } else {
+            for (var j = 0; j < AllAccounts.length; j++) {
+                if (AllAccounts[j]['Id'] === newDetailValue[0]['STKR__Account_lkp__c']) {
+                    console.log("id lookup same")
+                    try {
+                        if (AllAccounts[j]['STKR__Photograph_Required__c'] == true) {
+                            console.log("photograph", AllAccounts[j]['STKR__Photograph_Required__c'])
+                            try {
+                                if (Visit_Detail_Attachment.length) {
+                                    for (var l = 0; l < Visit_Detail_Attachment.length; l++) {
+                                        console.log("photo online for")
+                                        if (Visit_Detail_Attachment[l]['Name'].toLowerCase().indexOf('signature') == -1) {
+                                            flag_photo = 1;
+                                            //flag_sign = 1;
+                                            console.log("photo online")
+                                        } else {
+                                            // flag_photo = 1;
+                                        }
+                                    }
+                                }
+                            } catch (err) {
+                                console.log('Error STKR__Photograph_Required__c', err);
+                            }
+                            try {
+                                if (newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'].length) {
+                                    for (var m = 0; m < newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'].length; m++) {
+                                        console.log("photo offline for")
+                                        if (newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'][m].toLowerCase().indexOf('signature') == -1) {
+                                            flag_photo = 1;
+                                            //flag_sign = 1;
+                                            console.log("photo offline")
+                                        } else {
+
+                                            //flag_photo = 1;
+                                        }
+                                    }
+
+                                }
+                            } catch (err) {
+                                console.log('Error STKR__Photograph_Required__c', err);
+                            }
+                            //  CompleteVisit_UploadSignAndPhoto();
+                        } else { flag_photo = 1; }
+                        if (AllAccounts[j]['STKR__StandardCompliance__c'] === true || newDetailValue[0]['STKR__Reason_for_no_signature__c']) {
+                            console.log("standard compline123", AllAccounts[j]['STKR__StandardCompliance__c'],newDetailValue[0])
+                            try {
+                                if (newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length) {
+                                    for (var l = 0; l < newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length; l++) {
+                                        if (newDetailValue[0]['AttachmentThumbnail']['onlineUrls'][l].toLowerCase().indexOf('signature') > -1) {
+                                            flag_sign = 1;
+                                           // flag_photo = 1;
+                                            console.log("standard online")
+                                        } else {
+                                            console.log('didnot get the online signature');
+                                            //if(flag_sign){flag_sign=1}else{flag_sign=0}
+                                            // flag_photo = 1;
+                                        }
+                                    }
+
+                                }
+                            } catch (err) {
+                                console.log('Error Standard Compliance', err);
+                            }
+                            try {
+                                if (newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'].length) {
+                                    for (var m = 0; m < newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'].length; m++) {
+                                        if (newDetailValue[0]['AttachmentThumbnail']['OfflineUrls'][m].toLowerCase().indexOf('signature') > -1) {
+                                            flag_sign = 1;
+                                            //flag_photo = 1;
+                                            console.log("standard offline")
+                                        } else {
+                                            console.log("standard offline else")
+                                            // if(flag_sign){flag_sign=1}else{flag_sign=0}
+                                            //flag_photo = 1;
+                                        }
+                                    }
+                                    //CompleteVisit_UploadSignAndPhoto();
+                                }
+
+                            } catch (err) {
+                                console.log('Error Standard Compliance', err);
+                            }
+                            // if(AllAccounts[j]['STKR__Photograph_Required__c']==false){flag_photo=1;}
+
+                        } else {
+                            flag_sign = 1
+                        }
+                        if (AllAccounts[j]['STKR__Photograph_Required__c'] == false && AllAccounts[j]['STKR__StandardCompliance__c'] === false) {
+                            flag_sign = 1;
+                            flag_photo = 1;
+
+                        }
+                        CompleteVisit_UploadSignAndPhoto(AllAccounts[j]);
+                    }
+                    catch (err) {
+                    }
+                }
+                //if STKR__Reason_for_no_signature__c has value then allow visit to complete without signature                  
+                else {
+                    //CompleteVisit = 1;
+                    //updateVisit();
+                }
+            }
+        }
+    }
+
+    function CompleteVisit_UploadSignAndPhoto(accountdata) {
+        console.log('accountdata123', accountdata)
+        if (flag_sign === 1 && flag_photo === 1) {
+            CompleteVisit = 1;
+            updateVisit();
+        } else if (flag_sign === 0 && accountdata.STKR__StandardCompliance__c) {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'buttonLabels': ['OK', 'Cancel'],
+                'title': 'You must upload a signature to complete this Visit'
+            };
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                } else if (buttonIndex === 2) {
+                }
+            });
+        } else if (flag_photo === 0 && accountdata.STKR__Photograph_Required__c) {
+            var options1 = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'buttonLabels': ['OK', 'Cancel'],
+                'title': 'You must upload a photo to complete this Visit'
+            };
+            window.plugins.actionsheet.show(options1, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                } else if (buttonIndex === 2) {
+                }
+            });
+        } else {
+            var options2 = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'buttonLabels': ['OK', 'Cancel'],
+                'title': 'You must upload a photo and a signature to complete this Visit'
+            };
+            window.plugins.actionsheet.show(options2, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+    }
+
+    function UpdateStatusOfVisit() {
+        $('#DivChangeStatusOfVisits').kendoMobileModalView('close');
+        ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage')
+    }
+
+    function ConfirmationDialogVisitDetailStatusChange() {
+        try {
+            // If Start work is enabled ...
+            if (window.localStorage.getItem("EventType") === "" || window.localStorage.getItem("EventType") === null || window.localStorage.getItem("EventType") === 'Start') {
+                app.toastMessage('Please click on Start Work first', 'long');
+                return;
+            }
+        } catch (Error) {
+            console.log(Error);
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "Open") {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'title': 'Are you sure you want to accept visit ' + newDetailValue[0]['Name'] + ' ?',
+                'buttonLabels': ['Accept', 'Cancel']
+            };
+
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    app.toastMessage('Please wait while status is being changed', 'long');
+                    ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "Accepted") {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'title': 'Are you sure you want to start the journey to Visit ' + newDetailValue[0]['Name'] + ' ?',
+                'buttonLabels': ['Start', 'Cancel']
+            };
+
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    app.toastMessage('Please wait while status is being changed', 'long');
+                    ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "Journey Started") {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'title': 'Are you sure you want to Arrive at the Visit ' + newDetailValue[0]['Name'] + ' ?',
+                'buttonLabels': ['Arrive', 'Cancel']
+            };
+
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    app.toastMessage('Please wait while status is being changed', 'long');
+                    timer(newDetailValue);  
+                    ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "In Progress") {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'title': 'Are you sure you want to pause the Visit ' + newDetailValue[0]['Name'] + ' ?',
+                'buttonLabels': ['Pause', 'Cancel']
+            };
+
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    app.toastMessage('Please wait while status is being changed', 'long');
+                    stopTimer()
+                    //ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "Paused") {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'title': 'Are you sure you want to inprogess the Visit ' + newDetailValue[0]['Name'] + ' ?',
+                'buttonLabels': ['InProgress', 'Cancel']
+            };
+
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    app.toastMessage('Please wait while status is being changed', 'long');
+                    resume()
+                    //ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+        /*
+        //Change with some native Ui .. It is not working ... 
+        // Also close the modal view in the end... 
+        var ConfirmationDialogModalViewTemplate = kendo.template($("#ChangeStatusOfVisitConfirmation").html());
+        $('#ChangeDynamicStatusOfVisits_List').html(ConfirmationDialogModalViewTemplate(data));
+        $('#ChangeStatusOfVisits_List').kendoMobileModalView("open");
+        $('#ChangeStatusOfVisits_List').css('z-index', '1');
+        */
+    }
+
+    function timer(newDetailValue) {
+            console.log("time start")
+            newDetailValue[0].STKR__startDate__c = new Date().toJSON();
+            //$("#timerIconi" + newDetailValue[0].Id).removeClass("fa fa-play-circle my-float")
+            //$("#timerIconi" + newDetailValue[0].Id).addClass("fa fa-pause  my-float")
+          //  document.getElementById("timerIcon" + newDetailValue[0].Id).setAttribute("onClick", "stopTimer();");
+        }
+
+        function diff_minutes(dt2, dt1) {
+
+                var diff = (new Date(dt2).getTime() - new Date(dt1).getTime()) / 1000;
+                diff /= 60;
+                console.log("minutes difference", diff, "saveable", Math.abs(Math.round(diff)));
+                return Math.abs(Math.round(diff));
+
+            }
+
+            function stopTimer() {
+
+                    console.log("stop button")
+
+
+                    
+
+                        newDetailValue[0].STKR__Status__c = "Paused"
+
+                        newDetailValue[0].STKR__endDate__c = new Date().toJSON();
+                        newDetailValue[0].STKR__visitTimer__c = newDetailValue[0].STKR__visitTimer__c + diff_minutes(newDetailValue[0].STKR__endDate__c, newDetailValue[0].STKR__startDate__c)
+                        //document.getElementById("timerIcon" + newDetailValue[0].Id).setAttribute("onClick", "resume();");
+
+                        // $("#timerIconi" + newDetailValue[0].Id).removeClass("fa fa-pause my-float")
+                        // $("#timerIconi" + newDetailValue[0].Id).addClass("fa fa-play-circle my-float")
+
+                        ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+                       // document.getElementById("timerIcon" + newDetailValue[0].Id).setAttribute("onClick", "resume();");
+
+                    
+
+                }
+
+
+    function resume() {
+
+
+        console.log("resume", newDetailValue[0].STKR__Status__c)
+
+        newDetailValue[0].STKR__Status__c = "In Progress"
+        newDetailValue[0].STKR__startDate__c = new Date().toJSON();
+        newDetailValue[0].STKR__endDate__c = "";
+       // $("#timerIconi" + newDetailValue[0].Id).removeClass("fa fa-play-circle my-float")
+        //$("#timerIconi" + newDetailValue[0].Id).addClass("fa fa-pause  my-float")
+        ChangeVisitStatus(newDetailValue[0], 'fromVisitDetailPage');
+
+        //document.getElementById("timerIcon" + newDetailValue[0].Id).setAttribute("onClick", "stopTimer();");
+
+
+    }
+
+    function OpenDivChangeStatusOfVisits() {
+        if (newDetailValue[0]['STKR__Status__c'] === "Open") {
+            $('#headerOfChangeStatusOfVisits').text('Accept visit ' + newDetailValue[0]['Name'])
+            $('#MessageOfChangeStatusOfVisits').text('Are you Sure you want to accept Visit ' + newDetailValue[0]['Name']);
+            $('#DivChangeStatusOfVisits').kendoMobileModalView('open');
+            $('#DivChangeStatusOfVisits').data('kendoMobileModalView').scroller.reset();
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "Accepted") {
+            $('#headerOfChangeStatusOfVisits').text('Start Journey for visit ' + newDetailValue[0]['Name'])
+            $('#MessageOfChangeStatusOfVisits').text('Are you sure you want to start the journey to Visit ' + newDetailValue[0]['Name'])
+            $('#DivChangeStatusOfVisits').kendoMobileModalView('open');
+            $('#DivChangeStatusOfVisits').data('kendoMobileModalView').scroller.reset();
+        }
+        if (newDetailValue[0]['STKR__Status__c'] === "Journey Started") {
+            $('#headerOfChangeStatusOfVisits').text('Arrive at visit ' + newDetailValue[0]['Name'])
+            $('#MessageOfChangeStatusOfVisits').text('Are you sure you want to Arrive at the Visit ' + newDetailValue[0]['Name']);
+            $('#DivChangeStatusOfVisits').kendoMobileModalView('open');
+            $('#DivChangeStatusOfVisits').data('kendoMobileModalView').scroller.reset();
+        }
+    }
+
+    function RiskAssessmentQuestionSelectOptionChange() {
+        var OptionsSelected = $('#RiskAssessmentQuestionSelectOptions').val();
+        $('#SelectedRiskAssessmentQuestion').text(OptionsSelected);
+        updateVisit();
+    }
+
+    function GotoInpectionPage(Id, STKR__Account_lkp__c) {
+        app.navigate("view/Inspection.html?visitid=" + Id + "&AccountId=" + STKR__Account_lkp__c);
+    }
+
+    function OpenPestFoundDropDownlist() {
+        // $('#PestSelectOption').show();
+        $('#PestPicklistModalView').kendoMobileModalView('open');
+        $("#PestSelectOption").simulate('mousedown');
+    }
+
+    function OpenPestfoundMultipleList() {
+        $("#PestSelectOption").show();
+        $("#PestSelectOption").simulate('mousedown');
+    }
+
+    function zeroPadded(val) {
+        if (val >= 10)
+            return val;
+        else
+            return '0' + val;
+    }
+
+    // Change due start date
+
+    function ChangeDueStarDate() {
+        if (newDetailValue[0]['STKR__Fixed_Visit__c'] === true) {
+            app.toastMessage('Visit type is fixed can not change due date value', 'long');
+            return;
+        } else {
+            let dateTimeString = $("#startdateeditable").val();
+            let dObject;
+            try {
+                dObject = new Date(dateTimeString);
+            } catch (ee) { }
+
+            if (device.platform == 'iOS') {
+                //2019-06-18T16:07
+                try {
+                    let dtArray = dateTimeString.split(T);
+                    let dArray = dtArray[0].split('-');
+                    let tAray = dtArray[1].split(':');
+                    dObject = Date.UTC(dArray[0], dArray[1], dArray[2], tArray[0], tArray[1], 0);
+                } catch (err) {
+                    dObject = new Date();
+                }
+            }
+            var options = {
+                date: dObject,
+                mode: 'datetime',
+                androidTheme: 5
+            };
+
+            datePicker.show(options, onSuccess, onError);
+
+            function onSuccess(date) {
+                console.log(date);
+                var dateString = '';
+                dateString = date.getFullYear() + '-';
+                if ((date.getMonth() + 1) > 9) {
+                    dateString += (date.getMonth() + 1) + '-';
+                } else {
+                    dateString += '0' + (date.getMonth() + 1) + '-';
+                }
+                if (date.getDate() > 9) {
+                    dateString += date.getDate() + 'T';
+                } else {
+                    dateString += '0' + date.getDate() + 'T';
+                }
+                if (date.getHours() > 9) {
+                    dateString += date.getHours() + ':';
+                } else {
+                    dateString += '0' + date.getHours() + ':';
+                }
+                if (date.getMinutes() > 9) {
+                    dateString += date.getMinutes();
+                } else {
+                    dateString += '0' + date.getMinutes();
+                }
+                if(ButtonSettings.STKR__Restrict_Due_Date_Changes__c==true){
+                    if(date > new Date(newDetailValue[0].STKR__Last_Completion_Date__c) || date < new Date(newDetailValue[0].STKR__Earliest_Completion_Date__c) ){
+                        app.toastMessage("You can't change the Due date ", "long");
+                    }else{
+                        $('#startdateeditable').val(dateString);
+                        //app.toastMessage("You can't change the Due date past Completion date", "long");
+                       return ;
+                    }
+                }else{
+                    $('#startdateeditable').val(dateString);
+                }
+                if (Math.abs(Math.round((new Date(startdateeditable.value) - new Date(newDetailValue[0].STKR__Due_Finish__c))) / (24 * 60 * 60 * 1000)) > 14) {
+                    var msg = confirm("You are attempting to change the Due Date on this visit by more than 14 days. Please confirm you have your manager's permission to do this.");
+                    if (msg === true) {
+                        getcartdate(ParamVisitId, date);
+                        VisitDetail_RemoveRecord();
+                        VisitDetail_UpdateTabArray();
+                        updateVisit();
+                    } else {
+                        app.toastMessage("You can't change the Due to Start date", "long");
+                    }
+                } else {
+                    getcartdate(ParamVisitId, date);
+                    VisitDetail_RemoveRecord();
+                        VisitDetail_UpdateTabArray();
+                    updateVisit();
+                }
+            }
+            function onError(error) {
+            }
+
+        }
+    }
+
+    /*var VisDesTrim;
+    
+    function UpdateVisitDescription() {
+    var visdes = $('#EditVisitDescription').val();
+    VisDesTrim = visdes.trim();
+    EditCartDescription(ParamVisitId);
+    updateVisit();
+    }*/
+    function VisitDetail_UpdateTabArray() {
+        var currentDateTime = new Date();
+        var CurrentDate = new Date(currentDateTime.getFullYear(), currentDateTime.getMonth(), currentDateTime.getDate());
+        var diff = 0;
+        diff =new Date(newDetailValue[0]['STKR__Due_Date__c']).getTime()- (CurrentDate).getTime();
+        diff = diff / (1000 * 60 * 60 * 24);
+
+
+
+        if (diff < 0) {
+                VisitOverdue.push(newDetailValue[0]);
+            } else if (diff >= 0 && diff < 1) {
+                VisitToday.push(newDetailValue[0]);
+            } else if (diff >= 1 && diff < 7) {
+                VisitThisWeek.push(newDetailValue[0])
+            } else if (diff >= 7 && diff <= 46) {
+                VisitWithin45.push(newDetailValue[0]);
+        }    
+    } 
+
+    function CheckforFixedVisitUncheck(e) {
+        var flag = e.checked;
+
+        // if flag = 1 then initially checkbox was not chekced , if flag = false then initially checkbox was checked
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'title': 'Are you sure you want to mark this as fixed visit ' + newDetailValue[0]['Name'] + ' ?',
+            'buttonLabels': ['Yes', 'No']
+        };
+        if (flag) {
+            if ($("#STKR__Fixed_Visit__c[name='VisitLayoutName']").is(':checked')) {
+                window.plugins.actionsheet.show(options, function (buttonIndex) {
+                    if (buttonIndex === 1) {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+                        updateVisit();
+                    } else {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                    }
+                });
+            } else {
+                $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+                app.toastMessage('Can not change Fixed visit', 'long');
+            }
+        } else {
+            $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+            app.toastMessage('Can not change Fixed visit', 'long');
+        }
+    }
+
+    function CheckforFixedVisitChecked(e) {
+        var flag = e.checked;
+
+        // if flag = 1 then initially checkbox was not chekced
+        // if flag = false then initially checkbox was checked
+        var title = '';
+
+        var options = {
+            'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+            'buttonLabels': ['Yes', 'No']
+        };
+
+        if (newDetailValue[0]["STKR__Status__c"] != 'Complete') {
+            if (flag) {
+                title = 'Are you sure you want to mark this as fixed visit ' + newDetailValue[0]['Name'] + ' ?';
+                options['title'] = title;
+            } else {
+                title = 'Are you sure you want to mark this as not a fixed visit ' + newDetailValue[0]['Name'] + ' ?';
+                options['title'] = title;
+            }
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    if (flag) {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+                    } else {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                    }
+                    updateVisit();
+                } else {
+                    if (flag) {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+                    } else {
+                        $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+                    }
+                }
+            });
+        } else {
+            if (flag) {
+                $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', false);
+            } else {
+                $('#STKR__Fixed_Visit__c[name="VisitLayoutName"]').prop('checked', true);
+            }
+            app.toastMessage('Can not change fixed visit', 'long');
+        }
+    }
+
+    function CheckforFixedVisit(e) {
+        if (FixedVisitCheck == true || FixedVisitCheck == "true") {
+            CheckforFixedVisitChecked(e);
+        } else {
+            CheckforFixedVisitUncheck(e);
+        }
+    }
+  
+    function EditThumbnail(that) {
+        //console.log(that.src);
+        var splitedArray = decodeURI(that.src).split("_");
+        var stringArray = [];
+        for (var i = 1; i < splitedArray.length; i++) {
+            stringArray.push(splitedArray[i]);
+        }
+        var fileName = '', attId = '';
+        fileName = stringArray.join('_');
+
+        if (splitedArray[0].length > 18) {
+            attId = splitedArray[0].split(newDetailValue[0]['Id'])[1];
+            if (!attId) {
+                attId = splitedArray[0].split("/")[splitedArray[0].split("/").length - 1];
+            }
+        }
+        //console.log('fileName', fileName, attId);
+        try {
+            if (attId.length != 15 && attId.substring(0, 3) != "00P") {
+                try {
+                    if (new Date(parseInt(attId)) == "Invalid Date") {
+                        attId = '';
+                    }
+                } catch (er) { }
+            }
+        } catch (er) {
+            attId = '';
+        }
+
+        //console.log('fileName', fileName, attId);
+        if (fileName.indexOf("?timestamp=") > -1) {
+            fileName = fileName.split("?timestamp=")[0];
+        }
+
+        if (fileName.toLowerCase().indexOf(".jpg") > -1 || fileName.toLowerCase().indexOf(".png") > -1) {
+            fileName = fileName.substr(0, fileName.length - 4);
+        }
+
+
+        navigator.sketch.getSketch(function (base64) {
+            //console.log('got base64');
+            navigator.notification.prompt("", function (values) {
+                //console.log(values);
+                var dataToSend = {
+                    Id: attId
+                };
+                if (values.buttonIndex == 1) {
+                    //clicked on update
+                    if (base64) {
+                        // Update the Image body and name
+                        dataToSend['Body'] = base64.split('data:image/png;base64,')[1];
+                        dataToSend['Name'] = values.input1 + '.jpg';
+                        updateAttachment(dataToSend, that.src, values.input1);
+                    } else {
+                        //Update the name only
+                        dataToSend['Name'] = values.input1 + '.jpg';
+                        updateAttachment(dataToSend, that.src, values.input1);
+                    }
+                } else {
+                    //clicked on cancel
+                    if (base64) {
+                        // Update the Image body
+                        dataToSend['Body'] = base64.split('data:image/png;base64,')[1];;
+                        updateAttachment(dataToSend, that.src, values.input1);
+                    }
+                }
+            }, "You can update the tag", "Update,Cancel", fileName)
+        }, function (b) {
+            //console.log('Cancelled', b);
+        }, {
+                destinationType: 0,
+                inputType: navigator.sketch.InputType.FILE_URI,
+                inputData: that.src
+            }
+        );
+    }
+
+    function updateAttachment(data, LocalFileName, extractedFileName) {
+        //console.log('data', data);
+        if (AppIsOnline && data.Id && !isCurrentVisitInProgress) {
+            jsconn.sobject("Attachment").update(data, function (err, rs) {
+                //console.log('attachment updated', rs);
+                //remove from local 
+                var getAllLocalImage = $("#VisitDetail_Thumbnail_Local img");
+                for (var i = 0; i < getAllLocalImage.length; i++) {
+                    if (getAllLocalImage[i].src == LocalFileName) {
+                        getAllLocalImage[i].remove();
+                    }
+                }
+                ShowRemoteThumbnail(newDetailValue[0]["Id"], true, rs.id);
+            });
+        } else {
+            var datatoupdate;
+            //Check if record is in local database, If so then update it. else insert new records
+            app.db.transaction(function (tx) {
+                tx.executeSql("SELECT * FROM DataToUpdate WHERE recordid=?", [data.Id], function (a, rs) {
+                    if (rs.rows.length == 1) {
+                        datatoupdate = JSON.parse(rs.rows.item(0).jsondata);
+                        for (prop in data) {
+                            if (data[prop]) {
+                                if (datatoupdate[prop])
+                                    datatoupdate[prop] = data[prop];
+                            }
+                        }
+                        //console.log('datatoupdate', datatoupdate, filesystemURL, extractedFileName);
+                        tx.executeSql("UPDATE DataToUpdate SET jsondata=? WHERE recordid=?", [JSON.stringify(datatoupdate), data.Id], function (a, res) {
+                        }, function (err) { });
+                        //Delete previous image
+
+                        var filesystemURL = LocalFileName.split('/');
+                        var imageFileName = decodeURIComponent(filesystemURL.splice(filesystemURL.length - 1)[0]);
+                        var dirFileSystem = filesystemURL.join('/') + '/';
+
+                        window.resolveLocalFileSystemURL(dirFileSystem, function (dir) {
+                            dir.getFile(imageFileName, { create: false }, function (fileEntry) {
+                                fileEntry.remove(function (file) {
+
+                                }, function () {
+                                }, function () {
+                                });
+                            });
+                        });
+                        // Remove from dom
+                        var getAllLocalImage = $("#VisitDetail_Thumbnail_Local img");
+                        for (var i = 0; i < getAllLocalImage.length; i++) {
+                            if (getAllLocalImage[i].src == LocalFileName) {
+                                getAllLocalImage[i].remove();
+                            }
+                        }
+                        // Remove from DB
+
+                        tx.executeSql("SELECT jsondata FROM Visits WHERE visitid=?", [newDetailValue[0]['Id']], function (t, res) {
+                            var detailvalue = JSON.parse(res.rows.item(0)['jsondata']);
+                            console.log('deleteeeeeee', detailvalue);
+                           // debugger;
+                            try {
+                                if (detailvalue['AttachmentThumbnail']['OfflineUrls'].length) {
+                                    var changed = false;
+                                    for (var k = 0; k < detailvalue['AttachmentThumbnail']['OfflineUrls'].length; k++) {
+                                        if (LocalFileName == detailvalue['AttachmentThumbnail']['OfflineUrls'][k]) {
+                                            detailvalue['AttachmentThumbnail']['OfflineUrls'].splice(k, 1);
+                                            changed = true;
+                                        }
+                                    }
+                                    if (changed)
+                                        tx.executeSql("UPDATE Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(detailvalue), newDetailValue[0]["Id"]], function (a, res) {
+
+
+                                        }, function (err) { });
+                                }
+                            } catch (err) {
+                                console.error('Error 124', err);
+                            }
+                        }, function () {
+                        });
+
+                        // Remove from local variable
+                        //Signature : base64ToThumbnail(base64, fileName, VisitId, isSignature, VisitName);
+                        base64ToThumbnail(data.Body, data.Id + '_' + extractedFileName, newDetailValue[0]["Id"], false, newDetailValue[0]["Name"]);
+                    } else {
+                        var timeStamp = new Date().getTime();
+                        var Offlinedata = {
+                            ParentId: newDetailValue[0]["Id"],
+                            Name: extractedFileName,
+                            Body: data['Body'],
+                            //ContentType: 'data:image/jpeg;base64'
+                            ContentType: 'image/jpeg'
+                        }
+                        var datatoupload = {
+                            JsonData: JSON.stringify(Offlinedata),
+                            ObjectName: 'Attachment',
+                            Updated: 'false',
+                            UpdateOrInsert: 'insert',
+                            UserId: creds.UserID,
+                            RecordId: timeStamp
+                        }
+                        var datatoDelete = {
+                            JsonData: JSON.stringify({ Id: data['Id'] }),
+                            ObjectName: 'Attachment',
+                            Updated: 'false',
+                            UpdateOrInsert: 'delete',
+                            UserId: creds.UserID,
+                            RecordId: data.Id
+                        }
+                        app.insertRecord('DataToUpdate', datatoupload);
+                        app.insertRecord('DataToUpdate', datatoDelete);
+                        // Remove from dom
+                        var getAllLocalImage = $("#VisitDetail_Thumbnail_Online img");
+                        for (var i = 0; i < getAllLocalImage.length; i++) {
+                            if (getAllLocalImage[i].src == LocalFileName) {
+
+                                getAllLocalImage[i].remove();
+                            }
+                        }
+
+                        base64ToThumbnail(data.Body, data.Id + '_' + extractedFileName, newDetailValue[0]["Id"], false, newDetailValue[0]["Name"]);
+                    }
+                }, function (err) { });
+            });
+        }
+    }
+
+    var timer_start;
+    var timer_end;
+    var timer;
+
+    function StartTimer(that) {
+        //console.log(that.src);
+        timer_start = new Date();
+        //console.log(timer_start);
+    }
+
+    function EndTimer(that) {
+        //console.log(that.src);
+        timer_end = new Date();
+        //console.log(timer_end);
+        timer = timer_end - timer_start;
+        //console.log(timer);
+        if (timer > 500) {
+            var options = {
+                'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                'buttonLabels': ['Yes', 'No'],
+                'title': 'Are you sure you want to delete this image?'
+            };
+            window.plugins.actionsheet.show(options, function (buttonIndex) {
+                if (buttonIndex === 1) {
+                    DeleteImage(that);
+                } else if (buttonIndex === 2) {
+                }
+            });
+        }
+    }
+
+    function DeleteImage(get) {
+        //console.log(get.src, get);
+        var attId = '';
+        var splitedArray = decodeURI(get.src).split("_");
+        if (splitedArray[0].length > 18) {
+            attId = splitedArray[0].split(newDetailValue[0]['Id'])[1];
+            if (!attId) {
+                attId = splitedArray[0].split("/")[splitedArray[0].split("/").length - 1];
+            }
+        }
+        try {
+            if (attId.length != 15 && attId.substring(0, 3) != "00P") {
+                try {
+                    if (new Date(parseInt(attId)) == "Invalid Date") {
+                        attId = '';
+                    }
+                } catch (er) { }
+            }
+        } catch (er) {
+            attId = '';
+        }
+        //console.log(attId);
+
+        if (AppIsOnline && attId && attId.length == 18 && !isCurrentVisitInProgress) {
+            jsconn.sobject("Attachment").destroy(attId, function (err, ret) {
+                if (err || !ret.success) {
+                    return console.error(err, ret);
+                }
+                //console.log('Deleted Successfully : ' + ret.id);
+                var getAllLocalImage = $("#VisitDetail_Thumbnail_Local img");
+                for (var i = 0; i < getAllLocalImage.length; i++) {
+                    if (getAllLocalImage[i].src == get.src) {
+                        getAllLocalImage[i].remove();
+                    }
+                }
+                // Remove from variable..
+                try {
+                    for (var p = 0; p < newDetailValue[0]["AttachmentThumbnail"].onlineUrls.length; p++) {
+                        if (newDetailValue[0]["AttachmentThumbnail"].onlineUrls[p].indexOf(attId) > -1) {
+                            newDetailValue[0]["AttachmentThumbnail"].onlineUrls.splice(p, 1);
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+
+                // Remove from variable..
+                try {
+                    for (var p = 0; p < newDetailValue[0]["AttachmentThumbnail"].OfflineUrls.length; p++) {
+                        if (newDetailValue[0]["AttachmentThumbnail"].OfflineUrls[p].indexOf(attId) > -1) {
+                            newDetailValue[0]["AttachmentThumbnail"].OfflineUrls.splice(p, 1);
+                        }
+                    }
+                } catch (err) { }
+
+                // Remove from DB
+                app.db.transaction(function (tx) {
+                    tx.executeSql("SELECT jsondata FROM Visits WHERE visitid=?", [newDetailValue[0]['Id']], function (t, res) {
+                        var detailvalue = JSON.parse(res.rows.item(0)['jsondata']);
+                        try {
+
+                            var changed = false;
+                            try {
+                                for (var p = 0; p < detailvalue["AttachmentThumbnail"].onlineUrls.length; p++) {
+                                    if (detailvalue["AttachmentThumbnail"].onlineUrls[p].indexOf(attId) > -1) {
+                                        detailvalue["AttachmentThumbnail"].onlineUrls.splice(p, 1);
+                                        changed = true;
+                                    }
+                                }
+                            } catch (err) {
+                                console.error(err);
+                            }
+                            try {
+                                for (var p = 0; p < detailvalue["AttachmentThumbnail"].OfflineUrls.length; p++) {
+                                    if (detailvalue["AttachmentThumbnail"].OfflineUrls[p].indexOf(attId) > -1) {
+                                        detailvalue["AttachmentThumbnail"].OfflineUrls.splice(p, 1);
+                                        changed = false;
+                                    }
+                                }
+                            } catch (err) { }
+
+                            if (changed) {
+                                tx.executeSql("UPDATE Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(detailvalue), newDetailValue[0]["Id"]], function (a, res) {
+                                }, function (err) { });
+                            }
+                        } catch (err) {
+                            console.error('Error', err);
+                        }
+                    }, function () {
+                    });
+                });
+
+                ShowRemoteThumbnail(newDetailValue[0]["Id"], true);
+            });
+        } else {
+            app.db.transaction(function (tx) {
+                if (attId.length == 18) {
+                    tx.executeSql('INSERT INTO DataToUpdate (jsondata,objectname,updated,updateorinsert,userid,recordid) VALUES (?,?,?,?,?,?)',
+                        [JSON.stringify({ Id: attId }), 'Attachment', 'false', 'delete', creds.UserID, attId],
+                        function (a, b) {
+                            //console.log(a, b);
+                            //console.log('Deleted successfully');
+                        }, function (a, b) {
+                            console.error(a, b);
+                        });
+                }
+                //Delete previous image
+                var filesystemURL = get.src.split('/');
+                var imageFileName = decodeURIComponent(filesystemURL.splice(filesystemURL.length - 1)[0]);
+                var dirFileSystem = filesystemURL.join('/') + '/';
+                window.resolveLocalFileSystemURL(dirFileSystem, function (dir) {
+                    dir.getFile(imageFileName, { create: false }, function (fileEntry) {
+                        fileEntry.remove(function (file) {
+                        }, function () {
+                        }, function () {
+                        });
+                    });
+                });
+
+                // Remove from variable..
+                try {
+                    for (var p = 0; p < newDetailValue[0]["AttachmentThumbnail"].onlineUrls.length; p++) {
+                        if (newDetailValue[0]["AttachmentThumbnail"].onlineUrls[p].indexOf(attId) > -1) {
+                            newDetailValue[0]["AttachmentThumbnail"].onlineUrls.splice(p, 1);
+                        }
+                    }
+                } catch (err) { }
+
+                // Remove from variable..
+                try {
+                    for (var p = 0; p < newDetailValue[0]["AttachmentThumbnail"].OfflineUrls.length; p++) {
+                        if (newDetailValue[0]["AttachmentThumbnail"].OfflineUrls[p].indexOf(attId) > -1) {
+                            newDetailValue[0]["AttachmentThumbnail"].OfflineUrls.splice(p, 1);
+                        }
+                    }
+                } catch (err) { }
+
+                // Remove from dom
+                var getAllLocalImage = $("#VisitDetail_Thumbnail_Local img");
+                for (var i = 0; i < getAllLocalImage.length; i++) {
+                    if (getAllLocalImage[i].src == get.src) {
+                        getAllLocalImage[i].remove();
+                    }
+                }
+
+                // Remove from DB
+                tx.executeSql("SELECT jsondata FROM Visits WHERE visitid=?", [newDetailValue[0]['Id']], function (t, res) {
+                    var detailvalue = JSON.parse(res.rows.item(0)['jsondata']);
+                    try {
+                        if (detailvalue['AttachmentThumbnail']['OfflineUrls'].length) {
+                            var changed = false;
+                            for (var k = 0; k < detailvalue['AttachmentThumbnail']['OfflineUrls'].length; k++) {
+                                if (get.src == detailvalue['AttachmentThumbnail']['OfflineUrls'][k]) {
+                                    detailvalue['AttachmentThumbnail']['OfflineUrls'].splice(k, 1);
+                                    changed = true;
+                                }
+                            }
+                            if (changed)
+                                tx.executeSql("UPDATE Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(detailvalue), newDetailValue[0]["Id"]], function (a, res) {
+                                }, function (err) { });
+                        }
+                    } catch (err) {
+                        console.error('Error', err);
+                    }
+                    try {
+                        if (detailvalue['AttachmentThumbnail']['onlineUrls'].length) {
+                            var changed = false;
+                            for (var k = 0; k < detailvalue['AttachmentThumbnail']['onlineUrls'].length; k++) {
+                                if (get.src == detailvalue['AttachmentThumbnail']['onlineUrls'][k]) {
+                                    detailvalue['AttachmentThumbnail']['onlineUrls'].splice(k, 1);
+                                    changed = true;
+                                }
+                            }
+                            if (changed)
+                                tx.executeSql("UPDATE Visits SET jsondata=? WHERE visitid=?", [JSON.stringify(detailvalue), newDetailValue[0]["Id"]], function (a, res) {
+                                }, function (err) { });
+                        }
+                    } catch (err) {
+                        console.error('Error', err);
+                    }
+                }, function () {
+                });
+            });
+
+            //remove from datatoupdate table, if it is there.
+            //console.log("DataToUpdate", attId);
+            app.deleteRecord("DataToUpdate", attId);
+        }
+    }
+
+    function resizeBase64Img(base64, width, height) {
+        var x = document.createElement("IMG");
+        x.setAttribute("src", base64);
+        x.setAttribute("width", "100");
+        x.setAttribute("height", "100");
+        x.setAttribute("alt", "na");
+        x.setAttribute("onclick", "EditThumbnail(this)");
+        x.setAttribute("ontouchstart", "StartTimer(this)");
+        x.setAttribute("ontouchend", "EndTimer(this)");
+        return x;
+
+        // var canvas = document.createElement("canvas");
+        // canvas.width = width;
+        // canvas.height = height;
+        // var context = canvas.getContext("2d");
+        //  $("<img/>")
+        //      .attr("src", base64)
+        //      .load(function() {
+        //          context.scale(width / this.width, height / this.height);
+        //          context.drawImage(this, 0, 0); 
+        //          deferred.resolve($("<img/>").attr("src", canvas.toDataURL()));   
+        //      });  
+        // return deferred.promise();   
+    }
+
+    function ShowLocalThumbnail(Visit) {
+        app.db.transaction(function (tx) {
+            tx.executeSql("SELECT jsondata FROM Visits WHERE visitid=?", [newDetailValue[0]['Id']], function (t, res) {
+                var detailvalue = JSON.parse(res.rows.item(0)['jsondata']);
+                try {
+                    if (detailvalue['AttachmentThumbnail']['OfflineUrls'].length) {
+                        $("#VisitDetail_Thumbnail_Local_Div").show();
+                        $('#VisitDetail_Thumbnail_Local').html('');
+                    } else {
+                        return null;
+                    }
+                    try {
+                        $('#VisitDetail_Thumbnail_Local').html('');
+                        console.log('detail ', detailvalue);
+                        for (var i = 0; i < detailvalue['AttachmentThumbnail']['OfflineUrls'].length; i++) {
+                            var fileName = detailvalue['AttachmentThumbnail']['OfflineUrls'][i];
+                            if (fileName.toLowerCase().indexOf("signature") > -1) {
+                                flag_sign = 1;
+                            } else {
+                                flag_photo = 1;
+                            }
+                            $('#VisitDetail_Thumbnail_Local').append(resizeBase64Img(fileName, thumbnailWidth, thumbnailHeight));
+                        }
+                    } catch (err) {
+                        console.log('Erro 123', err);
+                    }
+                } catch (err) {
+                    console.error('Error 124', err);
+                }
+            }, function () {
+            });
+        });
+    }
+
+    function ShowRemoteThumbnail(VisitId, reload, prevAttId) {
+        if (!navigator.onLine) {
+            return;
+        }
+
+        if (!reload) {
+            try {
+                if (newDetailValue[0]['AttachmentThumbnail']['isOnlineDownloaded']) {
+                    if (newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length) {
+                        $("#VisitDetail_Thumbnail_Online_Div").show();
+                        $('#VisitDetail_Thumbnail_Online').html('');
+                    }
+                    for (var i = 0; i < newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length; i++) {
+                        $('#VisitDetail_Thumbnail_Online').append(resizeBase64Img(newDetailValue[0]['AttachmentThumbnail']['onlineUrls'][i], thumbnailWidth, thumbnailHeight));
+                    }
+                }
+                return null;
+            } catch (err) {
+            }
+        }
+
+        var countImage = 0;
+        var checkImageCount = 0;
+        var OnlineVisitAttachment = {};
+        OnlineVisitAttachment['onlineUrls'] = [];
+        OnlineVisitAttachment['isOnlineDownloaded'] = true;
+
+        function downloadThumbnailImage(attachmentId, FileName, tooManyFollowUp) {
+            var addTimeStamp = new Date().getTime();
+
+            var PathToDownload = creds.instanceUrl + '/servlet/servlet.FileDownload?file=' + attachmentId;
+            if (tooManyFollowUp) {
+                try {
+                    var test = PathToDownload.split('/');
+                    test[2] = OrgInfo.photos.picture.split('/')[2];
+                    var url = test.join('/');
+                    PathToDownload = url;
+                } catch (er) {
+                }
+            }
+
+            var filepath = encodeURI(PathToDownload);
+            if (device.platform === 'Android') {
+                window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (dir) {
+                    // Create ServiceTracker directory on Root
+                    dir.getDirectory('ServiceTracker/', { create: true, exclusive: false }, function (dirEntry1) {
+                        // Create Visit Folders
+                        dirEntry1.getDirectory(newDetailValue[0]['Name'], { create: true, exclusive: false }, function (dirEntry2) {
+
+                            dirEntry2.getFile(FileName, { create: true }, function (file) {
+                                var fileTransfer = new FileTransfer();
+                                fileTransfer.download(filepath, file.nativeURL, function (newFileEntry) {
+                                    if (prevAttId === attachmentId) {
+                                        OnlineVisitAttachment['onlineUrls'].push(newFileEntry.nativeURL + '?timestamp=' + addTimeStamp);
+                                    } else {
+                                        OnlineVisitAttachment['onlineUrls'].push(newFileEntry.nativeURL);
+                                    }
+
+                                    //Save the visit to table and visit object
+                                    if (!newDetailValue[0]['AttachmentThumbnail']) {
+                                        newDetailValue[0]['AttachmentThumbnail'] = {};
+                                    }
+
+                                    newDetailValue[0]['AttachmentThumbnail'] = OnlineVisitAttachment;
+                                    checkImageCount++;
+                                    if (checkImageCount === countImage) {
+                                        app.toastMessage("Thumbnail has been downloaded", "long");
+                                        $("#VisitDetail_Thumbnail_Online_Div").show();
+                                        for (var i = 0; i < newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length; i++) {
+                                            $('#VisitDetail_Thumbnail_Online').append(resizeBase64Img(newDetailValue[0]['AttachmentThumbnail']['onlineUrls'][i], thumbnailWidth, thumbnailHeight));
+                                        }
+                                        // insert into the table and in variable...
+                                        app.insertRecord("Visits", { JsonData: JSON.stringify(newDetailValue[0]), Updated: false, UserId: creds.UserID, VisitID: newDetailValue[0]["Id"] }, function () {
+                                            ShowRemoteThumbnail(newDetailValue[0]['Id']);
+                                        });
+                                    }
+                                }, function (error) {
+                                    if (error.exception === "Too many follow-up requests: 21") {
+                                        downloadThumbnailImage(attachmentId, FileName, true);
+                                    } else {
+                                        checkImageCount++;
+                                        console.log('Error with #download method.' + JSON.stringify(error));
+                                        console.log(error);
+                                    }
+                                }, false, {
+                                        headers: { "Authorization": "Bearer " + creds.accessToken }
+                                    });
+                            });
+                        }, function (err) {
+                            console.error(err);
+                        });
+                    }, function (err) {
+                        console.error(err);
+                    });
+                }, function (err) {
+                    console.error(err);
+                });
+            } else if (device.platform === 'iOS') {
+                window.resolveLocalFileSystemURL(cordova.file.documentsDirectory, function (dir) {
+                    dir.getFile(FileName, { create: true }, function (file) {
+                        var fileTransfer = new FileTransfer();
+
+                        fileTransfer.download(filepath, file.nativeURL, function (newFileEntry) {
+
+                            if (prevAttId === attachmentId) {
+                                OnlineVisitAttachment['onlineUrls'].push(newFileEntry.nativeURL + '?timestamp=' + addTimeStamp);
+                            } else {
+                                OnlineVisitAttachment['onlineUrls'].push(newFileEntry.nativeURL);
+                            }
+
+                            //Save the visit to table and visit object
+                            if (!newDetailValue[0]['AttachmentThumbnail']) {
+                                newDetailValue[0]['AttachmentThumbnail'] = {};
+                            }
+                            newDetailValue[0]['AttachmentThumbnail'] = OnlineVisitAttachment;
+                            checkImageCount++;
+                            if (checkImageCount === countImage) {
+                                app.toastMessage("Thumbnail is downloaded", 'long');
+                                for (var i = 0; i < newDetailValue[0]['AttachmentThumbnail']['onlineUrls'].length; i++) {
+                                    $('#VisitDetail_Thumbnail_Online').append(resizeBase64Img(newDetailValue[0]['AttachmentThumbnail']['onlineUrls'][i], thumbnailWidth, thumbnailHeight));
+                                }
+                                // insert into the table and in variable...
+                                app.insertRecord("Visits", { JsonData: JSON.stringify(newDetailValue[0]), Updated: false, UserId: creds.UserID, VisitID: newDetailValue[0]["Id"] }, function () {
+                                    ShowRemoteThumbnail(newDetailValue[0]['Id']);
+                                });
+                            }
+                        }, function (error) {
+                            if (error.code === 1) {
+                                app.toastMessage('File is not available', 'long');
+                            } else if (error.code === 3) {
+                                app.toastMessage('File is not available', 'long');
+                            } else if (error.exception === "Too many follow-up requests: 21") {
+                                downloadThumbnailImage(attachmentId, FileName, true);
+                            } else {
+                            }
+                        }
+                            , false, {
+                                headers: { "Authorization": "Bearer " + creds.accessToken }
+                            }
+                        );
+                    });
+                });
+            }
+        }
+
+        // Download all the attachments from the salesforce.. 
+        Visit_Detail_Attachment = [];
+        jsconn.sobject("Attachment")
+            .find()
+            .where("ParentId='" + VisitId + "'")
+            .execute(function (err, rs) {
+                console.log("Attachment Result", rs);
+                countImage = rs.length;
+                Visit_Detail_Attachment = rs;
+
+                try {
+                    if (Visit_Detail_Attachment.length) {
+                        for (var l = 0; l < Visit_Detail_Attachment.length; l++) {
+                            if (Visit_Detail_Attachment[l]['Name'].toLowerCase().indexOf('signature') > -1) {
+                                flag_sign = 1;
+                            } else {
+                                flag_photo = 1;
+                            }
+                        }
+                    }
+                } catch (err) {
+                }
+
+                $('#VisitDetail_Thumbnail_Online').html('');
+                for (var i = 0; i < rs.length; i++) {
+                    downloadThumbnailImage(rs[i]['Id'], rs[i]['Id'] + '_' + rs[i].Name);
+                }
+            });
+    }
+
+    function ActiveResourcesDropDown() {
+        ChangedUserId = '';
+        $("#assigntouser1").hide();
+
+        CurrentUserName = null;
+
+        try {
+            //CurrentUserName = dropdownlist.value();
+        } catch (err) { }
+
+        var AssignToUserData = [];
+        var User_Test = {};
+
+        for (var i = 0; i < ResourceData.length; i++) {
+            if (!CurrentUserName && ResourceData[i]['STKR__User__c'] === creds.UserID) {
+                CurrentUserName = ResourceData[i]['Name'];
+            }
+            if (ResourceData[i]['STKR__Status__c'] === 'Available' && ResourceData[i]['STKR__User__r'] && ResourceData[i]['STKR__User__r']['IsActive']) {
+                User_Test = { text: ResourceData[i]['Name'], value: ResourceData[i]['Name'] };
+                AssignToUserData.push(User_Test);
+            }
+        }
+
+        $("#assigntouser").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: AssignToUserData,
+            text: CurrentUserName,
+            value: CurrentUserName,
+            change: function (e) {
+                console.log('Before change', CurrentUserName);
+                var options = {
+                    'androidTheme': window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_DARK,
+                    'buttonLabels': ['Yes', 'Cancel'],
+                    'title': 'Are you sure you want change the resource?'
+                };
+                window.plugins.actionsheet.show(options, function (buttonIndex) {
+                    if (buttonIndex === 1) {
+                        ChangedUserId = '';
+                        for (var i = 0; i < ResourceData.length; i++) {
+                            if (ResourceData[i]['Name'] == dropdownlist.value()) {
+                                ChangedUserId = ResourceData[i]['STKR__User__c'];
+                            }
+                        }
+                        console.log('About to update', ChangedUserId, dropdownlist.value());
+                        updateVisit();
+                        UpdateArray(dropdownlist.value());
+                        window.history.back();
+                    } else {
+                        ChangedUserId = '';
+                        dropdownlist.value(CurrentUserName);
+                        dropdownlist.text(CurrentUserName);
+                    }
+                });
+            },
+            close: function (e) {
+                console.log('close');
+                ChangedUserId = '';
+            }
+        });
+
+        dropdownlist = $("#assigntouser").data("kendoDropDownList");
+        dropdownlist.open();
+
+    }
+
+    function savetask() {
+        var datatoupload = {};
+        datatoupload['ActivityDate'] = new Date($("#ModelViewDate").val());
+        datatoupload['Subject'] = $("#ModelViewSubject").val();
+        datatoupload['Description'] = $("#ModelViewDescription").val();
+        datatoupload['Priority'] = $("#ModelViewPriority").val();
+        datatoupload['Status'] = $("#ModelViewStatus").val();
+        datatoupload['WhatId'] = newDetailValue[0]['Id'];
+
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            jsconn.sobject("Task").create(datatoupload,
+                function (err, ret) {
+                    if (err || !ret.success) { return console.error(err, ret); }
+                    //console.log("Created record id : " + ret.id);
+                    datatoupload['Id'] = ret.id;
+                    //console.log('datatoupload after creating on salesforce', datatoupload);
+                    TaskData.push(datatoupload);
+                    app.insertRecord('TaskData', {
+                        JsonData: JSON.stringify(datatoupload),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+                        TaskID: datatoupload['Id']
+
+                    });
+                    app.toastMessage('New task created', 'long');
+                    try {
+                        DSTaskList();
+                    } catch (er) { console.error(er); }
+                });
+        } else {
+            var timestamp = (new Date().getTime()).toString();
+            datatoupload['Id'] = timestamp;
+            TaskData.push(datatoupload);
+            app.insertRecord('TaskData', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                TaskID: datatoupload['Id']
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'Task',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('New Task stored offline', 'long');
+            try {
+                DSTaskList();
+            } catch (er) { console.error(er); }
+        }
+        $("#modalview-task").kendoMobileModalView("close");
+    }
+
+    function edit_followup() {
+        var options = {
+            mode: 'datetime',
+            androidTheme: 5
+        };
+        if (!$("#STKR__Follow_Up__c").val()) {
+            options['date'] = new Date();
+        } else {
+            options['date'] = new Date($("#STKR__Follow_Up__c").val());
+        }
+        function onSuccess(date) {
+            //console.log(date);
+            var dateString = '';
+            dateString = date.getFullYear() + '-';
+            if ((date.getMonth() + 1) > 9) {
+                dateString += (date.getMonth() + 1) + '-';
+            } else {
+                dateString += '0' + (date.getMonth() + 1) + '-';
+            }
+            if (date.getDate() > 9) {
+                dateString += date.getDate() + 'T';
+            } else {
+                dateString += '0' + date.getDate() + 'T';
+            }
+            if (date.getHours() > 9) {
+                dateString += date.getHours() + ':';
+            } else {
+                dateString += '0' + date.getHours() + ':';
+            }
+            if (date.getMinutes() > 9) {
+                dateString += date.getMinutes();
+            } else {
+                dateString += '0' + date.getMinutes();
+            }
+            $('#STKR__Follow_Up__c').val(dateString);
+            updateVisit();
+        }
+        function onError(error) {
+            console.log(error);
+        }
+        datePicker.show(options, onSuccess, onError);
+    }
+
+    function NavigateToAssociatedVisits() {
+        app.navigate('view/AssociatedVisits.html?VisitId=' + ParamVisitId);
+    }
+    function expandLongNotes(){
+        $("#STKRLongNotes").text(longNotesInfo);
+       
+        $("#STKRLongNotes").append("<a onclick=ShowVisitDescriptionModal(newDetailValue[0],newDetailValue[0]['Id']); style=color:rgb(102,178,255);>Edit</a>");
+    }
+    function expandInternalNotes(){
+        $('#STKRInternalNotes').text(InternalNotesinfo);
+      
+        $("#STKRInternalNotes").append("<a onclick=ShowInternalNotesDescriptionModal(newDetailValue[0]['Id']); style=color:rgb(102,178,255);>Edit</a>");
+  
+    }
+</script>
+
+<script type="text/x-kendo-template" id="ViewForVisitTemplate">
+    #
+
+    var visitduestartdate;
+    var visitduefinishdate;
+   
+    if (device.platform==='Win32NT') {
+        visitduefinishdate = new Date(STKR__Due_Finish__c.split('+')[0] + 'Z');
+        visitduestartdate = new Date(STKR__Due_Date__c.split('+')[0] + 'Z');
+    } else if (device.platform==='iOS') {
+        visitduestartdate = new Date(STKR__Due_Date__c.split('.')[0]);
+      //  visitduestartdate = new Date(STKR__Due_Date__c);
+        visitduefinishdate = new Date(STKR__Due_Finish__c.split('.')[0]);
+    } else {
+        visitduefinishdate = new Date(STKR__Due_Finish__c);
+        visitduestartdate = new Date(STKR__Due_Date__c);
+    }
+    #
+    <div class="mdl-shadow--2dp VisitDetail_colldetails">
+        <br>
+        <!--span style="margin:0%;margin-left:4%;font-weight:bold;">#:Name#            
+        </span><br-->
+        #if (StoreVisitsAfterFilter.length > 1) {#
+            <center><div id="visitdetail_AssociatedVisits" onClick="NavigateToAssociatedVisits()">Click here to view other visits due on this site. Please consider completing these visits if appropriate.</div></center><br/>
+                    #}#
+                    #if (STKR__Priority__c == "High"){#
+                        <center>
+                        <hr style="width: 40%;background: red;margin-top: 0.5em;margin-bottom: 0.1em;">
+                        <div style="align-items: center;display: flex;justify-content: center;"><i class="fa fa-2x fa-exclamation-triangle" style="color: red;"></i><span id="PriorityLabel" style="color:red;font-weight: bold;">HIGH PRIORITY!</span></div>
+                        <hr style=" width: 40%; background: red; margin: 0em;">
+                        </center>
+                    #}#
+        #if(STKR__Account__c.length < 30) {#
+            <p style="margin:0%;margin-top: 2%;margin-left:4%;font-weight:bold;line-height:100%;font-size:20px;">#:STKR__Account__c#
+            </p>
+            #} else {#
+            <p style="margin:0%;margin-left:4%;font-weight:bold;line-height:100%;" >#:STKR__Account__c#
+            </p>
+            #}#
+
+            
+
+            <u> <p id="AddressOfAccountVisitDetail" style="margin:0%;margin-left:4%;line-height:100%;" onclick="ShowAccountLocationFromVisitCart();"></p></u><br>
+        <span id="Label_AccountPhoneVisitDetail" style="margin-left:4%;display:none;"> Phone :
+            <a style="color:black;font-weight:bold;" href="" id="AccountPhoneVisitDetail"></a>
+        </span>                      
+        <span id="Label_AccountMobileVisitDetail" style="margin-left:4%;display:none;margin-top:1%;"> Mobile :
+            <a style="color:black;font-weight:bold;margin-left:-1%;" href="" id="AccountMobileVisitDetail"></a>
+        </span> 
+        <span id="Label_AccountParentVisitDetail" style="margin-left:4%;display:none;margin-top:1%;"><span data-i18n="visitdetails--ViewForVisitdetail--Label_AccountParentVisitDetail"> Parent </span>:
+            <p style="color:black;font-weight:bold;margin-left:14%;margin-top: -18px;" id="AccountParentVisitDetail"></p>
+        </span>   
+    
+        
+        <br/>                
+        #var ampm = visitduestartdate.getHours() >= 12 ? 'pm' : 'am';
+        var Hour = (visitduestartdate.getHours() < 10 ? '0' : '') + visitduestartdate.getHours();
+        var minute = (visitduestartdate.getMinutes() < 10 ? '0' : '') + visitduestartdate.getMinutes();   
+        var day = (visitduestartdate.getDate() < 10 ? '0' : '') + visitduestartdate.getDate();
+        var month = ((visitduestartdate.getMonth() + 1) < 10 ? '0' : '') + (visitduestartdate.getMonth() + 1);
+        #
+        <span style="font-weight:bold;position:absolute;width:90.5%;margin-left:3.5%;">Due Start:#if (STKR__Due_Date__c) {#
+        <input type="datetime-local" id="startdateeditable"
+                onClick="ChangeDueStarDate(this)"
+                class="VisitDetailPageMDLName mdl-textfield__input"
+                name="RemoveThis"  
+                value="${visitduestartdate.getFullYear()}-${month}-${day}T${Hour}:${minute}"  
+                style="font-size: small;font-weight: bold;-webkit-text-fill-color: black;-webkit-appearance: menulist;margin-top: -3%;outline:none;position: absolute;border:none;" 
+                required="required" readonly/>
+             #}                                 
+        # </span>
+           <br/>
+           # if(!ButtonSettings.STKR__Hide_Visit_Sequence_Number__c){#
+           <div style="display:flex;justify-content:flex-start;margin-top:2px;">
+           <span style="margin-left:4%;width:20%">Visit:</span>
+           <span id="#:Id#CurrentVisitOfVisitPeryearVisitDetail" style="margin-left:26%;font-size:small;"></span>
+           </div>
+          #}#
+            <div style="display:flex;justify-content:flex-start">
+           <span id="Label_LastVisitVisitDetail" style="margin-left:4%;display:block;width:20%">Last Visit: </span>
+           <span id="LastVisitVisitDetail${Id}" style="margin-left:26%;font-size:small;display:block;"></span>
+            </div>    
+            
+           # if(ButtonSettings.STKR__Show_All_Contract__c){#
+            <span id="AssignuserLabel" style="margin-top:0%;font-weight:bold;position:absolute;width:90.5%;margin-left:4%;">Assigned User:
+                <span id="assigntouser1"
+                    class="VisitDetailPageMDLName mdl-textfield__input"
+                    style="position: absolute;margin-top: -5%;right: -48%;font-size: small;font-weight: bold;border: transparent;outline: none;-webkit-text-fill-color: black;">${STKR__Resource_Name__c}
+                </span>
+                <span id="assigntouser" style="font-size: small !important;font-weight:bold !important;right: 15%;"></span>
+          
+                <button data-role="button" 
+                 class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                 onClick="ActiveResourcesDropDown()"
+                 style="position: absolute;right:0.5%;font-size:55%;transform: rotate(90deg);margin-top: -3%;box-shadow: none;background: transparent;outline: none;border: transparent;">
+                 <i class="fa fa-play"></i>
+                 </button>
+               #}             
+             # </span>
+               <br/>
+               
+            <h5 style="margin-top: 5%;">                        
+            #if (STKR__Status__c==='In Progress') {#
+                <img src="img/InProgress.png"  style="width:10%;height:10%;" />
+                #:STKR__Status__c#  
+                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                        style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
+                        <i class="fa fa-pause  my-float"  ></i>  PAUSE
+                </button>
+            #} else if (STKR__Status__c==='Open') {#
+                <img src="img/Open.png" style="width:10%;height:10%;" />
+            #:STKR__Status__c#   
+                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                        style="float:right;font-weight:normal;font-size:75%;background:\#FFC107;border-style:none;color:white;border-style:none;padding-top: 0%;"
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"     >
+                    <span><!--i class="material-icons">cloud_download</i--> <i class="fa fa-cloud-download"></i>
+                        <label style="padding-top:0%;font-weight:bold"> ACCEPT</label></span>
+                </button>
+            #} else if (STKR__Status__c==='Accepted') {#
+                <img src="img/Accepted.png " style="width:10%;height:10%;" />
+                #:STKR__Status__c# 
+                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                        style="float:right;font-weight:normal;font-size:75%;background:\#00796B;border-style:none;color:white;padding-top: 0%;"
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"    >
+                    <!--i class="material-icons">directions_car</i-->
+                    <i class="fa fa-car"></i> START
+                </button>
+            #} else if (STKR__Status__c==='Journey Started') {#
+                <img src="img/JourneyStarted.png" style="width:10%;height:10%;"/>
+                #:STKR__Status__c#
+                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                        style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
+                    <i class="material-icons">forward</i> ARRIVE
+                </button>
+            #} else if (STKR__Status__c==='Complete' && STKR__Aborted_Visit__c===false) {#
+                <img src="img/check (2).png" style="width:10%;height:10%;"/>
+                #:STKR__Status__c#
+                <button onclick="PrintServiceReport()"
+                        id="VisitDetail_ServiceReport"
+                        style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
+                    <i class="fa fa-print fa-lg"></i> PRINT
+                </button>
+            #} else if(STKR__Status__c==='Complete' && STKR__Aborted_Visit__c===true){#
+                <img src="img/remove.png" style="width:10%;height:10%;"/>
+                Aborted Visit 
+                <button onclick="PrintServiceReport()"
+                        id="VisitDetail_ServiceReport"
+                        style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
+                    <i class="fa fa-print fa-lg"></i> PRINT
+               </button>
+               #} else if(STKR__Status__c=='Paused'){#
+                <img src="img/playState.png" style="width:10%;height:10%;"/>
+                #:STKR__Status__c#
+                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
+                <i class="fa fa-play-circle my-float"  ></i>  RESUME
+                </button>
+           #}#
+        </h5> 
+     
+        
+
+        
+        <br/>
+        #try {#
+          
+                <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;"  id="spanForlongNotes" >Visit Description 
+                <br/>
+                # if(STKR__Notes_Long__c == null || !STKR__Notes_Long__c.length) {#
+                    <p id="visitItalicLable" style="color:grey;margin-left:4%;font-style:italic;" onclick="ShowVisitDescriptionModal(#:JSON.stringify(data)#,'${Id}');"> Tap to add a Visit description</p><br/>
+             #} else if (STKR__Notes_Long__c.length>0) {#
+                <p  style="line-height:100%;margin-left:4%;" id="STKRLongNotes">#:STKR__Notes_Long__c#
+                <a id="EditDescription" onclick="ShowVisitDescriptionModal(#:JSON.stringify(data)#,'${Id}');"  style="color:rgb(102,178,255);margin-left:5px;">Edit </a> </p>
+            #}#
+            </span>               
+       # } catch (err) { }#
+
+       #try  { console.log('hi',InternalNotesinfo) # 
+               
+       <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;" id='spanForInternalNotes'  >Internal Notes 
+           <br/>
+          # if(STKR__Internal_Notes__c == null || !STKR__Internal_Notes__c.length){#
+            <p id="visitInternalItalicLable" style="color:grey;margin-left:4%;font-style:italic;" onclick="ShowInternalNotesDescriptionModal('${Id}');"> Tap to add Internal notes</p>
+               
+        #} else if (STKR__Internal_Notes__c.length > 0) {#
+       <p style="line-height:100%;margin-left:4%;"  id="STKRInternalNotes"  >#:STKR__Internal_Notes__c#
+        
+        <a  id="EditDescription" onclick="ShowInternalNotesDescriptionModal('${Id}');" style="color:rgb(102,178,255);margin-left:5px;">Edit </a> </p>
+       
+   #}#
+    </span>
+     #}  catch (err) { }#
+
+            #try{#
+
+                #if(SkillReqData.length){#
+                    #var skillTemp=[]#
+                    #for(i=0;i<SkillReqData.length;i++){#
+                        #if(SkillReqData[i].STKR__Client__c==newDetailValue[0].STKR__Account_lkp__c){#
+                            #skillTemp.push(SkillReqData[i])#
+                        #}#
+                    #}#
+   
+                    #if(skillTemp.length){#
+                    <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;" id="SkillReq">Skill Requirements</span>
+                    <ul id="SkillRequirementList" style="padding-left: 37px;">    
+                        # for(i=0;i<skillTemp.length;i++){ #
+         
+                             <li>${skillTemp[i].STKR__Requirement__r.Name} </br>
+                                #if(skillTemp[i].STKR__Requirement__r.STKR__Notes__c!=null){#
+                                Notes:${skillTemp[i].STKR__Requirement__r.STKR__Notes__c} 
+                                #}#
+                            </li>
+                        # } #      
+                     </ul>
+                    #}#
+               #}#
+                </br>
+
+         #    var ItemMap={}; #
+         #    var aarr=[];  #
+      
+            #for(i=0;i<InspectionItemData.length;i++){
+                if(InspectionItemData[i].STKR__Account__c==newDetailValue[0]["STKR__Account_lkp__c"]){
+                if(ItemMap[InspectionItemData[i].STKR__Item_Type__c]==undefined){
+                 ItemMap[InspectionItemData[i].STKR__Item_Type__c]=0;
+                 aarr.push(InspectionItemData[i].STKR__Item_Type__c)
+                }#
+           
+             
+                    # ItemMap[InspectionItemData[i].STKR__Item_Type__c]++#
+             
+             #}}#
+                #if(aarr.length){#
+                    <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;" id="InspectionItem">Items to inspect and treatments</span>
+   
+                    <ul id="InstectionItemList" style="padding-left: 37px;">     
+                        # for(i=0;i<aarr.length;i++){ #
+         
+                             <li>${ ItemMap[aarr[i]] } ${aarr[i]}</li>
+                        # } #      
+                     </ul>
+               # } else{ #
+                <p  style="color:grey;margin-left:4%;font-style:italic;" > No items nor treatments</p><br/>
+              # }#
+            
+          
+           
+            #}catch(err){}#
+
+                <span style="width:100%;font-size:130%;display: inline-block;">
+                        <center>                                                    
+                            <a data-role="button"
+                             style="background:\#3090C7;color:white;"
+                              href="view/ContactsList.html?AccountId=${STKR__Account_lkp__c}&VisitId=${Id}">
+                              <i class="fa fa-users"></i>
+                            </a>
+                            <a data-role="button"                        
+                             style="background:\#41A317;color:white;" 
+                             onclick="GotomapWithparam('#=Name#','#=STKR__Account_lkp__c#')">
+                             <i class="fa fa-map-marker"></i>
+                            </a> 
+                           <a data-role="button" 
+                             style="background: orange;color:white;" 
+                             onclick="NavigateToClientAttachment('#=STKR__Account_lkp__c#','#=Id#','Card')"> 
+                             <i class="fa fa-paperclip"></i>
+                            </a>                                              
+                        </center>
+                    </span>
+                         
+      
+        
+       
+        <hr/>
+        <div class="contentingrey">
+            <span style="margin:0%;margin-left:4%;">
+                #:STKR__Visit_Type__c#
+                (<span id="${Id}VisitFrequencyVisitDetail"></span>)
+            </span>
+            <br/>
+            <span id="Label_refVisitDetail" style="margin:0%;margin-left:4%;visibility:hidden;"> Ref: <span id="${Id}refVisitDetail"></span></span>
+            <br/>
+                
+            #
+            if (STKR__Items_to_inspect__c > 0) {#   
+             
+                <span style="margin:0%;margin-left:4%;color:black;">${STKR__Items_to_inspect__c} items to be inspected</span>
+            <br/>#}
+
+            #
+            <br/>
+            
+            <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;">Fixed Visit
+                <input type="checkbox" 
+                       style="position:absolute;right: 5%;width: 20px; height: 20px; margin-top: -2px;" 
+                       onChange="CheckforFixedVisit(this);" 
+                       id="STKR__Fixed_Visit__c"
+                       name="VisitLayoutName">
+            </span>
+            <br/><br/>
+             
+           
+
+          
+            <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;">Aborted Visit
+                       <input type="checkbox" 
+                               style="position:absolute;right: 5%;width: 20px; height: 20px; margin-top: -2px;" 
+                               onChange="CheckforAbortedVisit(this);" 
+                               id="STKR__Aborted_Visit__c"
+                               name="VisitLayoutName">
+            </span>
+        </div>
+        <br>
+        <center>
+            #if (STKR__Items_to_inspect__c || STKR__Items_Inspected__c) {
+                if ((STKR__Items_to_inspect__c) || (STKR__Items_to_inspect__c && STKR__Items_Inspected__c)) {
+                    if(ButtonSettings.STKR__disableInspectionButton__c){#
+                <button onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
+                        style="font-weight:bold;"
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    <i class="material-icons">visibility</i>
+                    Inspections (#:STKR__Items_to_inspect__c#)
+                </button>
+                <br><br> 
+                #} 
+            } else {
+                if(ButtonSettings.STKR__disableInspectionButton__c){#          
+                <button onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
+                            style="font-weight:bold;"
+                            class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                        <i class="material-icons">visibility</i>
+                        Inspections
+                    </button>
+                    <br><br> 
+                #}#
+            #}
+                } else {
+                    if(ButtonSettings.STKR__disableInspectionButton__c){#
+                <button onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
+                        style="font-weight:bold;"
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    <i class="material-icons">visibility</i>
+                    Inspection (0)
+                </button>
+                <br><br> 
+            #}
+            }
+
+            var OpenAction = 0;
+            var CompleteAction = 0;
+
+            for (var i = 0; i < ActionData.length; i++) {
+                if ((ActionData[i]['STKR__Account__c']===newDetailValue[0]['STKR__Account_lkp__c'] || ActionData[i]['stkr__account__c']===newDetailValue[0]['STKR__Account_lkp__c']) && (ActionData[i]['STKR__Status__c']==='Open')) {
+                    OpenAction++;
+                }else if ((ActionData[i]['STKR__Visit__c']===newDetailValue[0]['Id']) && (ActionData[i]['STKR__Status__c']==='Complete')) {
+                    CompleteAction++;
+                }
+            }
+
+            var OpenActionLabel = 'Open ' + ActionLabel;
+
+            if (OpenAction > 1) {
+                OpenActionLabel = 'Open ' + ActionLabel + 's';
+            }
+            if (OpenAction) {
+                if (OpenAction) {
+                  if(ButtonSettings.STKR__disableActionButton__c){#
+                <button onClick="gotoActionPage('SiteActions')" 
+                        style="font-weight:bold;"
+                        class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                    <i class="ionicons ion-android-walk largeicons"></i>
+                    #:OpenActionLabel#
+                    (#:OpenAction#)
+                </button><br><br>
+                #}
+            } 
+
+            }#
+        </center>
+    </div>
+    #if (STKR__Status__c==='Open' || STKR__Status__c==='Journey Started' || STKR__Status__c==='Accepted') {#
+        <h6>You will not be able to edit this visit until it is In Progress or Completed</h6>
+    #}#
+
+</script>
+
+<script type="text/x-kendo-template" id="CompleteButtonVisitTemplate">
+    #if(ButtonSettings.STKR__disablePrepWasteButton__c){#
+        <div class="mdl-shadow--2dp" 
+         id="prepswastes" 
+         style="padding:2%;background-color:\#fff; border-radius: 10px;">
+            <center>
+        <label style="padding-top:2%;font-weight:bold;" id="PrepWasteDynamicLabel">
+        <h5>
+            #if (PrepWasteLabel!=='undefined' && PrepWasteLabel!==undefined && PrepWasteLabel!=='null' && PrepWasteLabel!==null) {#
+                #:PrepWasteLabel#
+            #} else {#
+                Prep/Waste Used 
+            #}
+        
+            # 
+            </h5>
+        </label>
+        <button style="width:100;margin-bottom:3%;font-weight:bold;" 
+               
+                onclick="gotoPrepWasteMgmt('${Id}','${Name}')"
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" 
+                id="PrepWasteButton">
+                <img src="img/toolbox-solid.svg" style="width:20px;height:20px;margin-top:-3px;" />
+            #if (PrepWasteLabel!=='undefined' && PrepWasteLabel!==undefined && PrepWasteLabel!=='null' && PrepWasteLabel!==null) {#
+                SELECT #:PrepWasteLabel#
+            #} else {#
+                Select Prep/Waste
+            #}
+        
+            #
+        </button>
+    </center>
+       
+    </div>
+    #}#
+    #if (STKR__Status__c==='Open' || STKR__Status__c==='Journey Started' || STKR__Status__c==='Accepted') {#
+        <h6>You will not be able to edit this visit until it is In Progress or Completed</h6>
+    #} else if (STKR__Status__c==='In Progress' || STKR__Status__c==='Complete') {#
+    <center>
+        <button onclick="OpenConfirmCompleteVisit('#:Name#')"
+            id="CompletBtnEnabled" 
+                style="margin-top:3%;font-weight:bold;color:white;width:98%;background-color:\#7FE817;" 
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
+            <!--i class="material-icons">check</i-->
+            <i class="fa fa-check"></i>
+            COMPLETE THIS VISIT
+        </button>
+    </center>
+    #}# 
+</script>
+
+<style>
+    /* Hide the clear button from date input */
+
+    input[type="date"]::-webkit-clear-button {
+        -webkit-appearance: none;
+        display: none;
+    }
+
+    #visitdetails .km-content {
+        background: #E6E6E6;
+    }
+
+    .VisitDetail_colldetails {
+        background-color: white;
+        border-radius: 10px;
+    }
+
+    .p {
+        margin-left: 3%;
+        font-size: 15px;
+        /*color: grey;*/
+        color: black;
+    }
+
+    .VisitdetailPage {
+        background-color: white;
+        width: 90%;
+    }
+
+    .km-rightcustomicon:after,
+    .km-rightcustomicon:before {
+        content: "\e037";
+        color: White;
+        margin-left: -1em;
+    }
+
+    textarea {
+        font-family: Arial;
+    }
+
+    .ChangePositionOfModalView {
+
+        width: 100%;
+        height: 22em;
+        background: white;
+        margin-left: 0;
+        /*position: relative;*/
+    }
+
+    .RemoveArrayFromDD {
+        width: 100%
+    }
+
+    /* This is to remove the arrow of select element in IE */
+
+    select::-ms-expand {
+        display: none;
+    }
+
+    select {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    @-moz-document url-prefix() {
+        .ui-select {
+            border: 1px solid #CCC;
+            border-radius: 4px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ui-select select {
+            width: 110%;
+            background-position: right 30px center !important;
+            border: none !important;
+        }
+    }
+
+    #MyVisitsdetailFooter {
+        display: block !important;
+    }
+
+    #VisitDetail_Thumbnail_Online {
+        overflow-x: scroll;
+        overflow-y: hidden;
+        display: flex;
+    }
+
+    #VisitDetail_Thumbnail_Online img {
+        padding: 1px;
+    }
+
+    #VisitDetail_Thumbnail_Local {
+        overflow-x: scroll;
+        overflow-y: hidden;
+        display: flex;
+    }
+
+    #VisitDetail_Thumbnail_Local img {
+        padding: 1px;
+    }
+
+    #MyVisitsdetailFooter .km-button {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    .km-blackberry .k-dropdown .k-dropdown-wrap {
+        margin-top: 5%;
+        border: transparent;
+        margin-left: -3%;
+        position: absolute;
+    }
+
+    #visitdetail_AssociatedVisits {
+        background-color:red;
+        color: white;
+        font-weight: bold;
+        padding: 2px;
+       
+        border-style: solid;
+        border-bottom-width: 2px;
+        border-top-width:2px;
+    }
+    .km-rightitem{
+        margin-right:8%
+    }
+    .float{
+       
+    width:60px;
+    height:60px;
+    bottom:78px;
+    right:40px;
+    color:#FFF;
+    background-color: rgb(255,215,64);
+    border-radius:50px;
+    text-align:center;
+    z-index:160;
+    opacity: 0.6;
+    outline: none;
+    border: 2px solid black;
+}
+
+.my-float{
+    margin-top:0px;
+    color: black;
+}
+</style>

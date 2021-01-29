@@ -1,0 +1,330 @@
+<div data-role="view" data-title="Events" id="EventListPage" data-layout="EventListPageLayout" data-show="DSEventList"
+    data-after-show="DASEventList" data-use-native-scrolling="true">
+    <ul data-role="listview" id="EventListViewPage" data-style="inset" data-template="EventListPageTemplate"></ul>
+</div>
+<div data-id="EventListPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="EventListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="gotoneweventpage();" class="EventListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="OpenModalViewDuration();" class="EventListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add_alert</i>
+            </button>
+            <span data-role="view-title"></span>
+            <button onclick="app.navigate('view/HomePage.html');"  style="border-style:none;float:right;margin-top:2%;" class="EventListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons" style="color:white;">home</i>
+                </button>
+        </div>
+    </header>
+</div>
+<div data-role="modalview" id="modalview_duration" style="width:90%;height:80%;">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span>Select Duration</span>
+        </div>
+    </div>
+    <center>
+        <!--div style="margin-top:20%;font-size:x-large;">
+            <span>Select Duration</span>
+        </div-->
+        <div style="margin-top:15%;font-size:large;">
+            <input type="radio" name="duration" value="15" style="height: 2em;width: 2em;"> 15 Minutes
+            <br><br>
+            <input type="radio" name="duration" value="30" style="height: 2em;width: 2em;"> 30 Minutes
+            <br><br>
+            <input type="radio" name="duration" value="45" style="height: 2em;width: 2em;"> 45 Minutes
+            <br><br>
+            <input type="radio" name="duration" value="60" style="height: 2em;width: 2em;"> 60 Minutes
+            <br><br>
+            <input type="radio" name="duration" value="75" style="height: 2em;width: 2em;"> 75 Minutes
+            <br><br>
+        </div>
+    </center>
+
+    <div data-role="footer">
+        <div data-role="navbar">
+            <a data-click="ClearCheckbox" type="button" data-role="button" data-align="left">CLEAR</a>
+            <a data-click="CloseModalViewDuration" type="button" data-role="button" data-align="right">CANCEL</a>
+            <a data-click="CreateEventBasedOnDuration" type="button" data-role="button" data-align="right">SET</a>
+        </div>
+    </div>
+
+    <!--div style="margin-top:50%;">
+        <button onclick="ClearCheckbox()" data-role="button" style="color:aqua;float:left;border:none;background:none;font-weight:bold;">CLEAR</button>
+        <button data-click="CloseModalViewDuration" data-role="button" style="color:aqua;float:right;border:none;font-weight:bold;background:none;">CANCEL</button>
+        <button onclick="CreateEventBasedOnDuration()" data-role="button" style="color:aqua;float:right;border:none;font-weight:bold;background:none;">SET</button>
+    </div-->
+</div>
+
+<script>
+    function DSEventList() {
+        CountNumberOfOflineItem();
+        currentLocation = '';
+        console.log('PersonalEvents', PersonalEvents);
+        $("#EventListViewPage").data("kendoMobileListView").replace(PersonalEvents);
+    }
+
+    function DASEventList() {
+    }
+
+    function gotoneweventpage() {
+        app.navigate('view/SelectEventRecordType.html');
+    }
+
+    function OpenModalViewDuration() {
+        $("#modalview_duration").kendoMobileModalView("open");
+        $('input[type=radio]').prop('checked', false);
+    }
+
+    function CloseModalViewDuration() {
+        $("#modalview_duration").kendoMobileModalView("close");
+        $('input[type=radio]').prop('checked', false);
+    }
+
+    function ClearCheckbox() {
+        $('input[type=radio]').prop('checked', false);
+    }
+
+    function CreateEventBasedOnDuration() {
+        var radioValue = $("input[name='duration']:checked").val();
+        console.log(radioValue);
+        var ExpiryTime = new Date().getTime() + (radioValue * 60 * 1000);
+        console.log(ExpiryTime);
+        var datatoupload = {};
+        datatoupload['StartDateTime'] = new Date();
+        datatoupload['EndDateTime'] = new Date(ExpiryTime);
+        datatoupload['Subject'] = "BREAK";
+        datatoupload['Type'] = "BREAK";
+        console.log('datatoupload', datatoupload);
+        if (AppIsOnline) {
+            //Device is online
+            jsconn.sobject("Event").create(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    alert(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Updated Successfully : ' + ret.id);
+                datatoupload['Id'] = ret.id;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                PersonalEvents.push(datatoupload);
+                app.insertRecord('PersonalEvents', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    RecordId: datatoupload['Id']
+                }, function () {
+                });
+                //Rearrange the events
+                GetEventdataOffline();
+                app.toastMessage('New Event created', 'long');
+                window.history.back();
+            });
+        } else {
+            // Device is offline 
+            // Store in DataToUpdate table
+            var timestamp = (new Date().getTime()).toString();
+            datatoupload['Id'] = timestamp;
+            PersonalEvents.push(datatoupload);
+            app.insertRecord('PersonalEvents', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                RecordId: datatoupload['Id']
+            }, function () {
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'Event',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            app.insertRecord('DataToUpdate', data);
+            //Rearrange the events
+            GetEventdataOffline();
+            app.toastMessage('New Event stored offline', 'long');
+            window.history.back();
+        }
+    }
+</script>
+
+<script type="text/x-kendo-template" id="EventListPageTemplate">
+    <a href="view/EventDetailPage.html?EventId=${Id}">
+        <div>
+            # if (device.platform==='Android') {
+                //For StartDateTime
+                try {
+                    var datevalstart = new Date(StartDateTime);
+                    var monthstart;
+                    var daystart;
+                    var Hoursstart;
+                    var Minutesstart;
+                    //For EndDateTime
+                    var datevalend = new Date(EndDateTime);
+                    var monthend;
+                    var dayend;
+                    var Hoursend;
+                    var Minutesend;
+                }catch (e) {
+                } 
+                //For StartDateTime
+                try {
+                    if ((datevalstart.getMonth() + 1) < 10) {
+                        monthstart = '0' + (datevalstart.getMonth() + 1)
+                    } else {
+                        monthstart = datevalstart.getMonth() + 1
+                    }
+                    if (datevalstart.getDate() < 10) {
+                        daystart = '0' + datevalstart.getDate()
+                    } else {
+                        daystart = datevalstart.getDate()
+                    }
+                    if (datevalstart.getHours() < 10) {
+                        Hoursstart = '0' + datevalstart.getHours()
+                    } else {
+                        Hoursstart = datevalstart.getHours()
+                    }
+                    if (datevalstart.getMinutes() < 10) {
+                        Minutesstart = '0' + datevalstart.getMinutes()
+                    } else {
+                        Minutesstart = datevalstart.getMinutes()
+                    }
+                    //For EndDateTime
+                    if ((datevalend.getMonth() + 1) < 10) {
+                        monthend = '0' + (datevalend.getMonth() + 1)
+                    } else {
+                        monthend = datevalend.getMonth() + 1
+                    }
+                    if (datevalend.getDate() < 10) {
+                        dayend = '0' + datevalend.getDate()
+                    } else {
+                        dayend = datevalend.getDate()
+                    }
+                    if (datevalend.getHours() < 10) {
+                        Hoursend = '0' + datevalend.getHours()
+                    } else {
+                        Hoursend = datevalend.getHours()
+                    }
+                    if (datevalend.getMinutes() < 10) {
+                        Minutesend = '0' + datevalend.getMinutes()
+                    } else {
+                        Minutesend = datevalend.getMinutes()
+                    }
+                    var PEstartdate = (daystart + '/' + (monthstart) + '/' + datevalstart.getFullYear() + ' ' + (Hoursstart) + ':' + (Minutesstart));
+                    var PEenddate = (dayend + '/' + (monthend) + '/' + datevalend.getFullYear() + ' ' + (Hoursend) + ':' + (Minutesend));
+                } catch (err) {
+                    console.log('date error' + err);
+                }
+            } 
+            if (device.platform==='iOS') {
+                //For StartDateTime
+                try {
+                    var datevalstartios;            
+                    if (typeof(StartDateTime) === 'string') {
+                        datevalstartios = new Date(StartDateTime.split('.')[0]);
+                    } else {
+                        datevalstartios = new Date(StartDateTime);
+                    }
+                    var monthstartios;
+                    var daystartios;
+                    var Hoursstartios;
+                    var Minutesstartios;
+                    //For EndDateTime
+                    var datevalendios;    
+                    if (typeof(EndDateTime) === 'string') {
+                        datevalendios = new Date(EndDateTime.split('.')[0]);
+                    } else {
+                        datevalendios = new Date(EndDateTime);
+                    }
+                    var monthendios;
+                    var dayendios;
+                    var Hoursendios;
+                    var Minutesendios;
+                }catch (e1) {
+                }
+                //For StartDateTime
+                try {
+                    if ((datevalstartios.getMonth() + 1) < 10) {
+                        monthstartios = '0' + (datevalstartios.getMonth() + 1)
+                    } else {
+                        monthstartios = datevalstartios.getMonth() + 1
+                    }
+                    if (datevalstartios.getDate() < 10) {
+                        daystartios = '0' + datevalstartios.getDate()
+                    } else {
+                        daystartios = datevalstartios.getDate()
+                    }
+                    if (datevalstartios.getHours() < 10) {
+                        Hoursstartios = '0' + datevalstartios.getHours()
+                    } else {
+                        Hoursstartios = datevalstartios.getHours()
+                    }
+                    if (datevalstartios.getMinutes() < 10) {
+                        Minutesstartios = '0' + datevalstartios.getMinutes()
+                    } else {
+                        Minutesstartios = datevalstartios.getMinutes()
+                    }
+                    //For EndDateTime
+                    if ((datevalendios.getMonth() + 1) < 10) {
+                        monthendios = '0' + (datevalendios.getMonth() + 1)
+                    } else {
+                        monthendios = datevalendios.getMonth() + 1
+                    }
+                    if (datevalendios.getDate() < 10) {
+                        dayendios = '0' + datevalendios.getDate()
+                    } else {
+                        dayendios = datevalendios.getDate()
+                    }
+                    if (datevalendios.getHours() < 10) {
+                        Hoursendios = '0' + datevalendios.getHours()
+                    } else {
+                        Hoursendios = datevalendios.getHours()
+                    }
+                    if (datevalendios.getMinutes() < 10) {
+                        Minutesendios = '0' + datevalendios.getMinutes()
+                    } else {
+                        Minutesendios = datevalendios.getMinutes()
+                    }
+                    var PEstartdate = (daystartios + '/' + (monthstartios) + '/' + datevalstartios.getFullYear() + ' ' + (Hoursstartios) + ':' + (Minutesstartios));
+                    var PEenddate = (dayendios + '/' + (monthendios) + '/' + datevalendios.getFullYear() + ' ' + (Hoursendios) + ':' + (Minutesendios));
+                } catch (err) {
+                    console.log('date error' + err);
+                }
+            } 
+            #
+            #try{if(data.Location) {#
+                <span style="font-weight:bold;">${data.Location}</span><br/>
+            #}}catch(er){}#
+            #try{
+                if (Subject) {#
+                <span>${Subject}</span><br/>
+                #}
+            }catch(err){}# 
+            #try{
+                if (data.Description) {#
+                <span style="font-size:small;">${data.Description}</span><br/>
+                #}}catch(err){}
+            #
+            #try{if (StartDateTime) {#
+                <label style="font-size:x-small;">
+                    Start Date:
+                </label>
+                <span style="font-size:x-small;" >${PEstartdate}</span><br/>
+            #}}catch(err){}#
+            #try{if (EndDateTime) {#
+                <label style="font-size:x-small;">
+                    End Date:
+                </label>
+                <span style="font-size:x-small;">${PEenddate}</span>
+            #}}catch(err){}#
+        </div>
+    </a>
+</script>

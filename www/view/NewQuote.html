@@ -1,0 +1,569 @@
+<div data-role="view" data-title="Create New Quote" id="CreateQuote" data-show="DSCreateQuote"
+    data-after-show="DASCreateQuote" data-init="DICreateQuote" data-layout="CreateQuoteLayout"
+    data-use-native-scrolling="true">
+    <center>
+        <h5>Quote Header</h5>
+    </center>
+    <div class="mdl-shadow--2dp" style="margin:3%;padding:3%;background-color:#fff;">
+        <div class="NewQuotePageMDLName mdl-textfield mdl-js-textfield">
+            <label style="color: rgb(0,188,212);font-size: 16px;" for="STKR__Site_Contact__c">Site Contact</label>
+
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onclick="app.navigate('view/SelectLookup.html?ObjectName=Contact&InputElementId=STKR__Site_Contact__c&HiddenInputElementId=STKR__Site_Contact__cHidden');"
+                style="right:0;">
+                <i class="material-icons">search</i>
+            </button>
+            <input type="text" name="NewQuoteName" class="NewQuotePageMDLName mdl-textfield__input"
+                id="STKR__Site_Contact__c" readonly>
+            <input type="text" name="NewQuoteName" class="NewQuotePageMDLName mdl-textfield__input"
+                id="STKR__Site_Contact__cHidden" style="display:none;">
+        </div>
+        <br>
+
+        <div class="NewQuotePageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <textarea name="NewQuoteName" id="STKR__Introduction__c" class="NewQuotePageMDLName mdl-textfield__input"
+                type="text" rows="5"></textarea>
+            <label class="NewQuotePageMDLName mdl-textfield__label" for="STKR__Introduction__c">Introduction</label>
+        </div>
+        <br>
+        <div class="NewQuotePageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input type="text" name="NewQuoteName" class="NewQuotePageMDLName mdl-textfield__input"
+                id="STKR__P_O_Number__c">
+            <label class="NewQuotePageMDLName mdl-textfield__label" for="STKR__P_O_Number__c">Reference</label>
+        </div>
+        <br>
+    </div>
+    <center>
+        <h5>Line Items</h5>
+    </center>
+    <div class="mdl-shadow--2dp" style="margin:3%;padding:3%;background-color:#fff;">
+        <table style="width:100%;" id="LineItemsListTable">
+            <tr style="width:100%">
+                <th style="width:40%;padding:1%;">Product</th>
+                <th style="width:20%;padding:1%;">QTY</th>
+                <th id="NewQuotePage_TableHeaderCurrency" style="width:30%;padding:1%;">Price(&pound;)</th>
+            </tr>
+        </table>
+        <a onclick="addNewLineItems();">
+            <label class="add-Line" style="cursor:pointer">+ New Lines</label>
+        </a>
+        <div style="float:right;">
+            <label id="TotalLineItemValueLabel">Total &pound;</label>
+            <span id="TotalLineItemValue">0</span>
+        </div>
+    </div>
+    <div class="mdl-shadow--2dp" style="margin:3%;padding:3%;background-color:#fff;">
+        <label style="color:rgba(0,0,0,.26); font-size:16px;">Authorised</label>
+        <a onclick="ClearQuoteSign()"
+            style="font-size:100%;font-weight:bold;color:rgb(102,178,255);float:right;">Clear</a>
+        <br />
+        <div id="QuoteSign" style="background-color: lightgrey;">
+            <div id="QuoteSignature" style="width: 100%;padding: 0 0 0 0;margin: 0 0 0 0;border: 1px dotted #000;">
+            </div>
+        </div>
+        <br />
+    </div>
+    <center>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onclick="CreateQuote()" style="font-weight:bold;">
+            SAVE
+        </button>
+        <br />
+    </center>
+</div>
+<div data-id="CreateQuoteLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()"
+                class="QuoteDetailMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </header>
+</div>
+<div data-role="modalview" id="modalview-lineitemmore" style="width: 90%;">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span>Line Item Detail</span>
+        </div>
+    </div>
+
+    <div>
+        <center>
+            <h5 id="NewQuote_More_Location">Location</h5>
+        </center>
+        <div class="mdl-shadow--2dp" style="margin:2%;padding:2%;background-color:#fff; border-radius: 10px;">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input type="text" class="mdl-textfield__input" id="NewQuoteLocation">
+            </div>
+        </div>
+        <br />
+        <center>
+            <h5 id="NewQuote_More_Description">Description</h5>
+        </center>
+        <div class="mdl-shadow--2dp" style="margin:2%;padding:2%;background-color:#fff; border-radius: 10px;">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <textarea id="NewQuoteDescription" class="mdl-textfield__input"></textarea>
+            </div>
+        </div>
+
+        <!-- Hidden Value to know line item number -->
+        <input type="text" id="NewQuoteHiddenNumberMore" style="display:none;" />
+    </div>
+    <div data-role="footer">
+        <div data-role="navbar">
+            <a data-click="NewQuoteAdditionDetail" id="modalview-login-button" type="button" data-role="button"
+                data-align="left">Save</a>
+            <a data-click="closeModalViewNewQuote" id="modalViewCancelButtonNewQUote" type="button" data-role="button"
+                data-align="right">Cancel</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    var LastItemNumber = 0;
+    var getPrice;
+
+    function DICreateQuote() {
+        try {
+            $("#QuoteSignature").jSignature({
+                'background-color': 'transparent',
+                'decor-color': 'transparent',
+            });
+        } catch (e) {
+        }
+    }
+
+    function DSCreateQuote() {
+        CountNumberOfOflineItem();
+        LastItemNumber = 1;
+        $('#TotalLineItemValue').html(0);
+        $('#TotalLineItemValueLabel').html('Total ' + userDefaultCurrency);
+        $('#NewQuotePage_TableHeaderCurrency').html('Price(' + userDefaultCurrency + ')');
+
+        try {
+            var screenWidth = window.screen.width;
+            var screenHeight = window.screen.height / 5;
+
+            $('#QuoteSign canvas').prop({ "height": screenHeight, "width": screenWidth });
+            $('#QuoteSign canvas').css({ "height": screenHeight + "px", "width": "100%" });
+
+            $("#QuoteSignature").jSignature('reset');
+        } catch (e) {
+        }
+    }
+
+    function DASCreateQuote() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('VisitDetailPageMDLName'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+        }
+    }
+
+    function EditPrice(data, ProductNumber) {
+        console.log(data);
+        console.log(ProductNumber)
+        var Product = $('#LineItemProduct' + ProductNumber).val();
+        getPrice = $('#LineItemPrice' + ProductNumber).val();
+        for (var i = 0; i < ProductData.length; i++) {
+            if (ProductData[i]['Product2']['Id'] === Product) {
+                var ProductQuantity = $('#LineItemQuantity' + ProductNumber).val();
+                ProductData[i]['getPrice'] = getPrice;
+                app.toastMessage("Price Updated", "long");
+                $('#LineItemPrice' + ProductNumber).val((getPrice) * (ProductQuantity));
+                break;
+            }
+        }
+        var TotalLineItems = document.getElementById('LineItemsListTable').rows.length;
+        var TotalLineItemValue = 0;
+        for (var j = 1; j <= TotalLineItems; j++) {
+            if ($('#LineItemProduct' + j).val() && $('#LineItemProduct' + j).val() !== '') {
+                try {
+                    TotalLineItemValue += parseFloat($('#LineItemPrice' + j).val());
+                } catch (err) {
+                }
+            }
+        }
+        $('#TotalLineItemValue').html(TotalLineItemValue);
+    }
+
+    function ChangePrice(data, ProductNumber) {
+        console.log(data);
+        if ($('#LineItemQuantity' + ProductNumber).val() === 0) {
+            app.toastMessage('Quantity can\'t be zero', 'long');
+            $('#LineItemQuantity' + ProductNumber).val(1);
+        }
+        var Product = $('#LineItemProduct' + ProductNumber).val();
+        getPrice = $('#LineItemPrice' + ProductNumber).val();
+        for (var i = 0; i < ProductData.length; i++) {
+            if (ProductData[i]['Product2']['Id'] === Product) {
+                if (ProductData[i]['getPrice']) {
+                    var StoreNewPrice = (ProductData[i]['getPrice']);
+                    var ProductQuantity = $('#LineItemQuantity' + ProductNumber).val();
+                    $('#LineItemPrice' + ProductNumber).val((StoreNewPrice) * (ProductQuantity));
+                    break;
+                } else {
+                    var UnitPrice = (ProductData[i]['UnitPrice']);
+                    var ProductQuantity = $('#LineItemQuantity' + ProductNumber).val();
+                    $('#LineItemPrice' + ProductNumber).val((UnitPrice) * (ProductQuantity));
+                    break;
+                }
+            }
+        }
+
+        var TotalLineItems = document.getElementById('LineItemsListTable').rows.length;
+        var TotalLineItemValue = 0;
+        for (var j = 1; j <= TotalLineItems; j++) {
+            if ($('#LineItemProduct' + j).val() && $('#LineItemProduct' + j).val() !== '') {
+                try {
+                    TotalLineItemValue += parseFloat($('#LineItemPrice' + j).val());
+                } catch (err) {
+                }
+            }
+        }
+        $('#TotalLineItemValue').html(TotalLineItemValue);
+    }
+
+    function UpdateLineItemValues(ProductNumber) {
+        if ($('#LineItemProduct' + ProductNumber).val() === '') {
+            $('#LineItemPrice' + ProductNumber).val(0);
+            $('#LineItemQuantity' + ProductNumber).val(1);
+            return;
+        }
+        $('#LineItemQuantity' + ProductNumber).val(1);
+        var Product = $('#LineItemProduct' + ProductNumber).val();
+        for (var i = 0; i < ProductData.length; i++) {
+            if (ProductData[i]['Product2']['Id'] === Product) {
+                $('#LineItemPrice' + ProductNumber).val(ProductData[i]['UnitPrice']);
+                break;
+            }
+        }
+        var TotalLineItems = document.getElementById('LineItemsListTable').rows.length;
+        var TotalLineItemValue = 0;
+        for (var j = 1; j <= TotalLineItems; j++) {
+            if ($('#LineItemProduct' + j).val() && $('#LineItemProduct' + j).val() !== '') {
+                try {
+                    TotalLineItemValue += parseFloat($('#LineItemPrice' + j).val());
+                } catch (err) {
+                }
+            }
+        }
+        $('#TotalLineItemValue').html(TotalLineItemValue);
+    }
+
+    function ClearQuoteSign() {
+        $('#QuoteSignature').jSignature("reset")
+    }
+
+    function SaveQuoteSign() {
+        // Conditon to validate Signature area Should not Empty
+        //if (!($('#QuoteSignature').jSignature('getData', 'native').length === 0)) {
+        console.log($('#QuoteSignature').jSignature("getData"));
+        return $('#QuoteSignature').jSignature("getData");
+        /* base64sign = ($('#signature').jSignature("getData"));*/
+        // console.log(base64sign);
+        //$("#check").jSignature("setData",base64sign);
+        /*$('#check').attr('src', base64sign);
+        $('#Sign').hide();
+        $('#showSignDiv').show();*/
+        /* } else {
+        return 'error';
+        } */
+    }
+
+    function addNewLineItems() {
+        var itemsHTML = '';
+        for (var i = LastItemNumber + 1; i < LastItemNumber + 6; i++) {
+            itemsHTML += '<tr style="width:100%;">';
+            itemsHTML += '<td style="width:40%;padding:1%;">';
+            itemsHTML += '<select tabindex="' + i + '" style="width:100%;" id="LineItemProduct' + i + '" onChange="UpdateLineItemValues(' + i + ')">';
+            itemsHTML += '<option value="">None</option>';
+            for (var j = 0; j < ProductData.length; j++) {
+                itemsHTML += '<option value="' + ProductData[j]['Product2']['Id'] + '">' + ProductData[j]['Name'] + '</option>';
+            }
+            itemsHTML += '</select>';
+            itemsHTML += '</td>';
+            itemsHTML += '<td style="width:20%;padding:1%;"><input tabindex="' + (i + 1) + '" min="1" style="width:100%;" type="number" id="LineItemQuantity' + i + '" onChange="ChangePrice(this,' + i + ')"/></td>';
+            itemsHTML += '<td style="width:25%;padding:1%;">';
+            if (ButtonSettings.STKR__disablePriceEditing__c) {
+                itemsHTML += '<input tabindex="' + (i + 2) + '" style="width:100%;" type="number" id="LineItemPrice' + i + '" onChange="EditPrice(this,' + i + ')"/>';
+            } else {
+                itemsHTML += '<input tabindex="' + (i + 2) + '" style="width:100%;" type="number" id="LineItemPrice' + i + '" readonly/>';
+            }
+            itemsHTML += '</td>';
+            itemsHTML += '<td style="text-align: right;width: 3%;padding: 1%;">';
+            itemsHTML += '<button class="" onclick="openModalViewNewQuote(' + i + ')" style="border: none;background-color: transparent;"><i class="material-icons">more_vert</i></button>';
+            itemsHTML += '<input type="text" id="NewQuote_LocationHidden' + i + '" style="display:none;" />';
+            itemsHTML += '<textarea id="NewQuote_DescriptionHidden' + i + '" style="display:none;"></textarea>';
+            itemsHTML += '</td>';
+
+            itemsHTML += '</tr>';
+        }
+        LastItemNumber += 5;
+        $('#LineItemsListTable').append(itemsHTML); //add input box
+    }
+
+    function CreateQuote() {
+        var QuotesData = {};
+        QuotesData = {
+            STKR__Introduction__c: $("[name='NewQuoteName']#STKR__Introduction__c").val(),
+            STKR__Requested_By__c: $("[name='NewQuoteName']#STKR__Site_Contact__cHidden").val(),
+            STKR__P_O_Number__c: $("[name='NewQuoteName']#STKR__P_O_Number__c").val(),
+            STKR__Date__c: new Date(),
+            STKR__Account__c: newDetailValue[0]['STKR__Account_lkp__c'],
+            STKR__Status__c: 'New',
+            STKR__Service_Contract__c: newDetailValue[0]['STKR__Service_Contract__c'],
+            STKR__Schedule__c: newDetailValue[0]['STKR__Service__c'],
+            STKR__Visit__c: newDetailValue[0]['Id'],
+            STKR__Owner__c: creds.UserID,
+            RecordTypeId: RecordTypeIdForQuotes
+        };
+
+        // New
+        var New_TotalLineItems = document.getElementById('LineItemsListTable').rows.length;
+        var New_TotalLineItemValue = 0;
+
+        for (var j = 1; j <= New_TotalLineItems; j++) {
+            if ($('#LineItemProduct' + j).val() && $('#LineItemProduct' + j).val() !== '') {
+                try {
+                    New_TotalLineItemValue += parseFloat($('#LineItemPrice' + j).val());
+                } catch (err) {
+                }
+            }
+        }
+
+        //End
+        if (New_TotalLineItemValue == 0) {
+            return app.toastMessage("Please add line item", "long");
+        }
+
+        var SignBase64 = SaveQuoteSign();
+        if (SignBase64 !== 'error' && $('#QuoteSignature').jSignature("getData", "native").length > 0) {
+            QuotesData['STKR__Status__c'] = 'Accepted';
+        }
+
+        QuotesData['STKR__Type__c'] = 'Quote';
+
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            jsconn.sobject("STKR__Billing__c").create(QuotesData, function (err, qret) {
+                if (err || !qret.success) {
+                    return console.error(err, qret);
+                }
+                console.log("Created record id : " + qret.id);
+                var QuoteSFId = qret.id;
+                QuotesData['Id'] = QuoteSFId;
+                function insertName(QuotesData) {
+                    try {
+                        jsconn.query("SELECT Name FROM STKR__Billing__c WHERE Id='" + QuotesData['Id'] + "'",
+                            function (err, b) {
+                                console.log(err, b);
+                                if (err) {
+                                    QuotesData['Name'] = '~New Quote~';
+                                    BillingRecords.push(QuotesData);
+                                }
+                                if (b.totalSize) {
+                                    QuotesData['Name'] = b.records[0]['Name'];
+                                    BillingRecords.push(QuotesData);
+                                }
+                            });
+                    } catch (er) {
+                        QuotesData['Name'] = '~New Quote~';
+                        BillingRecords.push(QuotesData);
+                    }
+                }
+                insertName(QuotesData);
+                app.toastMessage('Quote created', 'long');
+                // Upload Signature
+                var SignBase64 = SaveQuoteSign();
+                if (SignBase64 !== 'error' && $('#QuoteSignature').jSignature("getData", "native").length > 0) {
+                    SignBase64 = SignBase64.split(',')[1];
+                    var QuoteSignAttachment = {
+                        ParentId: QuoteSFId,
+                        Name: 'Signature.png',
+                        Body: SignBase64,
+                        ContentType: 'image/jpeg;base64'
+                    }
+                    jsconn.sobject("Attachment").create(QuoteSignAttachment, function (err, aret) {
+                        if (err || !aret.success) {
+                            return console.error(err, aret);
+                        }
+                        console.log("Attachment record id : " + aret.id);
+                        app.toastMessage('Signature Uploaded to Quote', 'long');
+                    });
+                } else {
+                    app.toastMessage('Please Sign the quote, creating without it', 'long');
+                }
+                // Create Line Items
+
+                // Get Numbers of items in table
+
+                var TotalLineItems = document.getElementById('LineItemsListTable').rows.length;
+                var LineItemRowData = [];
+                for (var j = 1; j <= TotalLineItems; j++) {
+                    if ($('#LineItemProduct' + j).val() && $('#LineItemProduct' + j).val() !== '') {
+                        var data = {
+                            STKR__Billing_Number__c: QuoteSFId,
+                            STKR__Product__c: $('#LineItemProduct' + j).val(),
+                            STKR__Quantity__c: $('#LineItemQuantity' + j).val(),
+                            STKR__Sales_Price__c: parseFloat($('#LineItemPrice' + j).val()) / ($('#LineItemQuantity' + j).val())
+                        };
+                        var LocationField = $('#NewQuote_LocationHidden' + j).val();
+                        var DescriptionField = $('#NewQuote_DescriptionHidden' + j).val();
+                        console.log(LocationField + ' ' + DescriptionField);
+                        if (LocationField) {
+                            data['STKR__Location__c'] = LocationField;
+                        }
+                        if (DescriptionField) {
+                            data['STKR__Line_Description_Long__c'] = DescriptionField;
+                        }
+                        console.log('data', data);
+                        LineItemRowData.push(data);
+                    }
+                }
+                // Multiple records creation
+                jsconn.sobject("STKR__Billing_Items__c").create(LineItemRowData,
+                    function (err, rets) {
+                        if (err) {
+                            return console.error(err);
+                        }
+                        console.log('Line Items created', rets);
+                        app.toastMessage('Line Items are created', 'long');
+                        window.history.back();
+                    });
+            });
+        } else {
+            // Store Quote
+            var Billing_timestamp = new Date().getTime().toString();
+            QuotesData['Id'] = Billing_timestamp;
+            QuotesData['STKR__Mobile_Unique__c'] = Billing_timestamp;
+            QuotesData['Name'] = '~New Quote~';
+            var dataOftable = {
+                JsonData: JSON.stringify(QuotesData),
+                UserId: creds.UserID,
+                BillingId: Billing_timestamp,
+                Updated: 'false',
+                VisitId: newDetailValue[0]['Id']
+            }
+            app.insertRecord('Billing', dataOftable);
+            QuotesData['STKR__Type__c'] = 'Quote';
+            var datatoupload = {
+                JsonData: JSON.stringify(QuotesData),
+                ObjectName: 'STKR__Billing__c',
+                Updated: 'false',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: Billing_timestamp
+            }
+            BillingRecords.push(QuotesData);
+            app.insertRecord('DataToUpdate', datatoupload);
+
+            //Store Line items
+            var TotalLineItems = document.getElementById('LineItemsListTable').rows.length;
+            var LineItemRowData = [];
+            for (var j = 1; j <= TotalLineItems; j++) {
+                if ($('#LineItemProduct' + j).val() && $('#LineItemProduct' + j).val() !== '') {
+                    var data = {
+                        STKR__Billing_Number__c: null,
+                        STKR__Product__c: $('#LineItemProduct' + j).val(),
+                        STKR__Quantity__c: $('#LineItemQuantity' + j).val(),
+                        STKR__Sales_Price__c: parseFloat($('#LineItemPrice' + j).val()) / ($('#LineItemQuantity' + j).val()),
+                        STKR__Mobile_Unique_BillingId__c: newDetailValue[0]["STKR__Account_lkp__c"] + ';OfflineMobile;' + Billing_timestamp
+                    };
+                    var LocationField = $('#NewQuote_LocationHidden' + j).val();
+                    var DescriptionField = $('#NewQuote_DescriptionHidden' + j).val();
+                    console.log(LocationField + ' ' + DescriptionField);
+                    if (LocationField) {
+                        data['STKR__Location__c'] = LocationField;
+                    }
+                    if (DescriptionField) {
+                        data['STKR__Line_Description_Long__c'] = DescriptionField;
+                    }
+                    console.log('data', data);
+                    LineItemRowData.push(data);
+                }
+            }
+            app.db.transaction(function (tx) {
+                for (var li = 0; li < LineItemRowData.length; li++) {
+                    var tempTimeStamp = new Date().getTime() + li;
+                    LineItemRowData[li]['Id'] = tempTimeStamp;
+                    tx.executeSql('INSERT OR REPLACE INTO DataToUpdate(id,jsondata,objectname,updated,updateorinsert,userid,recordid) VALUES ((select id from ' +
+                        'DataToUpdate' +
+                        ' where recordid = "' + tempTimeStamp + '"),?,?,?,?,?,?)',
+                        [JSON.stringify(LineItemRowData[li]), 'STKR__Billing_Items__c', 'false', 'insert', creds.UserID, tempTimeStamp],
+                        function (a, b) { },
+                        function (err) { console.error(err); });
+                }
+            });
+
+            //Store Attachment
+            var SignBase64 = SaveQuoteSign();
+            if (SignBase64 !== 'error' && $('#QuoteSignature').jSignature("getData", "native").length > 0) {
+                SignBase64 = SignBase64.split(',')[1];
+                var QuoteSignAttachment = {
+                    ParentId: null,
+                    Name: 'Signature.png',
+                    Body: SignBase64,
+                    ContentType: 'image/jpeg;base64',
+                    Description: newDetailValue[0]["STKR__Account_lkp__c"] + ';OfflineMobile;' + Billing_timestamp
+                }
+                var datatoupload_att = {
+                    JsonData: JSON.stringify(QuoteSignAttachment),
+                    ObjectName: 'Attachment',
+                    Updated: 'false',
+                    UpdateOrInsert: 'insert',
+                    UserId: creds.UserID,
+                    RecordId: new Date().getTime()
+                }
+                app.insertRecord('DataToUpdate', datatoupload_att);
+            }
+            //end
+            app.toastMessage('Quote is created offline, reload the data', 'long');
+            window.history.back();
+        }
+    }
+
+    function closeModalViewNewQuote() {
+        $("#modalview-lineitemmore").kendoMobileModalView("close");
+    }
+
+    function NewQuoteAdditionDetail() {
+        var LineNumber = $('#NewQuoteHiddenNumberMore').val();
+        console.log(LineNumber);
+        $('#NewQuote_LocationHidden' + LineNumber).val($('#NewQuoteLocation').val());
+        $('#NewQuote_DescriptionHidden' + LineNumber).val($('#NewQuoteDescription').val());
+        $("#modalview-lineitemmore").kendoMobileModalView("close");
+    }
+
+    function openModalViewNewQuote(Index) {
+        console.log(Index, QuoteLocationLabel, QuoteDescriptionLabel);
+        if (QuoteLocationLabel !== 'undefined' && QuoteLocationLabel !== undefined && QuoteLocationLabel !== 'null' && QuoteLocationLabel !== null) {
+            $('#NewQuote_More_Location').html(QuoteLocationLabel);
+        } else {
+            $('#NewQuote_More_Location').html("Location");
+        }
+        if (QuoteDescriptionLabel !== 'undefined' && QuoteDescriptionLabel !== undefined && QuoteDescriptionLabel !== 'null' && QuoteDescriptionLabel !== null) {
+            $('#NewQuote_More_Description').html(QuoteDescriptionLabel);
+        } else {
+            $('#NewQuote_More_Description').html("Description");
+        }
+        if ($('#LineItemProduct' + Index).val() === "") {
+            app.toastMessage('Please select the product first', 'long');
+            return;
+        }
+        $("#modalview-lineitemmore").kendoMobileModalView("open");
+        $('#NewQuoteHiddenNumberMore').val(Index);
+        try {
+            var qnewlocation = $('#NewQuote_LocationHidden' + Index).val();
+            var qnewDescription = $('#NewQuote_DescriptionHidden' + Index).val();
+            $('#NewQuoteLocation').val(qnewlocation);
+            $('#NewQuoteDescription').val(qnewDescription);
+        } catch (err) {
+        }
+    } 
+</script>

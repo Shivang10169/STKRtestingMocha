@@ -1,0 +1,66 @@
+<div data-role="view" id="AssociatedVisits" data-title="Associated Visits" data-show="DataShowAssociatedVisits"
+    data-after-show="DataAfterShowAssociatedVisits" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="button" data-rel="drawer" data-icon="drawer-icon"
+                href="#MyVisitsdrawer"></a>
+            <button data-align="right" onClick="app.navigate('view/HomePage.html');"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div>
+        <div class="mainBody" id="MessageOfAssociatedVisits">
+        </div>
+        <ul data-role="listview" id="ListViewForAssociatedVisits" data-template="ListViewForVisitTemplate"
+            data-style="inset">
+        </ul>
+    </div>
+</div>
+
+<script>
+    var StoreInitialVisit = [];
+    var NewStoreVisitsAfterFilter = [];
+    var visitid = '';
+
+    function DataShowAssociatedVisits(e) {
+        var StoreIndex = 0;
+        var StoreSelectedVisitData = {};
+        var StoreInitialVisitData = {};
+
+        StoreInitialVisit = [];
+        NewStoreVisitsAfterFilter = [];
+        try {
+            visitid = e.view.params.VisitId;
+        } catch (e) {
+        }
+        try {
+            for (var i = 0; i < StoreVisitsAfterFilter.length; i++) {
+                if (StoreVisitsAfterFilter[i]['Id'] === visitid) {
+                    StoreIndex = i;
+                    StoreSelectedVisitData = StoreVisitsAfterFilter[i];
+                    StoreInitialVisitData = StoreVisitsAfterFilter[0];
+                    StoreVisitsAfterFilter[i] = StoreInitialVisitData;
+                    StoreVisitsAfterFilter[0] = StoreSelectedVisitData;
+                }
+            }
+            StoreInitialVisit.push(StoreVisitsAfterFilter[0]);
+            for (var j = 1; j < StoreVisitsAfterFilter.length; j++) {
+                StoreVisitsAfterFilter[j]['ToSort'] = new Date(StoreVisitsAfterFilter[j]['STKR__Due_Date__c']).getTime();
+                NewStoreVisitsAfterFilter.push(StoreVisitsAfterFilter[j]);
+            }
+            NewStoreVisitsAfterFilter.sort(function (a, b) { return a.ToSort - b.ToSort });
+            for (var k = 0; k < NewStoreVisitsAfterFilter.length; k++) {
+                delete NewStoreVisitsAfterFilter[k]['ToSort'];
+            }
+            $("#ListViewForAssociatedVisits").data("kendoMobileListView").replace(StoreInitialVisit.concat(NewStoreVisitsAfterFilter));
+            changeVisitColor();
+        } catch (e) {
+        }
+    }
+
+    function DataAfterShowAssociatedVisits() {
+    }
+</script>

@@ -1,0 +1,108 @@
+<div data-role="view" id="SearchPrepWaste" data-show="DataShowSearchPrepWaste" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();"
+                class="SearchInspectionListMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <span>PrepWaste Search</span>
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right"
+                style="border-style:none;margin-top:2%;"
+                class="SearchInspectionMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </header>
+    <div data-role="header" style="background:grey;">
+        <center>
+            <input type="text" id="term_PrepWaste" style="width:60%;margin:2%;line-height:2em;background-color:white;"
+                placeholder="Enter Character" onchange="getPrepWaste()" />
+            <button
+                class="SearchInspectionMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="getPrepWaste()">
+                Search
+            </button>
+        </center>
+    </div>
+    <div>
+        <div class="MainBodyPrepWasteSearch" id="MessaageOfPrepWasteSearch">
+        </div>
+        <ul data-role="listview" id="ListViewForSearchPrepWaste" data-template="SearchPrepWasteTemplate"
+            data-style="inset">
+        </ul>
+    </div>
+</div>
+<script id="SearchPrepWasteTemplate" type="text/x-kendo-template">
+    <div style="border-radius:10px;padding:2%;margin:2%;" onclick="nativateToCreatePrepWasteFromSearchPage('#:Id#')">
+       <div>
+            
+
+            #if(Name){#<span>Name : ${data.Name}</span></br>#}#
+            #if(STKR__Active_Ingredient__c){#<span>Active Ingredient : ${data.STKR__Active_Ingredient__c}</span></br>#}#
+            #if(STKR__Concentration_or_mg_kg__c){#<span>Concentration (%or mg/kg) : ${data.STKR__Concentration_or_mg_kg__c}</span></br>#}#
+            #if(STKR__Hazard_Code__c){#<span>Hazard Code: ${data.STKR__Hazard_Code__c}</span></br>#}#
+            #if(STKR__Packing_group__c){#<span>Packing group: ${data.STKR__Packing_group__c}</span></br>#}#
+            #if(STKR__Physical_form__c){#<span>Physical form: ${data.STKR__Physical_form__c}</span></br>#}#
+            #if(STKR__Type__c){#<span>Type: ${data.STKR__Type__c}</span></br>#}#
+            #if(STKR__UN_Class__c){#<span>UN Class: ${data.STKR__UN_Class__c}</span></br>#}#
+            #if(STKR__Waste_Code__c){#<span>Waste Code: ${data.STKR__Waste_Code__c}</span></br>#}#
+
+    
+        </div>
+    </div>
+</script>
+
+<script>
+    var PrepWasteRecords = [];
+    var Fromm;
+    var searchPrepWaste_VisitId = '', searchPrepWaste_VisitName = '', searchPrepWaste_InspectionId = '';
+    function getPrepWaste() {
+        var c = 0;
+        var sear = document.getElementById("term_PrepWaste").value;
+        console.log(sear);
+        var patt = new RegExp(sear, 'i');
+        if (sear === "") {
+            PrepWasteRecords = [];
+            app.toastMessage('Please enter a valid search item ', 'long');
+        } else {
+            PrepWasteRecords = [];
+            for (var i = 0; i < Prep_WasteData.length; i++) {
+                if (patt.test(Prep_WasteData[i].STKR__Active_Ingredient__c) == true ||
+                    patt.test(Prep_WasteData[i].STKR__Concentration_or_mg_kg__c) == true ||
+                    patt.test(Prep_WasteData[i].STKR__Hazard_Code__c) == true ||
+                    patt.test(Prep_WasteData[i].STKR__Packing_group__c) == true ||
+                    patt.test(Prep_WasteData[i].STKR__Physical_form__c) == true ||
+                    patt.test(Prep_WasteData[i].Name) == true ||
+                    patt.test(Prep_WasteData[i].STKR__Type__c) == true ||
+                    patt.test(Prep_WasteData[i].STKR__UN_Class__c) == true ||
+                    patt.test(Prep_WasteData[i].STKR__Waste_Code__c) == true) {
+                    PrepWasteRecords.push(Prep_WasteData[i]);
+                    c = 1;
+                }
+            }
+        }
+        if (c == 0) {
+            app.toastMessage('Please enter a valid search item', 'long');
+            PrepWasteRecords = [];
+        }
+
+        $("#ListViewForSearchPrepWaste").data("kendoMobileListView").replace(PrepWasteRecords);
+        $('#ListViewForSearchPrepWaste li:nth-child(odd)').css('background-color', 'lightblue');
+    }
+
+    function DataShowSearchPrepWaste(e) {
+        PrepWasteRecords = []
+        Fromm = e.view.params.id;
+        searchPrepWaste_VisitId = e.view.params.VisitId;
+        searchPrepWaste_VisitName = e.view.params.Visitname;
+        searchPrepWaste_InspectionId = e.view.params.InspectionId;
+        $("#ListViewForSearchPrepWaste").data("kendoMobileListView").replace(PrepWasteRecords);
+        $('#ListViewForSearchPrepWaste li:nth-child(odd)').css('background-color', 'lightblue');
+    }
+
+    function nativateToCreatePrepWasteFromSearchPage(PrepWasteId) {
+        app.navigate('view/CreatePrepWasteSelectRecordType.html?PreWasteMgmtId=&VisitId=' + searchPrepWaste_VisitId + '&Visitname=' + searchPrepWaste_VisitName + '&InspectionId=' + searchPrepWaste_InspectionId + '&PrepWasteId=' + PrepWasteId);
+    }
+</script>

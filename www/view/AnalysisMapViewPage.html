@@ -1,0 +1,217 @@
+<div data-role="view" data-title="Show Analysis On Map" data-show="DataShowAnalysisMap"
+    data-after-show="DataAfterShowDataShowAnalysisMap" id="AnalysisMapViewPage" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()"
+                class="AnalysisDetailPageMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <div id="AnalysisMapDiv">
+    </div>
+
+</div>
+<style>
+    #CreateAnalysisLayoutPageNew .km-content {
+        background: #E6E6E6;
+    }
+
+    .AnalysisDetailPageMDLName textarea {
+        width: 95%;
+        border: none;
+    }
+
+    .AnalysisDetailPageMDLName input[type="text"] {
+        border: none;
+        width: 95%;
+    }
+</style>
+<script>
+    var AnalysisRecordid = '';
+    var latvalu;
+    var langval;
+    var roadTrip = null;
+    function DataShowAnalysisMap() {
+        console.log('asd', AnalysisMapData);
+        $("#AnalysisMapDiv").height($(document.body).height()) - $("header").height();
+
+        try {
+            if (googleMapIncluded) {
+                showmaponPage();
+            } else {
+                includeGoogleMap(showmaponPage);
+            }
+        } catch (err) {
+        }
+    }
+
+    var roadTripCoordinates = [
+        { lat: 40.759011, lng: -73.984472 },
+        { lat: 40.916765, lng: -74.171811 },
+        { lat: 41.320043, lng: -73.979287 },
+        { lat: 41.503427, lng: -74.010418 },
+        { lat: 40.4406, lng: -79.9959 },
+        { lat: 41.878114, lng: -87.629798 },
+        { lat: 41.515776, lng: -88.089981 },
+        { lat: 41.603121, lng: -93.615418 },
+        { lat: 41.614432, lng: -94.017453 },
+        { lat: 41.506006, lng: -94.318428 },
+        { lat: 41.264905, lng: -95.995216 },
+        { lat: 40.922593, lng: -98.342114 },
+        { lat: 41.134193, lng: -104.816437 },
+        { lat: 39.755373, lng: -104.984837 }
+    ];
+
+    function showmaponPage() {
+        if (!AnalysisMapData.length)
+            return app.toastMessage("No records", "long")
+        var MapElement = document.getElementById('AnalysisMapDiv');
+        var geocoder = new google.maps.Geocoder();
+        var infowindow = new google.maps.InfoWindow();
+
+        var map = new google.maps.Map(MapElement, {
+            zoom: 20,
+            center: new google.maps.LatLng((AnalysisMapData[0] && AnalysisMapData[0]['lat']) || 0, (AnalysisMapData[0] && AnalysisMapData[0]['lng']) || 0),
+            mapTypeId: 'satellite'
+        });
+
+        for (i = 0; i < AnalysisMapData.length; i++) {
+            if (AnalysisMapData[i]['lat'] && AnalysisMapData[i]['lng']) {
+                marker = new google.maps.Marker({
+                    draggable: true,	
+                    animation: google.maps.Animation.DROP,
+                    position: new google.maps.LatLng(AnalysisMapData[i]['lat'], AnalysisMapData[i]['lng']),
+                    map: map,
+                    id_id:AnalysisMapData[i]['Id'],
+                });
+
+                google.maps.event.addListener(marker, 'dragend', function(marker, h) {	
+                    var latLng = marker.latLng;	
+                    var currentLatitude = latLng.lat();	
+                    var currentLongitude = latLng.lng();	
+                    console.log(marker,this.id_id, "Anadata", currentLatitude, currentLongitude);	
+                     updateMarkerPosition(marker.latLng,this.id_id);
+                     updatePolyline(latLng,this.id_id,map);
+                });	
+
+
+                google.maps.event.addListener(marker, 'click', (function (marker, i) {
+                    return function () {
+                        geocoder.geocode({ 'latLng': new google.maps.LatLng(marker.position.lat(), marker.position.lng()) }, function (results, status) {
+                            //if (status === google.maps.GeocoderStatus.OK) {
+                            console.log('results, status ', results, status);
+                            console.log(marker.position.lat(), marker.position.lng());
+                            if (results[i]) {
+                                endAddress = results[i].formatted_address;
+                                // AccountId = mapDetails[i]['AccountId'];
+                                var infoWindowHTML = '';
+                                infoWindowHTML = '<h6>';
+
+                                infoWindowHTML += newDetailValue[0].Name + ':';
+
+                                if (device.platform === "Android") {
+                                    infoWindowHTML += newDetailValue[0]['STKR__Account__c'] + '\n' +
+                                        '</h6>' + '<p>' +
+                                        results[0].formatted_address +
+                                        '</p><br/><button onClick="app.navigate(\'view/AnalysisDetailPage.html?RecordTypeId=' +
+                                        AnalysisMapData[i].RecordTypeId + '&AnalysisId=' + AnalysisMapData[i].Id +
+                                        '&mode=d\');"> View Analysis</button>';
+                                } else if (device.platform === "iOS") {
+                                    //comgooglemaps://?saddr=&daddr=&directionsmode=transit
+                                    infoWindowHTML += newDetailValue[0]['STKR__Account__c'] + '\n' +
+                                        '</h6>' + '<p>' +
+                                        results[0].formatted_address +
+                                        '</p><br/><button onClick="app.navigate(\'view/AnalysisDetailPage.html?RecordTypeId=' +
+                                        AnalysisMapData[i].RecordTypeId + '&AnalysisId=' + AnalysisMapData[i].Id +
+                                        '&mode=d\' );"> View Analysis</button>';
+                                }
+                                infowindow.setContent(infoWindowHTML);
+                                infowindow.open(map, marker);
+                                //calculateAndDisplayRoute(directionsService, directionsDisplay);
+                                //if (mapDetails.length > 1)
+                                // CheckOrigin=1 If map is shown from card; else CheckOrigin=0;
+                                //  if (CheckOrigin !== 1)
+                                //   ShowMaterialSnackbar();
+                            } else {
+                                AccountId = mapDetails[i]['AccountId'];
+                                if (device.platform === "Android") {
+                                    infowindow.setContent('<h6>' + mapDetails[i]['VisitName'] + ':' + mapDetails[i]['AccountName'] + '\n' + '</h6>' + '<p>' + 'null,null' +
+                                        '</p><br/><button onClick="app.navigate(\'view/AnalysisDetailPage.html?RecordTypeId=' + AnalysisMapData[i].RecordTypeId + '&AnalysisId=' + AnalysisMapData[i].Id + '&mode=d\');"> View Analysis</button>');
+
+                                } else if (device.platform === "iOS") {
+                                    infowindow.setContent('<h6>' + mapDetails[i]['VisitName'] + ':' + mapDetails[i]['AccountName'] + '\n' + '</h6>' + '<p>' + 'null,null' +
+                                        '</p><br/><button onClick="app.navigate(\'view/AnalysisDetailPage.html?RecordTypeId=' + AnalysisMapData[i].RecordTypeId + '&AnalysisId=' + AnalysisMapData[i].Id + '&mode=d\');"> View Analysis</button>');
+                                }
+                                infowindow.open(map, marker);
+                                if (mapDetails.length > 1)
+                                    ShowMaterialSnackbar();
+                            }
+                            // }
+                        });
+                    }
+                })(marker, i));
+
+            }
+        }
+         roadTrip = new google.maps.Polyline({
+            path: dummy,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+        roadTrip.setMap(map);
+
+    }
+
+    function updatePolyline(latLng, anId, myMap) {
+            var index;
+            for (var j = 0; j < AnalysisMapData.length; j++) {
+                if (AnalysisMapData[j]['Id'] == anId) {
+                    index = j;
+                    break;
+
+                }
+            }
+            dummy[index].lat = latLng.lat();
+            dummy[index].lng = latLng.lng();
+            if (roadTrip != null) {
+                roadTrip.setMap(null);
+            }
+            roadTrip = new google.maps.Polyline({
+                path: dummy,
+                strokeColor: '#FF0000',
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+            roadTrip.setMap(myMap);
+        }
+
+        function updateMarkerPosition(latLng, analysisId) {
+
+                //console.log('hola', latLng.lat(), latLng.lng(), analysisId);
+                jsconn.sobject("STKR__Chlorination_Results__c").update({
+                    Id: analysisId,
+                    STKR__Analysis_Geolocation__Latitude__s: latLng.lat(),
+                    STKR__Analysis_Geolocation__Longitude__s: latLng.lng()
+                }, function (err, ret) {
+                    if (err || !ret.success) {
+                        return console.error(err, ret);
+                    }
+                    app.toastMessage("Updated Successfully online", "long")
+                    //console.log('Updated Successfully : ', ret.id);
+                    for (var j = 0; j < AnalysisData.length; j++) {
+                        if (AnalysisData[j]['Id'] == analysisId) {
+                            AnalysisData[j].STKR__Analysis_Geolocation__Latitude__s = latLng.lat();
+                            AnalysisData[j].STKR__Analysis_Geolocation__Longitude__s = latLng.lng();
+                        }
+                    }
+                    // ...
+                });
+            }
+
+    function DataAfterShowDataShowAnalysisMap() {
+    }
+
+</script>

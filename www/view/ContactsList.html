@@ -1,0 +1,326 @@
+<div data-role="view" id="ContactListData" data-show="GetContacts" data-after-show="MdlbuttonEffect"
+    data-layout="ContactListLayout" data-title="Contacts" data-use-native-scrolling="true">
+    <div class="mainBody" id="MessaageOfContact"></div>
+    <ul data-role="listview" id="AllContactListview" data-template="ContactListemplate"></ul>
+</div>
+
+<div data-role="view" id="ContactAlertListData" data-show="GetContactsAlerts" data-after-show="MdlbuttonEffect_Alerts"
+    data-layout="ContactListLayout" data-title="Alerts" data-use-native-scrolling="true">
+    <div class="mainBody" id="MessaageOfContact"></div>
+    <ul data-role="listview" id="AllContactAlertListview" data-template="ContactAlertListemplate"></ul>
+</div>
+
+<div data-role="layout" data-id="ContactListLayout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="gobackfromContacts()"
+                class="ContactListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+
+            <button onclick="gotoCreateContact()" style="border-style:none;float:right;margin-top:2%;"
+                class="ContactListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon contactPage_createBtn">
+                <i class="material-icons">add</i>
+            </button>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="ContactListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+
+            <span data-role="view-title"></span>
+        </div>
+    </header>
+    <header data-role="header">
+        <div data-role="tabstrip" data-selected-index="0">
+            <a id="tabstripContactList" onclick="window.location.replace('#ContactListData')"
+                style="font-size:130%;">Contacts</a>
+            <a id="tabstripContactAlertList" onclick="window.location.replace('#ContactAlertListData')"
+                style="font-size:130%;">Alerts</a>
+        </div>
+    </header>
+</div>
+<script>
+    var NewContactdata = [], NewAlertsData = [],
+        Email = '', accountid = '', visitId = '',
+        contactPage_ContactOrAlert = "contact";
+
+    function GetContacts(e) {
+        $("#tabstripContactAlertList").removeClass("km-state-active");
+        $("#tabstripContactList").addClass("km-state-active");
+
+        CountNumberOfOflineItem();
+
+        accountid = '';
+        try {
+            accountid = e.view.params.AccountId;
+        } catch (err) {
+            StoreError(err);
+        }
+        try {
+            visitId = e.view.params.VisitId;
+        } catch (err) {
+            StoreError(err);
+        }
+
+        NewContactdata = [];
+        //change title
+        //navbar.title("Contacts");
+        contactPage_ContactOrAlert = "contact"
+        for (var i = 0; i < ContactData.length; i++) {
+            if (ShowRelatedContacts != undefined && ShowRelatedContacts.STKR__Enable__c) {
+                if ((ContactData[i]['RelatedAccount'] === newDetailValue[0]["STKR__Account_lkp__c"] || ContactData[i]['AccountId'] === newDetailValue[0]["STKR__Account_lkp__c"] ) && ContactData[i]['STKR__Status__c'] === "Active") {
+                    NewContactdata.push(ContactData[i]);
+                }
+            }
+            else {
+                if (ContactData[i]['AccountId'] === newDetailValue[0]["STKR__Account_lkp__c"] && ContactData[i]['STKR__Status__c'] === "Active") {
+                    NewContactdata.push(ContactData[i]);
+                }
+            }
+
+        }
+        $("#AllContactListview").data("kendoMobileListView").replace(NewContactdata);
+
+    }
+
+    function GetContactsAlerts() {
+        //Alert list data show
+        contactPage_ContactOrAlert = "alert"
+        NewAlertsData = [];
+        for (var j = 0; j < AlertsData.length; j++) {
+            if (AlertsData[j]['STKR__Account__c'] == newDetailValue[0]["STKR__Account_lkp__c"] || (AlertsData[j]['STKR__Service_Contract__c'].indexOf(newDetailValue[0]["STKR__Service_Contract__c"]) > -1 && (newDetailValue[0]["STKR__Account_lkp__r"]["Parent"] && AlertsData[j]['STKR__Account__c'] == newDetailValue[0]["STKR__Account_lkp__r"]["Parent"]["Id"] || AlertsData[j]['STKR__Account__c'] == null) || AlertsData[j]['STKR__Service__c'] == newDetailValue[0]["STKR__Service__c"])) {
+                if (AlertsData[j] && AlertsData[j].STKR__Contact__r) {
+                    NewAlertsData.push(AlertsData[j].STKR__Contact__r);
+                }
+            }
+            $("#AllContactAlertListview").data("kendoMobileListView").replace(NewAlertsData);
+        }
+
+    }
+
+    function gotoCreateContact() {
+        app.navigate('view/CreateAlert.html');
+    }
+
+    function ComposeEmail(email) {
+        Email = email;
+        if (AppIsOnline) {
+            try {
+                cordova.plugins.email.isAvailable(function (hasAccount) {
+                    if (hasAccount) {
+                        cordova.plugins.email.open({
+                            to: Email,
+                            cc: null,
+                            bcc: null,
+                            subject: 'Subject',
+                            body: 'Message'
+                        }, function (a) { });
+                    } else {
+                        app.toastMessage("Please add an account", "long");
+                    }
+                });
+            } catch (e) {
+                alert("Error" + e);
+            }
+        }
+        else {
+            app.toastMessage('No Internet', 'long')
+        }
+    }
+
+    var ContactId;
+
+    function ContactDetail(id) {
+        ContactId = id;
+        app.navigate('view/ContactDetail.html?ContactId=' + ContactId + '&accountid=' + newDetailValue[0]["STKR__Account_lkp__c"] + '&VisitId=' + visitId);
+    }
+
+    function MdlbuttonEffect() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('ContactListMDLClass'));
+        $('#MessaageOfContact').empty();
+        if (!(NewContactdata.length)) {
+            var ContactListPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu");
+            ContactListPlaceholder.css('color', 'grey');
+            ContactListPlaceholder.css('position', 'absolute');
+            ContactListPlaceholder.css('top', '50%');
+            $('#MessaageOfContact').html(ContactListPlaceholder);
+        }
+
+        $(".contactPage_createBtn").show();
+    }
+
+    function MdlbuttonEffect_Alerts() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('ContactListMDLClass'));
+        $('#MessaageOfContact').empty();
+        if (!(NewAlertsData.length)) {
+            var ContactListPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu");
+            ContactListPlaceholder.css('color', 'grey');
+            ContactListPlaceholder.css('position', 'absolute');
+            ContactListPlaceholder.css('top', '50%');
+            $('#MessaageOfContact').html(ContactListPlaceholder);
+        }
+
+        $(".contactPage_createBtn").hide();
+    }
+
+    function PhoneCall(phone) {
+
+        try {
+            window.open('tel:' + phone);
+        } catch (e) {
+        }
+
+
+    }
+
+
+    function gobackfromContacts() {
+        window.history.back();
+    }
+
+</script>
+
+<script type="text/x-kendo-template" id="ContactListemplate">
+    <div #try{ if(readOnly && readOnly == true){# class="AlertList_DisabledItem" style="background-color:;margin:0.5%;" #}else{# onclick="ContactDetail('${Id}')" style="background-color:white;margin:0.5%;" #}}catch(err){# onclick="ContactDetail('${Id}')" #}#>
+        #if (FirstName || LastName) {#
+            <span style="font-weight:bold">${FirstName} ${LastName}</span>
+        #}#
+        <div>
+            #if (Title) {#
+            <span>${Title}</span><br/>#}
+            if (Phone) {#
+                <span style="text-decoration: underline;color:rgb(102,178,255);" onclick="PhoneCall('${Phone}');event.stopPropagation();" >${Phone}</span><br/>
+            #}if (MobilePhone) {#
+               <span style="text-decoration: underline;color:rgb(102,178,255);" onclick="PhoneCall('${MobilePhone}');event.stopPropagation();" >${MobilePhone}</span><br/>
+            #}if (Email) {#
+                <a style="text-decoration: underline;color:rgb(102,178,255);" onclick="ComposeEmail('#=Email#');event.stopPropagation();">${Email}</a><br/>
+            #}#
+        </div>
+
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="ContactAlertListemplate">
+    <div >
+     #try {
+        if (typeof(FirstName)!="undefined") {#
+            <span style="font-weight:bold">${FirstName} </span>
+        #}
+    }catch(e1){
+        console.log(e1);
+    }
+
+    try {
+        if (LastName) {#
+            <span style="font-weight:bold">${LastName} </span>
+        #}
+    }catch(e1){
+        console.log(e1);
+    }#
+        <div>
+                #try {
+                    if (typeof(Title)!="undefined") {#
+                        <span style="font-weight:bold">${Title} </span>
+                    #}      
+                }catch(e1){
+                    console.log(e1);
+                }
+
+                try {
+                    if (typeof(MobilePhone)!="undefined") {#
+                        <span style="font-weight:bold">${MobilePhone} </span>
+                    #}
+                }catch(e1){
+                    console.log(e1);
+                }
+
+                try {
+                    if (typeof(Email)!="undefined") {#
+                        <span style="font-weight:bold">${Email} </span>
+                    #}
+                }catch(e1){
+                    console.log(e1);
+                }#
+        </div>
+    </div>
+</script>
+
+<style>
+    .mainBody {
+        width: 100%;
+        bottom: 0px;
+        top: 0px;
+        position: absolute;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 17px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 13px;
+        width: 13px;
+        left: 2px;
+        bottom: 2px;
+        background-color: rgb(33, 159, 243);
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: white;
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked+.slider:before {
+        -webkit-transform: translateX(13px);
+        -ms-transform: translateX(13px);
+        transform: translateX(13px);
+    }
+
+    .slider.round {
+        border-radius: 17px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .isa_error {
+        color: #D8000C;
+        background-color: #FFBABA;
+        padding: 50px;
+        margin: 50px;
+    }
+</style>

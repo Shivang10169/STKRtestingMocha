@@ -1,0 +1,740 @@
+<div data-role="view" id="SignaturePage" data-init="DI_SignaturePage" data-before-show="DBS_SignaturePage"
+    data-show="DS_SignaturePage" data-after-show="DAS_SignaturePage" data-layout="SignatureLayout">
+    <div data-role="header">
+        <div data-role="navbar">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="arrowBack();"
+                class="mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span>Signature</span>
+        </div>
+    </div>
+    <div id="example">
+        <table style="width:100%">
+            <tbody>
+                <tr>
+                    <td style="width:90%;">
+                        <input type="text"
+                            style="height: 29px;margin-left: 1%;margin-top: 7px;border-radius: 25px;padding-left: 20px;border: solid;"
+                            placeholder="Enter your name" id="Filename"> </td>
+                    <td style="padding-top: 13px;">
+                        <i class="fa fa-ellipsis-v fa-2x" aria-hidden="true" onclick="showDropdownContactSite();"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br />
+
+    <center>
+        <div id="Sign" style="background-color:white;">
+
+            <div style="border: solid;">
+                <canvas id="MainSignaturePad" style="touch-action: none; background-color: darkgray;"
+                    height="200"></canvas>
+            </div>
+            <p id="beforeSignMessage" style="size:125%;"></p>
+
+            <p id="messageOrintation" style="size:125%;"></p>
+
+            <center style="height: 0;width: 0;border: none;outline: none;">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <select id="SelectContactsForCurrentSite" class="mdl-textfield__input"
+                        onchange="onChangeingTheDropdownvalue();"></select>
+                </div>
+                <br />
+            </center>
+            <div style="background-color:white;margin-bottom:2%">
+                <center>
+                    <button onclick="SignaturePageMain_unlockOrientation()" style="margin-left:3%;"
+                        class="SignatureVisitsMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Cancel</button>
+                    <button onclick="SignaturePageMain_ClearSign()" style="margin-left:3%"
+                        class="SignatureVisitsMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Clear</button>
+                    <button onclick="SignaturePageMain_SaveSign()" style="margin-left:3%"
+                        class="SignatureVisitsMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Save
+                        Signature</button>
+
+                </center>
+
+            </div>
+
+            <br />
+
+            <br />
+
+        </div>
+    </center>
+
+
+    <!-- >span id="spanOfnoReason" style="margin:0%;margin-left:4%;color:black;font-weight:bold;">Do not have a signature?
+            <input type="checkbox" 
+                    style="position:absolute;right: 5%;width: 20px; height: 20px; margin-top: -2px;" 
+                    onChange="showReasonforNoSignCheck();" 
+                    id="SignatureNoReasonCheckbox"
+                   >
+        </span-->
+    <br />
+    <div id="contactNamePad" class="mdl-shadow--2dp" style="margin:5%;padding:3%;background:#FFF;">
+
+        <center>
+
+            <!--button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" 
+                        onClick=""
+                        style="font-weight:bold;">
+                    SELECT
+                </button-->
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;">Reason for no Signature</span>
+                <br />
+                <br />
+                <select id="ReasonForNotSigning" class="mdl-textfield__input">
+
+
+                </select>
+            </div>
+            <br />
+            <br />
+            <a style="font-size:150%;font-weight:bold;color:rgb(102,178,255);" onclick="SignaturePageUpdateData()">Save
+            </a>
+        </center>
+    </div>
+    <br />
+    <div id="showSignDiv" style="background-color:white">
+        <img id="checkSign" src="" style="display:none;">
+        <br />
+        <br />
+
+
+        <br />
+        <br />
+        <div style="background-color:white;margin:2%;">
+            <center>
+                <a style="font-size:150%;font-weight:bold;color:rgb(102,178,255);float:left;"
+                    onclick="SignaturePageMain_unlockOrientation()">Cancel</a>
+                <a style="font-size:150%;font-weight:bold;color:rgb(102,178,255);float:right;"
+                    onclick="SignaturePageMain_UploadSign()">Save
+                </a>
+            </center>
+        </div>
+
+    </div>
+</div>
+
+<div data-role="layout" data-id="SignatureLayout">
+    <div data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <span></span>
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right" style="border-style:none;"
+                class="mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div data-role="modalview" id="SignatureDisclaimerModalView" style="width:60%;height:50%;">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span style="font-weight:bold;">Signature Disclaimer</span>
+
+        </div>
+    </div>
+    <br />
+    <p id="SignatureDisclaimerData"></p>
+    <br />
+    <div style="position:fixed !important;">
+        <div style="top:0;">
+            <button data-role="button" onclick="$('#SignatureDisclaimerModalView').kendoMobileModalView('close')"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                Accept
+            </button>
+        </div>
+    </div>
+
+    <!--div data-role="footer" style="background-color:grey;display:block !important;"-->
+    <!--/div-->
+</div>
+
+<script>
+    var base64sign;
+    var VisitId;
+    var FromPage = '';
+    var MainSignaturePad;
+    var MainSignatureCanvas;
+    currentLocation = '';
+    var AccountId;
+    var ContactsForThisSite = [];
+    var checkCount = 0;
+
+    function arrowBack() {
+        window.screen.orientation.lock("portrait");
+        window.history.back();
+    }
+
+    function onChangeingTheDropdownvalue() {
+        $('#Filename').val($('#SelectContactsForCurrentSite option:selected').text());
+        $("#SelectContactsForCurrentSite").hide();
+        if ($('#SelectContactsForCurrentSite option:selected').text() == "Signature Not Available") {
+            $('#Sign').hide();
+            $("#contactNamePad").show();
+            $('#showSignDiv').hide();
+        }
+        else {
+            $('#Sign').show();
+            $("#contactNamePad").hide();
+        }
+    }
+
+    function showReasonforNoSignCheck() {
+        checkCount++;
+        if (document.getElementById("SignatureNoReasonCheckbox").checked == true) {
+            $('#Sign').hide();
+            $("#contactNamePad").show();
+            $('#showSignDiv').hide();
+
+        }
+        else {
+            $('#Sign').show();
+            $('#MainSignaturePad').show();
+            $('#beforeSignMessage').show();
+            $("#contactNamePad").hide();
+        }
+    }
+    function SignaturePageUpdateData() {
+        newDetailValue[0].STKR__Reason_for_no_signature__c = $('#ReasonForNotSigning option:selected').val();
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+
+            app.insertRecord('Visits', {
+                JsonData: JSON.stringify(newDetailValue[0]),
+                Updated: 'false',
+                UserId: creds.UserId,
+                VisitID: ParamVisitId
+            }, function (err, a) {
+            });
+
+            updateVisit($('#ReasonForNotSigning option:selected').val());
+            SignaturePageMain_unlockOrientation();
+        } else {
+            var datatoupload = {
+                JsonData: JSON.stringify(newDetailValue[0]),
+                ObjectName: 'STKR__Visit__c',
+                Updated: 'false',
+                UpdateOrInsert: 'update',
+                UserId: creds.UserID,
+                RecordId: ParamVisitId
+            };
+            // if (CompleteVisit === 1) {
+            //     var newdata2 = jQuery.extend({}, newDetailValue[0]);
+            //    UpdateGeolocation(newdata2);
+            //  }
+
+            // Insert updated values into visit
+            app.insertRecord('Visits', {
+                JsonData: JSON.stringify(newDetailValue[0]),
+                Updated: 'false',
+                UserId: creds.UserID,
+                VisitID: newDetailValue[0].Id
+            }, function () {
+                app.toastMessage('Offline Database updated', 'long');
+               
+            });
+
+            // Insert for data sync
+            app.insertRecord('DataToUpdate', datatoupload, function () {
+                SignaturePageMain_unlockOrientation();
+            });
+        }
+
+    }
+    function DAS_SignaturePage() {
+
+        $('#Filename').val('');
+        var OptionHTML = '';
+        try {
+            //  OptionHTML+='<option>None</option>';
+            OptionHTML += '<option>Signature Not Available</option>';
+            for (var i = 0; i < ContactsForThisSite.length; i++) {
+                OptionHTML += '<option value="' + ContactsForThisSite[i]['Id'] + '" id="' + ContactsForThisSite[i]['Id'] + '">' + ContactsForThisSite[i]['FirstName']+' '+ContactsForThisSite[i]['LastName'] + '</option>';
+            }
+
+        } catch (err) {
+            console.log(err);
+
+        }
+        $("#SelectContactsForCurrentSite").html(OptionHTML);
+
+
+
+        var OptionHTMLReason = '';
+        try {
+
+            OptionHTMLReason += '<option value="">None</option>';
+            for (var i = 0; i < VisitReasonFOrNoSignature.length; i++) {
+                OptionHTMLReason += '<option value="' + VisitReasonFOrNoSignature[i] + '">' + VisitReasonFOrNoSignature[i] + '</option>';
+            }
+
+        } catch (err) {
+            console.log(err);
+
+        }
+        $("#ReasonForNotSigning").html(OptionHTMLReason);
+
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('SignatureVisitsMDLClass'));
+
+    }
+
+    function resizeSignatureCanvas() {
+        if (window.screen.width > window.screen.height) {
+            MainSignatureCanvas.width = (window.screen.width / 100) * 90;
+            MainSignatureCanvas.height = (window.screen.height / 100) * 50;
+            MainSignaturePad.clear();
+        } else {
+            MainSignatureCanvas.width = (window.screen.height / 100) * 90;
+            MainSignatureCanvas.height = (window.screen.width / 100) * 50;
+            //MainSignatureCanvas.width = (window.screen.width / 100) * 100;
+            //MainSignatureCanvas.height = (window.screen.height / 100) * 40;
+
+            MainSignaturePad.clear();
+        }
+    }
+
+    function DI_SignaturePage() {
+
+        try {
+            document.getElementById("MainSignaturePad").width = window.screen.width - 2;
+            MainSignaturePad = new SignaturePad(document.getElementById('MainSignaturePad'), {
+                backgroundColor: 'rgba(255, 255, 255, 0)'
+            });
+            MainSignatureCanvas = document.getElementById('MainSignaturePad');
+        } catch (e) {
+            console.error('1', e);
+        }
+        resizeSignatureCanvas();
+        window.addEventListener("orientationchange", resizeSignatureCanvas);
+    }
+
+    function DBS_SignaturePage() {
+
+        try {
+            console.log('22');
+            // rotate and lock orientation to landscape
+            //  window.screen.orientation.lock('landscape');
+        } catch (err) {
+            console.error('2', err);
+        }
+    }
+
+    function showSignatureDisclaimer() {
+        if (ButtonSettings.STKR__Signature_Disclaimer__c) {
+            if (ButtonSettings.STKR__Signature_Disclaimer__c !== null) {
+                recursiveSignaturePage();
+                //$("#SignatureDisclaimerModalView").kendoMobileModalView("open");
+                //$("#SignatureDisclaimerData").text(ButtonSettings.STKR__Signature_Disclaimer__c);
+            }
+        }
+    }
+
+    function recursiveSignaturePage() {
+        navigator.notification.confirm(ButtonSettings.STKR__Signature_Disclaimer__c, function (s) {
+            if (s == 1) {
+                $('#signature_tncbox').prop('checked', true)
+            } else if (s == 2) {
+                $('#signature_tncbox').prop('checked', false)
+                SignaturePageMain_unlockOrientation();
+            } else {
+                recursiveSignaturePage();
+            }
+        }, "Signature Disclaimer", "Accept,Cancel")
+    }
+
+    function DS_SignaturePage(e) {
+        try {
+            e.view.scroller.reset();
+            if (ButtonSettings.STKR__Signature_Disclaimer__c) {
+                if (ButtonSettings.STKR__Signature_Disclaimer__c !== null) {
+                    recursiveSignaturePage();
+                    //$("#SignatureDisclaimerModalView").kendoMobileModalView("open");
+                    //$("#SignatureDisclaimerData").text(ButtonSettings.STKR__Signature_Disclaimer__c);
+                } else {
+                }
+            }
+        } catch (err) {
+        }
+        $('#Sign').show();
+        try {
+            MainSignaturePad.clear();
+        } catch (err) {
+            console.error('3', err);
+        }
+        $('#showSignDiv').hide();
+        $("#contactNamePad").hide();
+        $('#MainSignaturePad').show();
+        $('#beforeSignMessage').show();
+        // hide contactsite list when page loads
+        $('#SelectContactsForCurrentSite').hide();
+        $('#ReasonForNotSigning')[0].selectedIndex = 0;
+
+        try {
+            VisitId = e.view.params.VisitId;
+        } catch (err) {
+        }
+        try {
+            FromPage = e.view.params.fromPage;
+        } catch (err) {
+        }
+        //AccountId
+        try {
+            AccountId = e.view.params.AccountId;
+        } catch (err) {
+        }
+
+        ContactsForThisSite = [];
+        for (var i = 0; i < ContactData.length; i++) {
+            if (ContactData[i]['AccountId'] === newDetailValue[0]["STKR__Account_lkp__c"] && ContactData[i]['STKR__Status__c'] === "Active") {
+                ContactsForThisSite.push(ContactData[i]);
+            }
+        }
+        $('#beforeSignMessage').html('<input type="checkbox" id="signature_tncbox" style="width:20px,height:20px;" onclick="showSignatureDisclaimer()">' + 'I agree to this signature being stored against Visit ' + e.view.params.VisitName);
+        //$('#beforeSignMessage').text('I agree to this signature being stored against Visit ' + e.view.params.VisitName);
+        $('#messageOrintation').html('<input type="checkbox" id="Orintation_tncbox" style="width:20px,height:20px;" onclick="ChangeOrientation()">' + 'Click to change orientation');
+        currentLocation = document.getElementById("SignaturePage").id;
+    }
+
+    function ChangeOrientation() {
+        console.log("dgvadytscfdquygyft");
+        window.addEventListener("orientationchange", function () {
+            console.log("the orientation of the device is now " + screen.orientation.angle);
+            if (window.screen.orientation.type !== 'landscape-primary') {
+                $("#Sign").css({ "width": "100%", "margin-left": "0px", "margin-right": "0px" });
+                document.getElementById("MainSignaturePad").width = window.screen.width - 2;
+                document.getElementById("MainSignaturePad").height = "200";
+            } else {
+                $("#Sign").css({ "width": "80%", "margin-left": "40px", "margin-right": "40px" });
+                document.getElementById("MainSignaturePad").width = (window.screen.width / 100) * 80;
+                document.getElementById("MainSignaturePad").height = "200";
+            }
+        });
+        if (window.screen.orientation.type === 'portrait-primary') {
+            window.screen.orientation.lock("landscape-primary");
+
+        } else {
+            window.screen.orientation.lock("portrait");
+
+        }
+
+    }
+
+    function SignaturePageMain_onResume() {
+        var screenWidth_resume = window.screen.width - 15;
+        var screenHeight_resume = window.screen.height / 3;
+        $('#signatureMainPage canvas').prop({ "height": screenHeight_resume, "width": screenWidth_resume });
+        $('#signatureMainPage canvas').css({ "height": screenHeight_resume + "px", "width": "100%" });
+    }
+
+    function SignaturePageMain_ClearSign() {
+        MainSignaturePad.clear();
+    }
+    function showDropdownContactSite() {
+        $('#SelectContactsForCurrentSite').show();
+        $('#SelectContactsForCurrentSite').prop("selectedIndex", -1);
+        $("select").simulate('mousedown');
+    }
+    function SignaturePageMain_SaveSign() {
+        // Conditon to validate Signature area Should not Empty
+        //|| $('#SelectContactsForCurrentSite option:selected').text() !== 'None'
+        if (!MainSignaturePad.isEmpty() && ($('#Filename').val() !== '')) {
+            base64sign = MainSignaturePad.toDataURL();
+            //    $('#checkSign').attr('src', base64sign);
+            //    $('#checkSign').show();
+            //    $('#showSignDiv').show();
+            //    $('#Sign').hide();
+            SignaturePageMain_UploadSign();
+
+        } else {
+            app.toastMessage('Signature and Name both are required', 'long');
+        }
+
+    }
+    function SignaturePageMain_UploadSign() {
+        console.log('in test');
+        app.pane.loader.show();
+        // Added by Ashutosh on  13/07/2016
+        // To Store Signature for Service Report
+        try {
+            var SignatureData = {
+                ParentId: VisitId,
+                Name: $('#Filename').val().length ? $('#Filename').val() : $('#SelectContactsForCurrentSite option:selected').text(),
+                Body: base64sign,
+                ContentType: 'image/png;base64'
+            };
+            var SignatureDetails = {
+                JsonData: JSON.stringify(SignatureData),
+                UserId: creds.UserID,
+                VisitId: newDetailValue[0]['Id']
+            };
+            app.insertRecord('StoreSignature', SignatureDetails);
+
+        } catch (err) {
+            alert(err);
+        }
+
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            // while the device is online
+            jsconn.sobject("Attachment").create({
+                ParentId: VisitId,
+                Name: $('#Filename').val().length ? 'Signature ' + $('#Filename').val() + '.png' : 'Signature ' + $('#SelectContactsForCurrentSite option:selected').text() + '.png',
+                Body: base64sign.replace('data:image/png;base64,', ''),
+                ContentType: 'image/png;base64'
+            }, function (err, ret) {
+                if (err || !ret.success) {
+                    StoreError(err);
+                    //Offline
+                    base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], newDetailValue[0]['Name'] + ' Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+                    return console.error(err, ret);
+                }
+                //Online
+                base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], ret.id + '_Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+
+                console.log("Created record id : " + ret.id);
+                app.pane.loader.hide();
+                app.toastMessage('Signature Uploaded', 'long');
+                SignaturePageMain_unlockOrientation();
+            });
+        } else {
+            // while the device is offline
+            var timestamp = new Date().getTime();
+            var data = {
+                ParentId: VisitId,
+                Name: $('#Filename').val().length ? 'Signature ' + $('#Filename').val() + '.png' : 'Signature ' + $('#SelectContactsForCurrentSite option:selected').text() + '.png',
+                Body: base64sign.replace('data:image/png;base64,', ''),
+                ContentType: 'image/png;base64'
+            }
+            var datatoupload = {
+                JsonData: JSON.stringify(data),
+                ObjectName: 'Attachment',
+                Updated: 'false',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp
+            }
+            //Offline
+            base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], timestamp + '_Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+
+            app.insertRecord('DataToUpdate', datatoupload);
+            app.pane.loader.hide();
+            app.toastMessage('Signature Stored for later upload', 'long');
+            SignaturePageMain_unlockOrientation();
+        }
+
+    }
+    /*  function SignaturePageMain_UploadSign() {
+              if ($('#Filename').val() === '') {
+                  if ($('#SelectContactsForCurrentSite option:selected').text() == 'None') {
+                      app.toastMessage('Name is required', 'long');
+                  }
+                  else {
+                      app.pane.loader.show();
+                      // Added by Ashutosh on  13/07/2016
+                      // To Store Signature for Service Report
+                      try {
+                          var SignatureData = {
+                              ParentId: VisitId,
+                              Name: $('#Filename').val().length ? $('#Filename').val() : $('#SelectContactsForCurrentSite option:selected').text(),
+                              Body: base64sign,
+                              ContentType: 'image/png;base64'
+                          };
+                          var SignatureDetails = {
+                              JsonData: JSON.stringify(SignatureData),
+                              UserId: creds.UserID,
+                              VisitId: newDetailValue[0]['Id']
+                          };
+                          app.insertRecord('StoreSignature', SignatureDetails);
+  
+                      } catch (err) {
+                          alert(err);
+                      }
+  
+                      if (AppIsOnline) {
+                          // while the device is online
+                          jsconn.sobject("Attachment").create({
+                              ParentId: VisitId,
+                              Name:$('#Filename').val().length? 'Signature ' + $('#Filename').val() + '.png':'Signature ' + $('#SelectContactsForCurrentSite option:selected').text() + '.png',
+                              Body: base64sign.replace('data:image/png;base64,', ''),
+                              ContentType: 'image/png;base64'
+                          }, function (err, ret) {
+                              if (err || !ret.success) {
+                                  StoreError(err);
+                                  //Offline
+                                  base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], newDetailValue[0]['Name'] + ' Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+                                  return console.error(err, ret);
+                              }
+                              //Online
+                              base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], ret.id + '_Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+  
+                              console.log("Created record id : " + ret.id);
+                              app.pane.loader.hide();
+                              app.toastMessage('Signature Uploaded', 'long');
+                              SignaturePageMain_unlockOrientation();
+                          });
+                      } else {
+                          // while the device is offline
+                          var timestamp = new Date().getTime();
+                          var data = {
+                              ParentId: VisitId,
+                              Name:$('#Filename').val().length? 'Signature ' + $('#Filename').val() + '.png':'Signature ' + $('#SelectContactsForCurrentSite option:selected').text() + '.png',
+                              Body: base64sign.replace('data:image/png;base64,', ''),
+                              ContentType: 'image/png;base64'
+                          }
+                          var datatoupload = {
+                              JsonData: JSON.stringify(data),
+                              ObjectName: 'Attachment',
+                              Updated: 'false',
+                              UpdateOrInsert: 'insert',
+                              UserId: creds.UserID,
+                              RecordId: timestamp
+                          }
+                          //Offline
+                          base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], timestamp + '_Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+  
+                          app.insertRecord('DataToUpdate', datatoupload);
+                          app.pane.loader.hide();
+                          app.toastMessage('Signature Stored for later upload', 'long');
+                          SignaturePageMain_unlockOrientation();
+                      }
+                  }
+  
+              } else {
+                  app.pane.loader.show();
+                  // Added by Ashutosh on  13/07/2016
+                  // To Store Signature for Service Report
+                  try {
+                      var SignatureData = {
+                          ParentId: VisitId,
+                          Name: $('#Filename').val().length ? $('#Filename').val() : $('#SelectContactsForCurrentSite option:selected').text(),
+                          Body: base64sign,
+                          ContentType: 'image/png;base64'
+                      };
+                      var SignatureDetails = {
+                          JsonData: JSON.stringify(SignatureData),
+                          UserId: creds.UserID,
+                          VisitId: newDetailValue[0]['Id']
+                      };
+                      app.insertRecord('StoreSignature', SignatureDetails);
+  
+                  } catch (err) {
+                      alert(err);
+                  }
+  
+                  if (AppIsOnline) {
+                      // while the device is online
+                      jsconn.sobject("Attachment").create({
+                          ParentId: VisitId,
+                          Name:$('#Filename').val().length? 'Signature ' + $('#Filename').val() + '.png':'Signature ' + $('#SelectContactsForCurrentSite option:selected').text() + '.png',
+                          Body: base64sign.replace('data:image/png;base64,', ''),
+                          ContentType: 'image/png;base64'
+                      }, function (err, ret) {
+                          if (err || !ret.success) {
+                              StoreError(err);
+                              //Offline
+                              base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], newDetailValue[0]['Name'] + ' Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+                              return console.error(err, ret);
+                          }
+                          //Online
+                          base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], ret.id + '_Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+  
+                          console.log("Created record id : " + ret.id);
+                          app.pane.loader.hide();
+                          app.toastMessage('Signature Uploaded', 'long');
+                          SignaturePageMain_unlockOrientation();
+                      });
+                  } else {
+                      // while the device is offline
+                      var timestamp = new Date().getTime();
+                      var data = {
+                          ParentId: VisitId,
+                          Name:$('#Filename').val().length? 'Signature ' + $('#Filename').val() + '.png':'Signature ' + $('#SelectContactsForCurrentSite option:selected').text() + '.png',
+                              Body: base64sign.replace('data:image/png;base64,', ''),
+                          ContentType: 'image/png;base64'
+                      }
+                      var datatoupload = {
+                          JsonData: JSON.stringify(data),
+                          ObjectName: 'Attachment',
+                          Updated: 'false',
+                          UpdateOrInsert: 'insert',
+                          UserId: creds.UserID,
+                          RecordId: timestamp
+                      }
+                      //Offline
+                      base64ToThumbnail(base64sign.split('data:image/png;base64,')[1], timestamp + '_Signature ' + SignatureData.Name + '.jpg', newDetailValue[0]['Id'], true, newDetailValue[0]['Name']);
+  
+                      app.insertRecord('DataToUpdate', datatoupload);
+                      app.pane.loader.hide();
+                      app.toastMessage('Signature Stored for later upload', 'long');
+                      SignaturePageMain_unlockOrientation();
+                  }
+              }
+          }
+  
+  
+          */
+    function SignaturePageMain_unlockOrientation() {
+
+        try {
+            //to unlock the orientation
+            //   window.screen.orientation.unlock();
+            //rotate and lock orientation to portrait
+            if (device.platform === 'Android')
+                window.screen.orientation.lock('portrait');
+            else if (device.platform === 'iOS')
+                window.screen.orientation.lock('portrait-primary');
+            window.addEventListener("orientationchange", ChangeSignatureWidthHeigh);
+        } catch (err) {
+            window.removeEventListener("orientationchange", ChangeSignatureWidthHeigh);
+            alert(err);
+        }
+        window.history.back();
+        $('#Filename').val('');
+    }
+
+    function ChangeSignatureWidthHeigh() {
+        console.log('test' + new Date().toString());
+        var screenWidth, screenHeight;
+        try {
+            if (device.platform === 'Android') {
+                if (window.screen.orientation.type === 'landscape' || window.screen.orientation.type === 'landscape-primary') {
+                    screenWidth = window.screen.width - 15;
+                    screenHeight = window.screen.height / 2;
+                    $('#signatureMainPage canvas').prop({ "height": screenHeight, "width": screenWidth });
+                    $('#signatureMainPage canvas').css({ "height": screenHeight + "px", "width": "100%" });
+                    $('#signatureMainPage').jSignature('reset');
+                } else if (window.screen.orientation.type === 'portrait' || window.screen.orientation.type === 'portrait-primary') {
+                    screenWidth = window.screen.width - 15;
+                    screenHeight = window.screen.height / 3;
+                    $('#signatureMainPage canvas').prop({ "height": screenHeight, "width": screenWidth });
+                    $('#signatureMainPage canvas').css({ "height": screenHeight + "px", "width": "100%" });
+                    $('#signatureMainPage').jSignature('reset');
+                }
+            } else if (device.platform === 'iOS') {
+                if (window.screen.orientation === 'landscape' || window.screen.orientation === 'landscape-primary') {
+                    screenWidth = window.screen.width - 15;
+                    screenHeight = window.screen.height / 2;
+                    $('#signatureMainPage canvas').prop({ "height": screenHeight, "width": screenWidth });
+                    $('#signatureMainPage canvas').css({ "height": screenHeight + "px", "width": "100%" });
+                    $('#signatureMainPage').jSignature('reset');
+                } else if (device.platform === 'iOS' && (window.screen.orientation === 'portrait' || window.screen.orientation === 'portrait-primary')) {
+                    screenWidth = window.screen.width - 15;
+                    screenHeight = window.screen.height / 3;
+                    $('#signatureMainPage canvas').prop({ "height": screenHeight, "width": screenWidth });
+                    $('#signatureMainPage canvas').css({ "height": screenHeight + "px", "width": "100%" });
+                    $('#signatureMainPage').jSignature('reset');
+                }
+            }
+            window.removeEventListener("orientationchange", ChangeSignatureWidthHeigh);
+        } catch (e) {
+            console.log('Error 197 ', e);
+            window.removeEventListener("orientationchange", ChangeSignatureWidthHeigh);
+        }
+    }
+
+</script>

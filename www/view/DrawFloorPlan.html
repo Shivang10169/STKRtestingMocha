@@ -1,0 +1,134 @@
+<div data-show="DS_DrawFloorPlan" data-role="view" data-init="DI_DrawFloorPlan" data-after-show="DAS_DrawFloorPlan"
+    data-use-native-scrolling="true">
+    <div data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left"> <i class="material-icons">keyboard_backspace</i> </a>
+            <span>Floor Plan</span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="CreatePrepWasteMDLButton headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </div>
+    <div>
+        <center> <button id="cordova-plugin-sketch-open"
+                style="margin-top:3%;font-weight:bold;color:white;width:90%;background-color:\#7FE817;"
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                Draw the Floor
+            </button> <br /> <button id="cordova-plugin-sketch-upload"
+                style="margin-top:3%;font-weight:bold;color:white;width:90%;background-color:\#7FE817;"
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
+                Upload
+            </button> </center>
+        <center>
+            <input type="text" id="FloorPlanNameData" placeholder="Floor plan name.."
+                style="margin-top:3%;font-weight:bold;color:black;width:90%;" />
+            <br />
+        </center>
+        <br /> <img id="DrawFloorPlan_myImage" width="100%" height="100%" />
+    </div>
+</div>
+<script>
+    var ImageData;
+
+    function DI_DrawFloorPlan() {
+        document.getElementById("cordova-plugin-sketch-open").addEventListener("click", getSketch, false);
+        document.getElementById("cordova-plugin-sketch-upload").addEventListener("click", UploadSketch, false);
+    }
+
+    function DAS_DrawFloorPlan() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('VisitDetailMDLClass'));
+    }
+
+    function UploadSketch() {
+        if ($("#FloorPlanNameData").val().length == 0) {
+            app.toastMessage('Please give a name to the Floor Plan', 'long');
+
+        }
+        else {
+            UploadFloorPlanSketch(ImageData);
+        }
+
+    }
+
+    function DS_DrawFloorPlan(e) {
+        CountNumberOfOflineItem();
+        $("#cordova-plugin-sketch-upload").hide();
+        $("#FloorPlanNameData").hide();
+    }
+
+    function getSketch() {
+        var image = document.getElementById('DrawFloorPlan_myImage');
+        navigator.sketch.getSketch(Sketch_onSuccess, Sketch_onFail, {
+            destinationType: navigator.sketch.DestinationType.DATA_URL
+        });
+    }
+
+    function Sketch_onSuccess(imageData) {
+        if (imageData == null) {
+            return;
+        }
+        setTimeout(function () {
+            // do your thing here!
+            var image = document.getElementById('DrawFloorPlan_myImage');
+            if (imageData) {
+                ImageData = imageData;
+                $("#cordova-plugin-sketch-upload").show();
+                $("#FloorPlanNameData").show();
+                if (imageData.indexOf("data:image") >= 0) {
+                    image.src = imageData;
+                } else {
+                    image.src = "data:image/png;base64," + imageData;
+                }
+            } else {
+                app.toastMessage('Please draw something', 'long');
+            }
+        }, 0);
+    }
+
+    function Sketch_onFail(message) {
+        setTimeout(function () {
+            console.log('plugin message: ' + message);
+        }, 0);
+    }
+
+    function UploadFloorPlanSketch(base64Data) {
+        app.pane.loader.show();
+
+        var FloorData = {
+            ParentId: Attachment_Visitid,
+            Name: $("#FloorPlanNameData").val()+ 'floorplan' + '.png',
+            Body: base64Data.replace('data:image/png;base64,', ''),
+            ContentType: 'image/png;base64'
+        };
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            // while the device is online
+            jsconn.sobject("Attachment").create(FloorData,
+                function (err, ret) {
+                    if (err || !ret.success) {
+                        StoreError(err);
+                        return console.error(err, ret);
+                    }
+                    console.log("Created record id : " + ret.id);
+                    app.pane.loader.hide();
+                    app.toastMessage('Floor Plan Uploaded', 'long');
+                });
+        } else {
+            var datatoupload = {
+                JsonData: JSON.stringify(FloorData),
+                ObjectName: 'Attachment',
+                Updated: 'false',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: null
+            }
+            app.insertRecord('DataToUpdate', datatoupload);
+            app.pane.loader.hide();
+            app.toastMessage('Floor Plan is Stored for later upload', 'long');
+        }
+    }
+
+</script>

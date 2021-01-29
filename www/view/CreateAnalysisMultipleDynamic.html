@@ -1,0 +1,332 @@
+<div data-role="view" data-title="Create Multiple Analysis" data-show="DS_CreateMultipleAnalysis" data-after-show="DAS_CreateAnalysisMultiple"
+    id="CreateMultipleAnalysis" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="AnalysisDetailPageMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </header>
+    <div id="CreateMultipleAnalysisHTML">
+    </div>
+    <center>
+        <button id="CreateAnalysisLayoutMDLButton" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onClick="CreateMultipleAnalysis()" style="font-weight:bold;">
+            CREATE
+        </button>
+    </center>
+</div>
+<style>
+    #CreateAnalysisLayoutPage .km-content {
+        background: #E6E6E6;
+    }
+
+    .AnalysisDetailPageMDLName textarea {
+        width: 95%;
+        border: none;
+    }
+
+    .AnalysisDetailPageMDLName input[type="text"] {
+        border: none;
+        width: 95%;
+    }
+</style>
+<script>
+    var AnalysisMultipleRecordid = '';
+    var AnalysisMultipleRecordidArray = [],MuplipleAnalysis_backbutton_call= false;
+
+    function DS_CreateMultipleAnalysis(e) {
+        MuplipleAnalysis_backbutton_call = false;
+        CountNumberOfOflineItem();
+
+        try {
+            e.view.scroller.reset();
+            $('#CreateMultipleAnalysisHTML').html('');
+        } catch (error) {
+        }
+
+        console.log('On Create Multiple Analysis Layout Page');
+        AnalysisMultipleRecordid = '';
+        try {
+            AnalysisMultipleRecordid = e.view.params.AnalysisRecordId;
+            AnalysisMultipleRecordidArray = AnalysisMultipleRecordid.split(';');
+            if (AnalysisMultipleRecordidArray.length > 1) {
+                app.db.transaction(function (tx) {
+                    for (var i = 0; i < AnalysisMultipleRecordidArray.length; i++) {
+                        for (var j = 0; j < AnalysisRecordTypes.length; j++) {
+                            if (AnalysisMultipleRecordidArray[i] === AnalysisRecordTypes[j]['name']) {
+                                function getLayout(AnalysisRecordTypes, RecordTypeName) {
+                                    tx.executeSql("Select * from AnalysisRecordType where recordid=?", [AnalysisRecordTypes],
+                                        function (tx, rs) {
+                                            if (rs.rows.length) {
+                                                console.log(rs.rows.item(0));
+                                                var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                                                console.log('Analysis Record Type Layout', Layoutdata);
+                                                AnalysisMultipleLayoutGenerator(Layoutdata, AnalysisRecordTypes, RecordTypeName);
+                                            } else {
+                                                app.toastMessage('This record type is not found, Please refresh data', 'long');
+                                            }
+                                        }, function (tx, error) {
+                                            StoreError(error);
+                                            alert(error.message)
+                                        });
+                                }
+
+                                getLayout(AnalysisRecordTypes[j]['recordTypeId'], AnalysisMultipleRecordidArray[i]);
+                            }
+                        }
+                    }
+                });
+            } else {
+                app.toastMessage('Only one record type', 'long');
+            }
+        } catch (err) {
+            StoreError(err)
+            console.log('1:' + err);
+        }
+    }
+
+    function AnalysisMultipleLayoutGenerator(Layoutdata, RecordTypeId, RecordTypeName) {
+        var AnalysisLayoutPageHTML = '';
+
+        for (var x = 0; x < Layoutdata['editLayoutSections'].length; x++) {
+            var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+            var layoutHeader = Layoutdata['editLayoutSections'][x]['heading'];
+            if (layoutHeader !== "System Information") {
+                AnalysisLayoutPageHTML += '<div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background-color:#fff;">';
+                AnalysisLayoutPageHTML += '<center><h4 style="color:rgb(0,188,212)">' + RecordTypeName + '</h4></center>';
+                AnalysisLayoutPageHTML += '<center><h4>' + layoutHeader + '</h4></center>';
+                for (var j = 0; j < layoutRows.length; j++) {
+                    var layoutItems = layoutRows[j]['layoutItems'];
+                    for (var y = 0; y < layoutItems.length; y++) {
+                        if (layoutItems[y]['editableForUpdate']) {
+                            var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                            try {
+                                var label = layoutComponents['details']['label'];
+                                var htmlid = layoutComponents['details']['name'];
+                                var dataType = layoutComponents['details']['type'];
+                                var nillable = layoutComponents['details']['nillable'];
+                                var precision = layoutComponents['details']['precision'];
+                                var scale = layoutComponents['details']['scale'];
+                                var max = Math.pow(10, (precision - scale)) - 1;
+                                var step = Math.pow(10, -1 * scale);
+                                var htmlrequired = nillable ? '' : 'required';
+                                var newhtmlrequired = layoutItems[y]['required'] ? 'required' : '';
+                                if (dataType === 'string') {
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisLayoutPageHTML += '<input type="text" name="AnalysisMultipleLayoutName" class="AnalysisDetailPageMDLName mdl-textfield__input" id="' + htmlid + RecordTypeId + '"' + newhtmlrequired + '>';
+                                    AnalysisLayoutPageHTML += '<label class="AnalysisDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else if (dataType === 'reference') {
+                                } else if (dataType === 'double') {
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisLayoutPageHTML += '<input type="number" max="' + max + '" step="' + step + '" name="AnalysisMultipleLayoutName" class="AnalysisDetailPageMDLName mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" id="' + htmlid + RecordTypeId + '"' + newhtmlrequired + '>';
+                                    AnalysisLayoutPageHTML += '<label class="AnalysisDetailPageMDLName mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else if (dataType === 'picklist') {
+                                    if (newhtmlrequired === 'required')
+                                        AnalysisLayoutPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    else
+                                        AnalysisLayoutPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisLayoutPageHTML += '<select name="AnalysisMultipleLayoutName" id="' + htmlid + RecordTypeId + '" class="AnalysisDetailPage2MDLName mdl-textfield__input"' + newhtmlrequired + '>';
+                                    // Start 
+                                    AnalysisLayoutPageHTML += '<option value="" selected>--None--</option>';
+                                    for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                        if (layoutComponents['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                            AnalysisLayoutPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '" selected>' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+
+                                        } else {
+                                            AnalysisLayoutPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                        }
+                                    }
+                                    // End
+                                    AnalysisLayoutPageHTML += '</select>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else if (dataType === 'date') {
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield">';
+                                    AnalysisLayoutPageHTML += '<br/><br/><label class="km-label-above' + htmlrequired + '">' + label;
+                                    AnalysisLayoutPageHTML += '<br/><input type="date" name="AnalysisMultipleLayoutName" id="' + htmlid + RecordTypeId + '"' + newhtmlrequired + '/>';
+                                    AnalysisLayoutPageHTML += '</label>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else if (dataType === 'textarea') {
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield">';
+                                    AnalysisLayoutPageHTML += '<textarea name="AnalysisMultipleLayoutName" id="' + htmlid + RecordTypeId + '" class="AnalysisDetailPageMDLName mdl-textfield__input" type="text" rows="5"' + newhtmlrequired + '></textarea>';
+                                    AnalysisLayoutPageHTML += '<label class="AnalysisDetailPageMDLName mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else if (dataType === 'datetime') {
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield">';
+
+                                    AnalysisLayoutPageHTML += '<br/><br/><label class="km-label-above' + htmlrequired + '">' + label;
+                                    AnalysisLayoutPageHTML += '<br/><input type="date" name="AnalysisMultipleLayoutName" id="' + htmlid + RecordTypeId + '"' + newhtmlrequired + '/>';
+                                    AnalysisLayoutPageHTML += '</label>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else if (dataType === 'boolean') {
+                                    AnalysisLayoutPageHTML += '<label class="AnalysisDetailPageMDLName mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + htmlid + '">'
+                                    AnalysisLayoutPageHTML += '<input name="AnalysisMultipleLayoutName" type="checkbox" id="' + htmlid + RecordTypeId + '" class="InspectionDetailPageMDLName mdl-checkbox__input"' + newhtmlrequired + '>'
+                                    AnalysisLayoutPageHTML += '<span class="AnalysisDetailPageMDLName mdl-checkbox__label">' + label + '</span>';
+                                    AnalysisLayoutPageHTML += '</label><br>';
+                                } else if (dataType === 'multipicklist') {
+                                    if (newhtmlrequired === 'required')
+                                        AnalysisLayoutPageHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    else
+                                        AnalysisLayoutPageHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label><br/>';
+                                    AnalysisLayoutPageHTML += '<div class="AnalysisDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                    AnalysisLayoutPageHTML += '<select class="AnalysisDetailPageMDLName mdl-textfield__input" name="AnalysisMultipleLayoutName" id="' + htmlid + RecordTypeId + '" multiple' + newhtmlrequired + '>';
+                                    for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                        AnalysisLayoutPageHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    }
+                                    AnalysisLayoutPageHTML += '</select>';
+                                    AnalysisLayoutPageHTML += '</div><br>';
+                                } else {
+                                    console.log('In else', dataType);
+                                }
+                            } catch (e) {
+                            }
+                        }
+                    }
+                }
+                AnalysisLayoutPageHTML += '<input id="RecordTypeId' + RecordTypeId + '" name="AnalysisMultipleLayoutName" type="text" style="display:none;" value="NewRecord_' + RecordTypeId + '"/>';
+
+                AnalysisLayoutPageHTML += '</div>';
+            }
+        }
+        
+        $('#CreateMultipleAnalysisHTML').append(AnalysisLayoutPageHTML);
+        if (device.platform == "Android") 
+        componentHandler.upgradeElements(document.getElementsByClassName('AnalysisDetailPageMDLName'));
+    }
+
+    function CreateMultipleAnalysis() {
+        //app.pane.loader.show();
+        var AnalysisLayoutHTMLComponents = $("[name='AnalysisMultipleLayoutName']");
+        console.log(AnalysisLayoutHTMLComponents);
+        var AllDataToSend = [];
+        var datatoupload = {};
+        for (var i = 0; i < AnalysisLayoutHTMLComponents.length; i++) {
+            var values = '';
+            var checkNext = false;
+            if (AnalysisLayoutHTMLComponents[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $('#' + AnalysisLayoutHTMLComponents[i]['id'])[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (AnalysisLayoutHTMLComponents[i]['type'] === "checkbox") {
+                values = $('#' + AnalysisLayoutHTMLComponents[i]['id'] + '[name="AnalysisMultipleLayoutName"]').prop('checked');
+            } else if (AnalysisLayoutHTMLComponents[i]['type'] === "date") {
+                values = $('#' + AnalysisLayoutHTMLComponents[i]['id']).val();
+                if (!values) {
+                    values = null;
+                }
+            } else {
+                values = $('#' + AnalysisLayoutHTMLComponents[i]['id'] + '[name="AnalysisMultipleLayoutName"]').val();
+            }
+            try {
+                if (AnalysisLayoutHTMLComponents[i]['id'].indexOf('RecordTypeId') > -1 && (AnalysisLayoutHTMLComponents[i].value).indexOf('NewRecord_') > -1) {
+                    values = $('#' + AnalysisLayoutHTMLComponents[i]['id'] + '[name="AnalysisMultipleLayoutName"]').val().split('_')[1];
+                    datatoupload['STKR__Inspection__c'] = InspectionPageDetailData['Id'];
+                    datatoupload[AnalysisLayoutHTMLComponents[i]['id']] = values;
+                    console.log('Data to upload', datatoupload);
+                    AllDataToSend.push(datatoupload);
+                    datatoupload = {};
+                    checkNext = true;
+                }
+            } catch (err) {
+                console.log(err);
+            }
+            if (!checkNext)
+                datatoupload[AnalysisLayoutHTMLComponents[i]['id']] = values;
+
+            if (AnalysisLayoutHTMLComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                app.pane.loader.hide();
+                return;
+            }
+            console.log('datatoupload', i, datatoupload);
+        }
+        console.log('AllDataToSend', AllDataToSend);
+        var AllOrganisedData = [];
+        // Arrange data 
+        for (var q = 0; q < AllDataToSend.length; q++) {
+            var fromSplit = '';
+            var newData = {};
+            for (property in AllDataToSend[q]) {
+                if (property.indexOf('RecordTypeId') > -1) {
+                    fromSplit = AllDataToSend[q][property];
+                }
+            }
+            for (property in AllDataToSend[q]) {
+                newData[property.split(fromSplit)[0]] = AllDataToSend[q][property];
+            }
+            AllOrganisedData.push(newData);
+        }
+        console.log('AllOrganisedData', AllOrganisedData);
+        // Check whether device is online or not
+        for (var i = 0; i < AllOrganisedData.length; i++) {
+            var datatoupload = AllOrganisedData[i];
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+
+                function IndividualAnalysisSync(datatoupload) {
+                    //Device is online
+                    jsconn.sobject("STKR__Chlorination_Results__c").create(datatoupload, function (err, ret) {
+                        if (err || !ret.success) {
+                            app.pane.loader.hide();
+                            app.toastMessage('Error occured, Please check Error log page', 'long');
+                            StoreError(err);
+                            return console.error(err, ret);
+                        }
+                        console.log('Updated Successfully : ' + ret.id);
+                        datatoupload['Id'] = ret.id;
+                        AnalysisData.push(datatoupload);
+                        app.insertRecord('Analysis', {
+                            JsonData: JSON.stringify(datatoupload),
+                            Updated: 'false',
+                            UserId: creds.UserID,
+                            AnalysisID: datatoupload['Id']
+                        });
+                        app.toastMessage('New Analysis created', 'long');
+                        app.pane.loader.hide();
+
+                        if (!MuplipleAnalysis_backbutton_call) {
+                            MuplipleAnalysis_backbutton_call = true;
+                            window.history.back();
+                        }
+
+
+                    });
+                }
+
+                IndividualAnalysisSync(datatoupload);
+            } else {
+                // Device is offline
+                // Store in DataToUpdate table
+                var timestamp = (new Date().getTime()).toString();
+                datatoupload['Id'] = timestamp;
+                AnalysisData.push(datatoupload);
+                var data = {
+                    JsonData: JSON.stringify(datatoupload),
+                    ObjectName: 'STKR__Chlorination_Results__c',
+                    Updated: 'newRecord',
+                    UpdateOrInsert: 'insert',
+                    UserId: creds.UserID,
+                    RecordId: timestamp
+                }
+                app.insertRecord('DataToUpdate', data);
+                app.toastMessage('New Analysis stored offline', 'long');
+                app.pane.loader.hide();
+                if (!MuplipleAnalysis_backbutton_call) {
+                            MuplipleAnalysis_backbutton_call = true;
+                            window.history.back();
+                        }
+            }
+        }
+    }
+
+    function DAS_CreateAnalysisMultiple() {
+        if (device.platform == "Android") 
+        componentHandler.upgradeElements(document.getElementById('CreateAnalysisLayoutMDLButton'));
+    }
+</script>

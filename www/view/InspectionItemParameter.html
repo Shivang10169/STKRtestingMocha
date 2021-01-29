@@ -1,0 +1,96 @@
+<div data-role="view" data-show="DataShowInspectionItemaParameter" id="InspectionItemParamaterPage"
+    data-use-native-scrolling="true" data-after-show="DataAfterShowInspectionItemParameter">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back();"
+                data-role="button" class="InspectionHistoryMDLName mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <b>
+                <span id="InspectionItemParameter_ItemNumber">Inspection Item Parameter</span>
+            </b>
+        </div>
+    </header>
+
+    <div style="background:white;">
+        <div id="MessageOfInspectionParameter">No parameter found</div>
+        <ul data-role="listview" id="ListviewForInspectionItemParameter" data-style="inset"
+            data-template="TemplateForInspectionItemParameter" style="margin:1%;background:white">
+        </ul>
+
+    </div>
+</div>
+<script>
+    function DataShowInspectionItemaParameter(e) {
+
+        let inspectionItemId;
+        var thisItemParameters = [];
+        $('#MessageOfInspectionParameter').hide();
+
+        try {
+            inspectionItemId = e.view.params.inspectionitemid;
+
+        } catch (er) { console.error(er); }
+
+        if (inspectionItemId) {
+            for (let i = 0; i < InspectionItemParameterData.length; i++) {
+                if (InspectionItemParameterData[i]['STKR__Inspection_Item__c'] == inspectionItemId) {
+                    if (InspectionItemParameterData[i]['STKR__Valid_To__c']) {
+                        var array = (InspectionItemParameterData[i]['STKR__Valid_To__c']).split('-');
+                        if (new Date(array[0], array[1]-1, array[2]) >= new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())) {
+                            thisItemParameters.push(InspectionItemParameterData[i]);
+                        }
+                    } else {
+                        thisItemParameters.push(InspectionItemParameterData[i])
+                    }
+                }
+            }
+        }
+
+
+        if (thisItemParameters.length){
+            $("#ListviewForInspectionItemParameter").data("kendoMobileListView").replace(thisItemParameters);
+            $('#MessageOfInspectionParameter').hide();
+        }
+            
+        else{
+            $('#MessageOfInspectionParameter').show();
+        }
+            
+    }
+
+    function DataAfterShowInspectionItemParameter() {
+
+    }
+</script>
+<script type="script/x-kendo-template" id="TemplateForInspectionItemParameter">
+    #try{
+        if(STKR__Test_Type__c){#
+            <label>Chemical Analysis:</label> ${STKR__Test_Type__c}<br/>
+        #}
+    }catch(err){}#
+
+    #try{
+        if(STKR__Valid_From__c){#
+            <label>Valid From:</label> ${STKR__Valid_From__c}<br/>
+        #}
+    }catch(err){}#
+
+    #try{
+        if(STKR__Valid_To__c){#
+            <label>Valid To:</label> ${STKR__Valid_To__c}<br/>
+        #}
+    }catch(err){}#
+
+    #try{
+        if(STKR__Lower_Threshold__c){#
+            <label>Lower Threshold:</label> ${STKR__Lower_Threshold__c}<br/>
+        #}
+    }catch(err){}#
+
+    #try{
+        if(STKR__Upper_Threshold__c){#
+            <label>Upper Threshold:</label> ${STKR__Upper_Threshold__c}<br/>
+        #}
+    }catch(err){}#
+</script>

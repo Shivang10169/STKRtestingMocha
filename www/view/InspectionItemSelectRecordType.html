@@ -1,0 +1,78 @@
+<div data-role="view" data-title="Create Inspection Item" data-show="DataShowSelectInspectionItemRecordType"
+    data-after-show="DAFSelectInspectionItemRecordType" id="SelectInspectionItemRecordTypePage"
+    data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="backbutton">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span data-role="view-title" ></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');"  style="border-style:none;float:right;margin-top:2%;" 
+            class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons" style="color:white;">home</i>
+                </button>
+        </div>
+    </header>
+    <div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background:#FFF;">
+        <center>
+            <h4>Select Record Type : </h4>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <select id="SelectOptionRecordTypeInspectionItem" class="mdl-textfield__input"></select>
+            </div>
+            <br /><br />
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="RedirectToInspectionItemLayout()" style="font-weight:bold;">
+                SELECT
+            </button>
+        </center>
+    </div>
+</div>
+<script>
+    function DataShowSelectInspectionItemRecordType() {
+        CountNumberOfOflineItem();
+        console.log('Metadata InspectionItem', InspectionItemMetadata);
+        var OptionHTML = '';
+        try {
+            for (var i = 0; i < InspectionItemMetadata['recordTypeInfos'].length; i++) {
+                if (InspectionItemMetadata['recordTypeInfos'][i]['available'])
+                    OptionHTML += '<option value="' + InspectionItemMetadata['recordTypeInfos'][i]['recordTypeId'] + '" id="' + InspectionItemMetadata['recordTypeInfos'][i]['recordTypeId'] + '">' + InspectionItemMetadata['recordTypeInfos'][i]['name'] + '</option>';
+            }
+        } catch (err) {
+            OptionHTML = '';
+            for (var i = 0; i < InspectionItemMetadata[0]['recordTypeInfos'].length; i++) {
+                if (InspectionItemMetadata[0]['recordTypeInfos'][i]['available'])
+                    OptionHTML += '<option value="' + InspectionItemMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '" id="' + InspectionItemMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '">' + InspectionItemMetadata[0]['recordTypeInfos'][i]['name'] + '</option>';
+            }
+        }
+        $("#SelectOptionRecordTypeInspectionItem").html(OptionHTML);
+    }
+    function DAFSelectInspectionItemRecordType() {
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-button'));
+    }
+    function RedirectToInspectionItemLayout() {
+        var flagtoMove = 0;
+        var SelectedOption = $('#SelectOptionRecordTypeInspectionItem').val();
+        var SelectedValue = $('#SelectOptionRecordTypeInspectionItem option:selected').text()
+        for (var i = 0; i < InspectionMetadata['recordTypeInfos'].length; i++) {
+            if (InspectionMetadata['recordTypeInfos'][i]['name'] === SelectedValue) {
+                flagtoMove++;
+
+
+            }
+
+        }
+        if (flagtoMove) {
+            app.navigate('view/CreateInspectionItemDynamic.html?InspectionItemRecordId=' + SelectedOption + '&InspectionItemRecordTypeName=' + $('#SelectOptionRecordTypeInspectionItem option:selected').text());
+
+        } else {
+            app.toastMessage('This recordType is not available for current user', 'long');
+        }
+    }
+</script>
+<style>
+    #SelectInspectionItemRecordTypePage .km-content {
+        background: #E6E6E6;
+    }
+</style>

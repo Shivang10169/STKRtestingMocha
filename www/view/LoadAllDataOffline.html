@@ -1,0 +1,1153 @@
+<div data-role="view" id="loadOfflinedata" data-show="LoadAllDataOffline" data-use-native-scrolling="true">
+
+</div>
+
+<script>
+    var NotEditableVisitFields, allVisitFields;
+    var AllVisits = [], AllOthersVisits = [];
+    var VisitOverdue = [], VisitToday = [], VisitThisWeek = [], VisitWithin45 = [], VisitCompleted = [];
+    var VisitOverdueCount = 0, VisitTodayCount = 0, VisitThisWeekCount = 0, VisitWithin45Count = 0, VisitCompletedCount = 0;
+    var CountAllDownloadObjects = 0;
+    var InspectionData = [];
+    var InspectionItemData = [];
+    var InspectionItemParameterData = [];
+    var AnalysisData = [];
+    var ScheduleData = [];
+    var ActionData = [];
+    var Prep_WasteData = [];
+    var ContactData = [], ContactMetadata = [];
+    var AlertsData = [];
+    //var ContactAlertData = [];
+    var CountAccounts = 0;
+    var CountInspection = 0;
+    var CountInspectionItem = 0;
+    var CountSchedule = 0;
+    var CountPrep = 0;
+    var CountAnalysis = 0;
+    var CountContact = 0;
+    var CountAlert = 0;
+    var CountVehicle = 0;
+    // var CountContactAlert = 0;
+    var CountAction = 0;
+    var AllAccounts = [];
+    var CountVisit = 0;
+    var CountResource = 0;
+    var ResourceData = [];
+
+    var Prep_WasteManagementData = [];
+    var PrepWasteManagementPageLayout = [];
+    var CountPrep_WasteManagement = 0;
+    var TotalObjectCount = 45;
+    var CountInspectionRecordType = 0;
+    var InspectionRecordType = [];
+    var CountInspectionItemRecordType = 0;
+    var InspectionItemRecordType = [];
+    var VisitRecordTypes = [];
+    var AllVisitPageLayout = [];
+    var CountVisitRecordType = 0;
+    var AnalysisRecordTypes = [];
+    var CountAnalysisRecordTypes = 0;
+    var ResourceRecordtype = [];
+    var CountResourceRecordtype = 0;
+    var InspectionMetadata = {};
+    var VisitMetadata = {};
+    var AnalysisMetadata = [];
+    var ResourceMetadata = [];
+    var Userdata = [];
+    var CountUserdata = 0;
+    var CountvehicleRecordType = 0;
+    var CountvehicleMetaData = 0;
+    var vehicleRecordType = [];
+    var vehicleMetaData = [];
+    var vehicleData = [];
+
+    var ActionMetadata = [];
+    var ActionRecordTypeDetail = []
+    var ActionRecordTypes = []
+    var InspectionItemRecordTypeDetail = [];
+    var ScheduleMetadata = [];
+    var PrepWasteManagementMetadata = [];
+    var PrepWasteMetadata = [];
+    var InspectionItemMetadata = [];
+    var ScheduleItemMetadata = [];
+
+    var AnalysisRecordTypeDetail = [];
+
+    CheckSecondTimeOnlineStatus = true;
+
+    var PrepWasteLabel, QuoteLocationLabel, QuoteDescriptionLabel, ActionLabel, FixedVisitCheck, OrgInfo = {};
+
+    var PersonalEvents = [];
+    var EventsMetadata = [];
+    var EventsLayouts = [], EventRecordTypes = [], EventRecordTypeDetail = [];
+    var CameraSettings;
+    var ButtonSettings;
+    var ShowAllVisitsSettings;
+    var EventsOverdue = [],
+        EventsToday = [],
+        EventsThisWeek = [],
+        EventsWithin45 = [],
+        EventsOverdueCount = 0,
+        EventsTodayCount = 0,
+        EventsThisWeekCount = 0,
+        EventsWithin45Count = 0;
+
+    var TaskData = [];
+    var ContractData = [];
+    var DefaultValues;
+    var SkillReqData = [];
+    var countSkill = 0;
+
+    function LoadAllDataOffline() {
+        //console.log("download offline data")
+
+        //Clear all variables..
+        clearAllVariables();
+
+        CountAllDownloadObjects = 0;
+        TotalObjectCount = 43;
+
+        jsconn = new jsforce.Connection({
+            oauth2: {
+                clientId: consumerKey,
+                clientSecret: ConsumerSecret,
+                redirectUri: callbackUrl
+
+
+            },
+            instanceUrl: creds.instanceUrl,
+            accessToken: creds.accessToken,
+            refreshToken: creds.refresh_token
+        });
+
+        try {
+            PrepWasteLabel = window.localStorage.getItem("PrepWasteLabel");
+            QuoteDescriptionLabel = window.localStorage.getItem("QuoteDescriptionLabel");
+            QuoteLocationLabel = window.localStorage.getItem("QuoteLocationLabel");
+            ActionLabel = window.localStorage.getItem("ActionLabel");
+            FixedVisitCheck = window.localStorage.getItem("FixedVisitCheck");
+            QuickInspect = window.localStorage.getItem("QuickInspect");
+            CameraSettings = JSON.parse(window.localStorage.getItem("CameraSettings"));
+            ShowAllVisitsSettings = JSON.parse(window.localStorage.getItem("ShowAllVisitsSettings"));
+            ButtonSettings = JSON.parse(window.localStorage.getItem("ButtonSettings"));
+            ShowRelatedContacts = JSON.parse(window.localStorage.getItem("ShowRelatedContacts"));
+        } catch (err) {
+        }
+
+        jsconn.on("refresh", function (accessToken, res) {
+            //console.log(res);
+            try {
+                oauthClient.oauthResponse.refresh_token = accessToken;
+            } catch (e) {
+            }
+            creds.accessToken = accessToken;
+
+            // Update Credential Table
+            app.db.transaction(function (tx) {
+                tx.executeSql("UPDATE Credential SET accesstoken = ? WHERE id = ?", [accessToken, 1],
+                    function () {
+                        ////console.log('Credential Table Updated');
+                    },
+                    function (err) {
+                    });
+            });
+
+            // ReInitialize forcetk
+            ForcetkClient = new forcetk.Client(consumerKey, loginUrl, null, null);
+            ForcetkClient.setSessionToken(creds.accessToken, "v33.0", creds.instanceUrl);
+            ForcetkClient.setRefreshToken(creds.refresh_token);
+            var patchUserAgent = function (userAgent) {
+                var match = /^(SalesforceMobileSDK\/[^\ ]* [^\/]*\/[^\ ]* \([^\)]*\) [^\/]*\/[^ ]* )(Hybrid|Web)(.*$)/.exec(userAgent);
+                if (match != null && match.length == 4) {
+                    return match[1] + match[2] + "SmartSync" + match[3];
+                } else {
+                    // Not a SalesforceMobileSDK user agent, we leave it unchanged
+                    return userAgent;
+                }
+            };
+            ForcetkClient.setUserAgentString(patchUserAgent(creds.userAgent || ForcetkClient.getUserAgentString()));
+        }, function (err, x) {
+            //console.log(err, x);
+        });
+
+        // Initialize ForceTK
+
+        ForcetkClient = new forcetk.Client(consumerKey, loginUrl, null, null);
+        ForcetkClient.setSessionToken(creds.accessToken, "v33.0", creds.instanceUrl);
+        ForcetkClient.setRefreshToken(creds.refresh_token);
+        var patchUserAgent = function (userAgent) {
+            var match = /^(SalesforceMobileSDK\/[^\ ]* [^\/]*\/[^\ ]* \([^\)]*\) [^\/]*\/[^ ]* )(Hybrid|Web)(.*$)/.exec(userAgent);
+            if (match != null && match.length == 4) {
+                return match[1] + match[2] + "SmartSync" + match[3];
+            } else {
+                // Not a SalesforceMobileSDK user agent, we leave it unchanged
+                return userAgent;
+            }
+        };
+        ForcetkClient.setUserAgentString(patchUserAgent(creds.userAgent || ForcetkClient.getUserAgentString()));
+
+        getDefaultCurrency();
+
+        app.db.transaction(function (tx) {
+            app.pane.loader.show();
+            tx.executeSql("Select * from Account ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        AllAccounts.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountAccounts === (rs.rows.length - 1)) {
+                        }
+                        CountAccounts++;
+                    }
+                    //console.log('AllAccounts');
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from Inspection ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        InspectionData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountInspection === (rs.rows.length - 1)) {
+                        }
+                        CountInspection++;
+                    }
+                    ////console.log('InspectionData', InspectionData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message)
+                });
+
+                 // add to load vehicle data
+            tx.executeSql("Select * from Vehicle ", [],
+            function(tx, rs) {
+                for (var i = 0; i < rs.rows.length; i++) {
+                    vehicleData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                    if (CountVehicle === (rs.rows.length - 1)) {}
+                    CountVehicle++;
+                }
+                ////console.log('InspectionData', InspectionData);
+                CountAllDownloadObjects++;
+                if (CountAllDownloadObjects === TotalObjectCount) {
+                    AllOfflineDataLoaded();
+                }
+            },
+            function(tx, error) {
+                StoreError(error)
+                alert(error.message)
+            });
+
+            tx.executeSql("Select * from SkillRequirement ", [],
+                function(tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        SkillReqData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (countSkill === (rs.rows.length - 1)) {}
+                        countSkill++;
+                    }
+                    ////console.log('InspectionData', InspectionData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                },
+                function(tx, error) {
+                    StoreError(error)
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from OrgInfo", [],
+                function (tx, rs) {
+                    try {
+                        OrgInfo = JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) { }
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from InspectionItem ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        InspectionItemData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountInspectionItem === (rs.rows.length - 1)) {
+                        }
+                        CountInspectionItem++;
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from InspectionItemParameter", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        InspectionItemParameterData.push(JSON.parse(rs.rows.item(i).jsondata));
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Schedule ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        ScheduleData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountSchedule === (rs.rows.length - 1)) {
+                        }
+                        CountSchedule++;
+                    }
+                    ////console.log('ScheduleData', ScheduleData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Prep_Waste ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        Prep_WasteData.push(JSON.parse(rs.rows.item(i).jsondata))
+
+                        if (CountPrep === (rs.rows.length - 1)) {
+                        }
+                        CountPrep++;
+                    }
+                    ////console.log('Prep_WasteData', Prep_WasteData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Analysis ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        AnalysisData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountAnalysis === (rs.rows.length - 1)) {
+                        }
+
+                        CountAnalysis++;
+                    }
+                    ////console.log('AnalysisData', AnalysisData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Contact ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        ContactData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountContact === (rs.rows.length - 1)) {
+                        }
+                        CountContact++;
+                    }
+
+                    ////console.log('ContactData', ContactData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Alerts ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        AlertsData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountAlert === (rs.rows.length - 1)) {
+                        }
+                        CountAlert++;
+                    }
+                    ////console.log('AlertsData', AlertsData);
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+
+            tx.executeSql("Select * from Action ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        ActionData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountAction === (rs.rows.length - 1)) {
+                        }
+                        CountAction++;
+                    }
+                    //console.log('ActionData', ActionData);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Resource ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        ResourceData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountResource === (rs.rows.length - 1)) {
+                        }
+                        CountResource++;
+                    }
+                    ////console.log('ResourceData', ResourceData);
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Prep_WasteManagement ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        Prep_WasteManagementData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountPrep_WasteManagement === (rs.rows.length - 1)) {
+                        }
+                        CountPrep_WasteManagement++;
+                    }
+                    ////console.log('Prep_WasteManagementData', Prep_WasteManagementData);
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Visits where userid=? OR userid=?", [creds.UserID.substr(0, 15), creds.UserID],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        AllVisits.push(JSON.parse(rs.rows.item(i).jsondata));
+                        CountVisit++
+                    }
+                    GetVisitdataOffline();
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from OthersVisits ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        AllOthersVisits.push(JSON.parse(rs.rows.item(i).jsondata));
+                        CountVisit++
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message)
+                });
+
+
+            tx.executeSql("Select * from InspectionRecordType ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        InspectionRecordType.push(JSON.parse(rs.rows.item(i).jsondata));
+                        CountInspectionRecordType++;
+                        if (CountInspectionRecordType === (rs.rows.length - 1)) {
+                            //console.log('InspectionRecordType ', InspectionRecordType);
+                        }
+                    }
+                    //console.log('InspectionRecordType', InspectionRecordType);
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from InspectionItemRecordType ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        InspectionItemRecordType.push(JSON.parse(rs.rows.item(i).jsondata));
+                        CountInspectionItemRecordType++;
+                        if (CountInspectionItemRecordType === (rs.rows.length - 1)) {
+                            //console.log('InspectionItemRecordType ', InspectionItemRecordType);
+                        }
+                    }
+                    //console.log('InspectionItemRecordType', InspectionItemRecordType);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+                 //add vehicle recordtype offline
+            tx.executeSql("Select * from vehicleRecordType ", [],
+            function(tx, rs) {
+                for (var i = 0; i < rs.rows.length; i++) {
+                    vehicleRecordType.push(JSON.parse(rs.rows.item(i).jsondata));
+                    CountvehicleRecordType++;
+                    if (CountvehicleRecordType === (rs.rows.length - 1)) {
+                        //console.log('InspectionItemRecordType ', InspectionItemRecordType);
+                    }
+                }
+                //console.log('InspectionItemRecordType', InspectionItemRecordType);
+                CountAllDownloadObjects++;
+                if (CountAllDownloadObjects === TotalObjectCount) {
+                    AllOfflineDataLoaded();
+                }
+            },
+            function(tx, error) {
+                StoreError(error)
+                alert(error.message);
+            });
+
+            tx.executeSql("Select * from VisitRecordTypes ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        var tabledata = JSON.parse(rs.rows.item(i).jsondata);
+                        VisitRecordTypes.push(tabledata);
+                        CountVisitRecordType++;
+                        AllVisitPageLayout.push(tabledata);
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from PrepWasteManagementRecordTypes ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        var tabledata = JSON.parse(rs.rows.item(i).jsondata);
+                        PrepWasteManagementPageLayout.push(tabledata);
+                    }
+                    //console.log('PrepWasteManagementPageLayoutData', PrepWasteManagementPageLayout);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from AnalysisRecordType ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        AnalysisRecordTypeDetail.push(JSON.parse(rs.rows.item(i).jsondata));
+                        AnalysisRecordTypes.push(JSON.parse(rs.rows.item(i).jsondata));
+                        CountAnalysisRecordTypes++;
+                        if (CountAnalysisRecordTypes === (rs.rows.length - 1)) {
+                        }
+                    }
+                    //console.log('AnalysisRecordTypes ', (AnalysisRecordTypes));
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from ResourceRecordtype ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        ResourceRecordtype.push(JSON.parse(rs.rows.item(i).jsondata));
+                        CountResourceRecordtype++;
+                        if (CountResourceRecordtype === (rs.rows.length - 1)) {
+                        }
+                    }
+                    //console.log('AnalysisRecordTypes ', (ResourceRecordtype));
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from InspectionMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        InspectionMetadata = JSON.parse(rs.rows.item(0).jsondata)
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    //console.log('InspectionMetadata', InspectionMetadata);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+                  //add vehicle metadata offline    
+            tx.executeSql("Select * from vehicleMetaData ", [],
+            function(tx, rs) {
+                for (var i = 0; i < rs.rows.length; i++) {
+                    vehicleMetaData.push(JSON.parse(rs.rows.item(i).jsondata));
+                    CountvehicleMetaData++;
+                    if (CountvehicleMetaData === (rs.rows.length - 1)) {
+                        //console.log('InspectionItemRecordType ', InspectionItemRecordType);
+                    }
+                }
+                //console.log('InspectionItemRecordType', InspectionItemRecordType);
+                CountAllDownloadObjects++;
+                if (CountAllDownloadObjects === TotalObjectCount) {
+                    AllOfflineDataLoaded();
+                }
+            },
+            function(tx, error) {
+                StoreError(error)
+                alert(error.message);
+            });
+
+            tx.executeSql("Select * from ContactMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        ContactMetadata = JSON.parse(rs.rows.item(0).jsondata)
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    //console.log('ContactMetadata', ContactMetadata);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error)
+                    alert(error.message);
+                });
+
+
+            tx.executeSql("Select * from VisitMetadata ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        VisitMetadata = JSON.parse(rs.rows.item(0).jsondata);
+                    }
+                    //console.log('VisitMetadata ', (VisitMetadata));
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from AnalysisMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        AnalysisMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('AnalysisMetadata ', (AnalysisMetadata));
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            // Billing metadata
+            tx.executeSql("Select * from BillingMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        BillingMetadata = (JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('BillingMetadata ', (BillingMetadata));
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from ResourceMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        ResourceMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('ResourceMetadata ', (ResourceMetadata));
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from ActionMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        ActionMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('ActionMetadata ', (ActionMetadata));
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from ScheduleMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        ScheduleMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('ScheduleMetadata ', (ScheduleMetadata));
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from PrepWasteMgmtMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        PrepWasteManagementMetadata=JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    //console.log('PrepWasteManagementMetadata ', (PrepWasteManagementMetadata));
+
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from PrepWasteMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        PrepWasteMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('PrepWasteMetadata ', (PrepWasteMetadata));
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from InspectionItemMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        InspectionItemMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    //console.log('InspectionItemMetadata ', (InspectionItemMetadata));
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from ScheduleItemMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        ScheduleItemMetadata.push(JSON.parse(rs.rows.item(0).jsondata));
+                    } catch (err) {
+                    }
+
+                    //console.log('ScheduleItemMetadata ', (ScheduleItemMetadata));
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message);
+                });
+
+            tx.executeSql("Select * from Userdata ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        Userdata.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountUserdata === (rs.rows.length - 1)) {
+                        }
+                        CountUserdata++;
+                    }
+                    //console.log('Userdata', Userdata);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from PersonalEvents ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        PersonalEvents.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountUserdata === (rs.rows.length - 1)) {
+                        }
+                        CountUserdata++;
+                    }
+                    //console.log('PersonalEvents', PersonalEvents);
+                    GetEventdataOffline();
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from EventMetadata ", [],
+                function (tx, rs) {
+                    try {
+                        for (var i = 0; i < rs.rows.length; i++) {
+                            EventsMetadata = JSON.parse(rs.rows.item(i).jsondata);
+
+                            if (CountUserdata === (rs.rows.length - 1)) {
+                            }
+                            CountUserdata++;
+                        }
+                    } catch (err) { }
+                    //console.log('EventMetadata', EventsMetadata);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from  EventLayout", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        EventRecordTypeDetail.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountUserdata === (rs.rows.length - 1)) {
+                        }
+                        CountUserdata++;
+                    }
+                    //console.log('EventRecordTypeDetail', EventRecordTypeDetail);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+            tx.executeSql("Select * from InspectionItemCompactLayout ", [],
+                function (tx, rs) {
+                    try {
+                        InspectionItemCompactLayout = JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) { }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+                tx.executeSql("Select * from InspectionCompactLayout ", [],
+                function (tx, rs) {
+                    try {
+                        InspectionCompactLayout = JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) { }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+                tx.executeSql("Select * from PrepWasteCompactLayout ", [],
+                function (tx, rs) {
+                    try {
+                        PrepWasteCompactLayout = JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) { }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });  
+
+            tx.executeSql("Select * from TaskData ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        TaskData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountUserdata === (rs.rows.length - 1)) {
+                        }
+                        CountUserdata++;
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+            tx.executeSql("Select * from ContractData ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        ContractData.push(JSON.parse(rs.rows.item(i).jsondata));
+
+                        if (CountUserdata === (rs.rows.length - 1)) {
+                        }
+                        CountUserdata++;
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from PriceEntries ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        PricebookEntries.push(JSON.parse(rs.rows.item(i).jsondata));
+                    }
+                    //console.log('PricebookEntries', PricebookEntries);
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from Billing ", [],
+                function (tx, rs) {
+                    for (var i = 0; i < rs.rows.length; i++) {
+                        BillingRecords.push(JSON.parse(rs.rows.item(i).jsondata));
+                    }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from DefaultValues ", [],
+                function (tx, rs) {
+                    try {
+                        DefaultValues = JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) { }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+            tx.executeSql("Select * from DefaultValues ", [],
+                function (tx, rs) {
+                    try {
+                        DefaultValues = JSON.parse(rs.rows.item(0).jsondata);
+                    } catch (err) { }
+                    CountAllDownloadObjects++;
+                    if (CountAllDownloadObjects === TotalObjectCount) {
+                        AllOfflineDataLoaded();
+                    }
+                }, function (tx, error) {
+                    StoreError(error);
+                    alert(error.message)
+                });
+
+        });
+    }
+
+    var NavigateToPages = function (location) {
+        app.navigate(location);
+    }
+
+    function GetVisitdataOffline() {
+        for (var i = 0; i < AllVisits.length; i++) {
+            if (AllVisits[i]['STKR__Status__c'] === 'Complete') {
+                VisitCompleted[VisitCompletedCount++] = AllVisits[i];
+            } else {
+                // New Code 
+                var visitdueDate;
+                var currentDateTime = new Date();
+                var CurrentDate = new Date(currentDateTime.getFullYear(), currentDateTime.getMonth(), currentDateTime.getDate());
+
+                if (device.platform === 'Win32NT') {
+                    // Added by Ashutosh on 15-09-2016
+                    var dates = (AllVisits[i]['STKR__Due_Date__c']).split('T')[0];
+
+                    var day = dates.split('-')[2];
+                    var month = dates.split('-')[1];
+                    var year = dates.split('-')[0];
+
+                    visitdueDate = new Date(year, month - 1, day);
+                } else if (device.platform === 'iOS') {
+                    // Added by Ashutosh on 15-09-2016
+                    var dates = (AllVisits[i]['STKR__Due_Date__c']).split('T')[0];
+
+                    var day = dates.split('-')[2];
+                    var month = dates.split('-')[1];
+                    var year = dates.split('-')[0];
+
+                    visitdueDate = new Date(year, month - 1, day);
+                } else {
+                    var visitdueDateTime = new Date(AllVisits[i]['STKR__Due_Date__c']);
+                    visitdueDate = new Date(visitdueDateTime.getFullYear(), visitdueDateTime.getMonth(), visitdueDateTime.getDate());
+                }
+                var diff = 0;
+                diff = (visitdueDate).getTime() - (CurrentDate).getTime();
+                diff = diff / (1000 * 60 * 60 * 24);
+                //END New Code
+
+                if (diff < 0) {
+                    VisitOverdue[VisitOverdueCount++] = AllVisits[i];
+                } else if (diff >= 0 && diff < 1) {
+                    VisitToday[VisitTodayCount++] = AllVisits[i];
+                } else if (diff >= 1 && diff < 7) {
+                    VisitThisWeek[VisitThisWeekCount++] = AllVisits[i];
+                } else if (diff >= 7 && diff <= 46) {
+                    VisitWithin45[VisitWithin45Count++] = AllVisits[i];
+                }
+            }
+        }
+    }
+
+    /*document.addEventListener("online", function() {
+    if (CheckSecondTimeOnlineStatus) {        
+    UploadOfflineChanges();
+    }
+    }, false); */
+
+    function AllOfflineDataLoaded() {
+        UpdateWithOfflineRecords();
+        app.navigate('view/HomePage.html');
+    }    
+</script>

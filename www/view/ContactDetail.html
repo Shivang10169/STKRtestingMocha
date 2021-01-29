@@ -1,0 +1,341 @@
+<div data-role="view" style="background-color:white;" data-show="GetContactDetail" data-after-show="DAFContactDetail"
+    data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span>Contact</span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="ContactListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </header>
+    <div id="ContactDetailPage_HTMLContent">
+    </div>
+</div>
+
+<script>
+    var ContactDetailId;
+    var ContactIndex = null;
+
+    function GetContactDetail(e) {
+        ContactIndex = null, ContactDetailId = null;
+
+        CountNumberOfOflineItem();
+        try {
+            e.view.scroller.reset();
+        } catch (e) {
+        }
+        // To support material design
+        var HTMLCONTENT = '<div style="margin:5%;"><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><select class="ContactDetailPageMDLName mdl-textfield__input" id="EditSal"></select><label class="ContactDetailPageMDLName mdl-textfield__label" for="EditSal">Salutation</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><input class="ContactDetailPageMDLName mdl-textfield__input" type="text" id="Editfirstname"><label class="ContactDetailPageMDLName mdl-textfield__label" for="Editfirstname">First Name</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><input class="ContactDetailPageMDLName mdl-textfield__input" type="text" id="Editlastname"><label class="ContactDetailPageMDLName mdl-textfield__label" for="Editlastname">Last Name</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><input class="ContactDetailPageMDLName mdl-textfield__input" type="text" id="EditTitle"><label class="ContactDetailPageMDLName mdl-textfield__label" for="EditTitle">Title</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><input class="ContactDetailPageMDLName mdl-textfield__input" type="email" id="Editemail"><label class="ContactDetailPageMDLName mdl-textfield__label" for="Editemail">Email</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><input class="ContactDetailPageMDLName mdl-textfield__input" type="text" id="Editphone" ><label class="ContactDetailPageMDLName mdl-textfield__label" for="Editphone">Phone</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><input class="ContactDetailPageMDLName mdl-textfield__input" type="text" id="EditMobile" ><label class="ContactDetailPageMDLName mdl-textfield__label" for="EditMobile">Mobile</label></div><br/><div class="ContactDetailPageMDLName mdl-textfield mdl-js-textfield mdl-textfield--floating-label"><select class="ContactDetailPageMDLName mdl-textfield__input" id="EditStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option></select><label class="ContactDetailPageMDLName mdl-textfield__label" for="EditStatus">Status</label></div><br/><div id="EnableEmailAlertDiv"><label for="EnableEmailAlert" style="font-size:16px;color:rgb(0,188,212);">Enable Email Alert</label><input type="checkbox" style="float:right;margin-right:5%;" id="EnableEmailAlert" onChange="EnableEmailAlert(this);"></div><br/><br/><span style="margin-top:5%;"><center><button class="ContactDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="float:left;margin-left:5%;font-weight:bold;background-color:grey;" onClick="window.history.back();">CANCEL</button><button class="ContactDetailPageMDLName mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" style="float:right;margin-right:5%;font-weight:bold;margin-bottom:5%" onclick="ValidationOfContactDetail()">UPDATE</button></center></span></div>';
+        $("#ContactDetailPage_HTMLContent").html(HTMLCONTENT);
+        ContactDetailId = e.view.params.ContactId;
+        var selectSalutation = $('#EditSal');
+        var salutationlist = [];
+        for (var i = 0; i < ContactMetadata.fields.length; i++) {
+            if (ContactMetadata.fields[i].name == "Salutation") {
+
+                salutationlist = ContactMetadata.fields[i].picklistValues.slice();
+            }
+
+        }
+        var list = '';
+        list += '<option value="none">None</option>'
+        if (salutationlist.length) {
+            for (var j = 0; j < salutationlist.length; j++) {
+                list += "<option value='" + salutationlist[j].label + "'>" + salutationlist[j].label + "</option>";
+            }
+        }
+
+        
+        selectSalutation.html(list);
+
+        // $('#EditSal').hide();
+        $('#EnableEmailAlertDiv').show();
+        try {
+            //Check if alert exisit for this contact
+            for (var i = 0; i < AlertsData.length; i++) {
+                if ((AlertsData[i]["STKR__Contact__c"] == ContactDetailId && (AlertsData[i]["STKR__Service_Contract__c"].substr(0, 15) === newDetailValue[0]["STKR__Service_Contract__c"].substr(0, 15)))) {
+                    $('#EnableEmailAlert').prop("checked", true);
+                    break;
+                } else {
+                    $('#EnableEmailAlert').prop("checked", false);
+                }
+            }
+        } catch (err) {
+        }
+
+        for (var i = 0; i < ContactData.length; i++) {
+            if (ContactDetailId === ContactData[i]['Id']) {
+                ContactIndex = i;
+                console.log(ContactData[i]);
+                $('#EditSal').val(ContactData[i]['Salutation']);
+                $('#Editfirstname').val(ContactData[i]['FirstName']);
+                $('#Editlastname').val(ContactData[i]['LastName']);
+                $('#EditTitle').val(ContactData[i]['Title']);
+                $('#Editemail').val(ContactData[i]['Email']);
+                $('#Editphone').val(ContactData[i]['Phone']);
+                $('#EditMobile').val(ContactData[i]['MobilePhone']);
+                $('#EditStatus').val(ContactData[i]['STKR__Status__c']);
+                try {
+                    //$('#HiddenReferenceIdForAlert').val(ContactData[i]['STKR__Reference_Id__c']);    
+                } catch (err) { }
+                break;
+            }
+        }
+    }
+
+    function EnableEmailAlert(e) {
+        var _checkboxval = $("#EnableEmailAlert").prop("checked");
+        if (_checkboxval) {
+            // create an alert on this contact ... 
+            $("#EnableEmailAlert").prop("checked", false);
+            var datatoupload = {};
+            datatoupload['STKR__Contact__c'] = ContactDetailId;
+            datatoupload['STKR__Service_Contract__c'] = newDetailValue[0]["STKR__Service_Contract__c"];
+            datatoupload['STKR__Visits__c'] = true;
+            datatoupload['STKR__Account__c'] = newDetailValue[0]["STKR__Account_lkp__c"];
+            datatoupload['STKR__Service__c'] = newDetailValue[0]["STKR__Service__c"];    
+            ValidationOfContactDetail();
+            var ContactRecord = {
+                FirstName: ContactData[ContactIndex]['FirstName'],
+                Salutation: ContactData[ContactIndex]['Salutation'],
+                LastName: ContactData[ContactIndex]['LastName'],
+                Title: ContactData[ContactIndex]['Title'],
+                Email: ContactData[ContactIndex]['Email'],
+                Phone: ContactData[ContactIndex]['Phone'],
+                MobilePhone: ContactData[ContactIndex]['MobilePhone'],
+                STKR__Status__c: ContactData[ContactIndex]['STKR__Status__c'],
+            };
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+                jsconn.sobject("STKR__Alerts__c").create(datatoupload, function (err, ret) {
+                    if (err || !ret.success) {
+                        StoreError(err);
+                        return console.error(err, ret);
+                    }
+                    console.log('Create Successfully : ' + ret.id);
+                    datatoupload['Id'] = ret.id;
+                    AlertsData.push(Object.assign({ STKR__Contact__r: ContactRecord }, datatoupload));
+
+                    app.insertRecord('Alerts', {
+                        JsonData: JSON.stringify(datatoupload),
+                        Updated: 'false',
+                        UserId: creds.UserID,
+                        AccountID: accountid,
+                        AlertID: datatoupload
+                    });
+                    app.pane.loader.hide();
+
+                    app.toastMessage('Alert Created', 'long');
+                    window.history.back();
+                });
+            } else {
+                // Offline handle
+                console.log('createAlertContactID', ContactDetailId);
+                var timestamp = (new Date().getTime()).toString();
+                datatoupload['STKR__Reference_Id__c'] = ContactDetailId + ';Mobile;';
+                datatoupload['Id'] = timestamp;
+
+                var datatouploadalert = {
+                    JsonData: JSON.stringify(datatoupload),
+                    ObjectName: 'STKR__Alerts__c',
+                    Updated: 'newRecord',
+                    UpdateOrInsert: 'upsert',
+                    UserId: creds.UserID,
+                    RecordId: timestamp
+                };
+                app.insertRecord('DataToUpdate', datatouploadalert);
+                var modifiedData = Object.assign({ STKR__Contact__r: ContactRecord }, datatoupload);
+                AlertsData.push(modifiedData);
+
+                var data = {
+                    JsonData: JSON.stringify(modifiedData),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    AccountID: accountid,
+                    AlertID: timestamp
+                }
+                app.insertRecord('Alerts', data);
+                app.toastMessage('Alert Created Offline', 'long');
+                window.history.back();
+            }
+        } else {
+            // u can't modif previous alerts..
+            app.toastMessage('You can\'t change this value', 'long');
+            $("#EnableEmailAlert").prop("checked", true);
+        }
+    }
+
+    function ShowDropdownlist() {
+        $('#EditSal').show();
+        $("select").simulate('mousedown');
+    }
+
+    function ValidationOfContactDetail() {
+        if ($('#Editemail').val()) {
+            if (!(/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test($('#Editemail').val()))) {
+                app.toastMessage('Please provide a valid Email', 'long');
+            } else {
+                EditContact();
+            }
+        } else {
+            EditContact();
+        }
+    }
+
+    function EditContact() {
+        var salutaionCheck = "";
+        if (!($('#Editlastname').val() === '') && !($('#Editfirstname').val() === '')) {
+            if ($('#EditSal').val() == "none") {
+                salutaionCheck = "";
+            } else {
+                salutaionCheck = $('#EditSal').val();
+            }
+            var SaveContact = {
+                Salutation: salutaionCheck,
+                FirstName: $('#Editfirstname').val(),
+                LastName: $('#Editlastname').val(),
+                Title: $('#EditTitle').val(),
+                Email: $('#Editemail').val(),
+                Phone: $('#Editphone').val(),
+                MobilePhone: $('#EditMobile').val(),
+                Id: ContactDetailId,
+                STKR__Status__c: $('#EditStatus').val()
+            };
+            ContactData[ContactIndex]['FirstName'] = SaveContact.FirstName;
+            ContactData[ContactIndex]['Salutation'] = SaveContact.Salutation;
+            ContactData[ContactIndex]['LastName'] = SaveContact.LastName;
+            ContactData[ContactIndex]['Title'] = SaveContact.Title;
+            ContactData[ContactIndex]['Email'] = SaveContact.Email;
+            ContactData[ContactIndex]['Phone'] = SaveContact.Phone;
+            ContactData[ContactIndex]['MobilePhone'] = SaveContact.MobilePhone;
+            ContactData[ContactIndex]['STKR__Status__c'] = SaveContact.STKR__Status__c;
+            try {
+                if (accountid)
+                    SaveContact['AccountId'] = accountid;
+                else
+                    SaveContact['AccountId'] = newDetailValue[0]['STKR__Account_lkp__c'];
+            } catch (err) {
+            }
+            try {
+                if (ContactData[ContactIndex]['STKR__Reference_Id__c'])
+                    SaveContact['STKR__Reference_Id__c'] = ContactData[ContactIndex]['STKR__Reference_Id__c'];
+            } catch (err) { }
+            var data = {
+                JsonData: JSON.stringify(SaveContact),
+                Updated: 'false',
+                UserId: creds.UserID,
+                AccountID: accountid,
+                ContactID: ContactDetailId
+            };
+            app.insertRecord('Contact', data);
+
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+                jsconn.sobject("Contact").update(SaveContact, function (err, ret) {
+                    if (err || !ret.success) {
+                        var Error = {
+                            Errordata: err,
+                            UserId: creds.UserID,
+                            date: new Date()
+                        };
+                        console.log(JSON.stringify(Error));
+                        app.insertRecord('ErrorLog', Error);
+                        console.error(err, ret);
+                        return null;
+                    }
+                    app.toastMessage('Contact updated', 'long');
+                    window.history.back();
+                });
+            } else {
+                try {
+                    app.selectFromTable('DataToUpdate', 'recordid', ContactData[ContactIndex]['Id'], function (a, rs) {
+                        if (rs.rows.length > 0) {
+                            var updateOrInsert = rs.rows.item(0)['updated'];
+                            var datatoupload = {
+                                JsonData: JSON.stringify(SaveContact),
+                                ObjectName: 'Contact',
+                                Updated: 'newRecord',
+                                UserId: creds.UserID,
+                                RecordId: ContactData[ContactIndex]['Id']
+                            }
+                            if (updateOrInsert === 'false') {
+                                // Record is being updated and is already being on salesforce ...
+                                datatoupload['UpdateOrInsert'] = 'update';
+                                datatoupload['Updated'] = 'false';
+                            } else if (updateOrInsert === 'newRecord') {
+                                // Record is created on mobile device and needs to be created instead of updated... 
+                                datatoupload['UpdateOrInsert'] = 'insert';
+                                datatoupload['Updated'] = 'newRecord';
+                            }
+                            app.insertRecord('DataToUpdate', datatoupload);
+                            app.toastMessage('Contact updated', 'long');
+                            window.history.back();
+                        } else {
+                            var datatoupload = {
+                                JsonData: JSON.stringify(SaveContact),
+                                ObjectName: 'Contact',
+                                Updated: 'false',
+                                UpdateOrInsert: 'update',
+                                UserId: creds.UserID,
+                                RecordId: ContactData[ContactIndex]['Id']
+                            }
+                            app.insertRecord('DataToUpdate', datatoupload);
+                            app.toastMessage('Contact updated', 'long');
+                            window.history.back();
+                        }
+                    });
+                } catch (err) {
+                    var datatoupload = {
+                        JsonData: JSON.stringify(SaveContact),
+                        ObjectName: 'Contact',
+                        Updated: 'false',
+                        UpdateOrInsert: 'update',
+                        UserId: creds.UserID,
+                        RecordId: ContactData[ContactIndex]['Id']
+                    }
+                    app.insertRecord('DataToUpdate', datatoupload);
+                    app.toastMessage('Contact updated', 'long');
+                    window.history.back();
+                }
+            }
+        } else {
+            app.toastMessage('First Name and Last Name are Required', 'long');
+        }
+    }
+
+    function DAFContactDetail() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName("ContactDetailPageMDLName"));
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName("mdl-textfield"));
+        componentHandler.upgradeElements(document.getElementsByClassName("mdl-button"));
+    }
+</script>
+
+<style>
+    .dd {
+        width: 50%;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        font-size: 1.2em;
+        position: relative;
+        top: 50%;
+        line-height: normal;
+        z-index: 1;
+        right: 0;
+        margin-top: -1em;
+    }
+
+    /* .km-ios .km-list>li
+    {
+    background: #FFFFFF;
+    }*/
+    .km-rightcustomicon:after,
+    .km-rightcustomicon:before {
+        content: "\e037";
+    }
+</style>

@@ -1,0 +1,162 @@
+<div data-role="view" data-title="Quotes" id="listQuotations" data-show="DSListQuotations" data-after-show="DASListQuotations"
+    data-init="DIListQuotations" data-layout="QuoteListPageLayout">
+    <ul data-role="listview" id="QuoteListView" data-template="ListQuotationsTemplate"></ul>
+</div>
+
+<div data-id="QuoteListPageLayout" data-role="layout">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border-style:none;" onclick="window.history.back()" class="ActionListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="GotoNewQuotation();" class="ActionListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <span data-role="view-title"></span>
+            <button onclick="app.navigate('view/HomePage.html');" 
+            style="border-style:none;float:right;margin-top:2%;" 
+           class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+               <i class="material-icons" style="color:white;">home</i>
+               </button>
+        </div>
+    </header>
+</div>
+<script type="text/x-kendo-template" id="ListQuotationsTemplate">
+    <div onclick="app.navigate('view/DetailViewQuote.html?QuotesId=${Id}')">
+        <div>
+            <span> #try{#${Name}#}catch(err){}# <b> #try {
+            # for ${STKR__Owner__r.FirstName} ${STKR__Owner__r.LastName} #} catch (err) {
+            }
+                # </b> <span style="float:right;">
+                        #if(typeof(STKR__Date__c)=='object'){#
+                            #:STKR__Date__c.toLocaleDateString()#
+                        #}else{#
+                            ${STKR__Date__c}
+                        #}#</span> </span>
+        </div>
+    </div>
+</script>
+<script>
+    var QuotationsData = [];
+    var ProductData = [];
+    var RecordTypeInfoQuote = [];
+    var RecordTypeIdForQuotes = '';
+    var QuotesRecordtypeInfo;
+    var QuotesLayout;
+
+    function DSListQuotations() {
+        CountNumberOfOflineItem();
+        app.pane.loader.show();
+        try {
+            $('#QuoteSignature').jSignature('reset');
+            $("#STKR__Introduction__c[name='NewQuoteName']").val('');
+            $("#STKR__Site_Contact__c[name='NewQuoteName']").val('');
+            $("#STKR__Site_Contact__cHidden[name='NewQuoteName']").val('');
+            $("#STKR__P_O_Number__c[name='NewQuoteName']").val('');
+            $("#LineItemsListTable").html('<tr style="width:100%"><th style="width:40%;padding:1%;">Product</th><th style="width:20%;padding:1%;">QTY</th><th style="width:30%;padding:1%;">Price (' + userDefaultCurrency + ')</th></tr>');
+        } catch (err) {
+        }
+        QuotationsData = [];
+        ProductData = [];
+
+        if (BillingRecords.length) {
+            for (var bi = 0; bi < BillingRecords.length; bi++) {
+                if (BillingRecords[bi]['STKR__Visit__c'] == newDetailValue[0]['Id']) {
+                    QuotationsData.push(BillingRecords[bi]);
+                }
+            }
+            if (QuotationsData.length) {
+                $("#QuoteListView").data("kendoMobileListView").replace(QuotationsData);
+            } else {
+                app.toastMessage('No Quote found ...', 'long');
+                $("#QuoteListView").data("kendoMobileListView").replace([]);
+                app.pane.loader.hide();
+            }
+            app.pane.loader.hide();
+        }
+
+        let Account_PriceBookId;
+        for (var ai = 0; ai < AllAccounts.length; ai++) {
+            if (AllAccounts[ai]['Id'] == newDetailValue[0]['STKR__Account_lkp__c']) {
+                Account_PriceBookId = AllAccounts[ai]['STKR__Price_Book__c'];
+            }
+        }
+        if (Account_PriceBookId) {
+            for (var pi = 0; pi < PricebookEntries.length; pi++) {
+                if (Account_PriceBookId == PricebookEntries[pi]['Pricebook2Id']) {
+                    ProductData.push(PricebookEntries[pi]);
+                }
+            }
+        }
+
+        app.pane.loader.hide();
+        /* jsconn.query("SELECT id,Name,STKR__Date__c,STKR__Status__c,STKR__Owner__r.LastName,STKR__Owner__r.FirstName FROM STKR__Billing__c WHERE STKR__Visit__c = '" + newDetailValue[0]['Id'] + "' AND STKR__Type__c ='Quote'",
+            function (err, result) {
+                if (err) {
+                    app.pane.loader.hide();
+                    return console.error(err);
+                }
+                QuotationsData = result.records;
+                console.log("Get Quote", QuotationsData);
+
+                if (QuotationsData.length > 0) {
+                    $("#QuoteListView").data("kendoMobileListView").replace(QuotationsData);
+                } else {
+                    app.toastMessage('No Quote found ...', 'long');
+                    $("#QuoteListView").data("kendoMobileListView").replace([]);
+                }
+                ProductData = [];
+                app.pane.loader.show();
+                jsconn.query("SELECT Name,Product2.Id,UnitPrice FROM PricebookEntry WHERE IsActive=true AND Pricebook2Id IN (SELECT STKR__Price_Book__c FROM Account WHERE Id='" + newDetailValue[0]['STKR__Account_lkp__c'] + "') ORDER BY Product2.Family, Product2.Name", function (err, resultLineItem) {
+                    if (err) {
+                        return console.error(err);
+                    }
+                    console.log(resultLineItem);
+                    app.pane.loader.hide();
+                    ProductData = resultLineItem.records;
+                });
+            }); */
+    }
+
+    function DASListQuotations() {
+    }
+
+    function DIListQuotations() {
+
+        if (BillingMetadata) {
+            for (var i = 0; i < BillingMetadata['recordTypeInfos'].length; i++) {
+                if (BillingMetadata['recordTypeInfos'][i]['name'] === 'Quote')
+                    RecordTypeIdForQuotes = BillingMetadata['recordTypeInfos'][i]['recordTypeId'];
+            }
+        }
+
+        /* jsconn.sobject("STKR__Billing__c").describe(function (err, meta) {
+            if (err) {
+                return console.error(err);
+            }
+            console.log('Metadata for Quotes Object', meta);
+            QuotesMetadata = meta;
+            RecordTypeInfoQuote = meta['recordTypeInfos'];
+            for (var i = 0; i < RecordTypeInfoQuote.length; i++) {
+                if (RecordTypeInfoQuote[i]['name'] === 'Quote')
+                    RecordTypeIdForQuotes = RecordTypeInfoQuote[i]['recordTypeId'];
+            }
+            for (var j = 0; j < RecordTypeInfoQuote.length; j++) {
+                QuotesRecordtypeInfo = RecordTypeInfoQuote[j].RecordTypeId;
+                console.log(QuotesRecordtypeInfo);
+            }
+        }); */
+    }
+
+    function GotoNewQuotation() {
+        try {
+            $("[name='NewQuoteName']#STKR__Introduction__c").val('');
+            $("[name='NewQuoteName']#STKR__Site_Contact__cHidden").val('');
+            $("[name='NewQuoteName']#STKR__Site_Contact__c").val('');
+        } catch (err) {
+        }
+        app.navigate('view/NewQuote.html');
+    }
+</script>

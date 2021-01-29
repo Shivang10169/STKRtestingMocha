@@ -1,0 +1,181 @@
+<!-- <div data-role="view" 
+     id ="AddContactAlert" 
+     data-layout="AddContactAlertLayout" 
+     data-show="GetAccountid"
+     data-after-show="DAFCreateContactAlert"
+     data-use-native-scrolling="true"
+     data-title="Create New Contact">
+    <div style="margin:5%;">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <select class="mdl-textfield__input" id="Salutation">
+                <option value="none">None</option>
+                <option value="Mr">Mr.</option>
+                <option value="Ms">Ms.</option>
+                <option value="Mrs">Mrs.</option>
+                <option value="Dr">Dr.</option>
+                <option value="Prof">Prof.</option>
+            </select>
+            <label class="mdl-textfield__label" for="Salutation">Salutation</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="firstname">
+            <label class="mdl-textfield__label" for="firstname">First Name</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="lastname">
+            <label class="mdl-textfield__label" for="lastname">Last Name</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="title">
+            <label class="mdl-textfield__label" for="title">Title</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="email" id="email">
+            <label class="mdl-textfield__label" for="email">Email</label>
+        </div>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="number" id="phone" pattern="[0-9]*">
+            <label class="mdl-textfield__label" for="phone">Phone</label>
+        </div>
+        <br>
+        <span style="margin-top:5%;">
+            <center>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                        style="float:left;margin-left:5%;font-weight:bold;background-color:grey;"
+                        onClick="window.history.back();">
+                    CANCEL
+                </button>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                        style="float:right;margin-right:5%;font-weight:bold;margin-bottom:5%"
+                        onclick="ValidationOfCreateContactAlert()">
+                    SAVE
+                </button>
+            </center>
+        </span>
+    </div>
+</div>
+<div data-role="layout" data-id="AddContactAlertLayout">
+    <div data-role="header">
+        <div data-role="navbar">
+            <span>Contact</span>
+            <a data-role="backbutton" data-align="left" style="border-style:none;" >
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+        </div>
+    </div>
+</div>
+<script>
+    var salutation;
+    var fname;
+    var lname;
+    var title;
+    var phone;
+    var email;
+    
+    function Expand(obj) {
+        obj.size = obj.value.length;
+    }
+    function GetAccountid(e) {
+        CountNumberOfOflineItem();
+
+    }
+    function ValidationOfCreateContactAlert() {
+        if ($('#email').val()) {
+            if (!(/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test($('#email').val()))) {
+                app.toastMessage('Please provide a valid Email', 'long');
+            } else {
+                CreateContactAlert();
+            }
+        } else {
+            CreateContactAlert();
+        }
+    }
+    function CreateContactAlert() {
+        if (!($('#lastname').val()==='') && !($('#firstname').val()==='')) {
+            app.pane.loader.show();
+            var SaveContactAlert = {
+                Salutation:$('#Salutation').val(),
+                FirstName:$('#firstname').val(),
+                LastName:$('#lastname').val(),
+                Title:$('#title').val(),
+                Email:$('#email').val(),
+                Phone:$('#phone').val()
+            };
+            SaveContactAlert['AccountId'] = accountid;
+            console.log('SaveContactAlert', SaveContactAlert);
+            if (AppIsOnline && !isCurrentVisitInProgress) {
+                jsconn.sobject("Contact").create(SaveContactAlert, function(err, ret) {
+                    if (err || !ret.success) {
+                        StoreError(err);
+                        return console.error(err, ret);
+                    }
+                    console.log('Create Successfully : ' + ret.id);
+                    var data = {
+                        JsonData:JSON.stringify(SaveContactAlert),
+                        Updated:'false',
+                        UserId:creds.UserID,
+                        AccountID:accountid,
+                        ContactAlertID:ret.id
+                    }
+                    app.insertRecord('Contact', data);
+                    SaveContactAlert['Id'] = ret.id;
+                    ContactAlertData.push(SaveContactAlert);
+                    app.pane.loader.hide();
+                    app.toastMessage('New ContactAlert ' + SaveContactAlert.LastName + ' Created', 'long');
+                    app.navigate("#:back");
+                });
+            } else {
+                var timestamp = new Date().getTime().toString();
+                var data = {
+                    JsonData:JSON.stringify(SaveContactAlert),
+                    Updated:'false',
+                    UserId:creds.UserID,
+                    AccountID:accountid,
+                    ContactAlertID:timestamp
+                }
+                SaveContactAlert['Id'] = timestamp;
+                app.insertRecord('Contact', data);
+                var datatoupload = {
+                    JsonData:JSON.stringify(SaveContactAlert),
+                    ObjectName:'Contact',
+                    Updated:'newRecord',
+                    UpdateOrInsert:'insert',
+                    UserId:creds.UserID,
+                    RecordId:timestamp
+                };
+                app.insertRecord('DataToUpdate', datatoupload);
+                ContactAlertData.push(SaveContactAlert);
+                app.pane.loader.hide();
+                app.toastMessage('New ContactAlert ' + SaveContactAlert.LastName + ' created', 'long');
+                window.history.back();
+            }
+        } else {
+            app.toastMessage('Last Name and First Name are required', 'long');
+        }
+    }
+    function DAFCreateContactAlert() {
+        if (device.platform == "Android") {
+        componentHandler.upgradeElements(document.getElementsByClassName("mdl-textfield"));
+        componentHandler.upgradeElements(document.getElementsByClassName("mdl-button"));
+        }
+    }    
+</script>
+<style>
+    .km-rightcustomicon:after,
+    .km-rightcustomicon:before
+    {
+        content: "\e037";
+    }
+    .textbox
+    {
+        border: 2px solid grey;
+        float: right;
+        size: 5;
+    }
+</style> -->

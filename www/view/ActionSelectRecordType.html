@@ -1,0 +1,78 @@
+<div data-role="view" 
+     data-show="DataShowSelectActionRecordType" 
+     data-after-show="DAFSelectActionRecordType" 
+     id="SelectActionRecordTypePage" 
+     data-use-native-scrolling="true">
+
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="backbutton">
+                <i class="material-icons">keyboard_backspace</i>
+                </a>
+            <span id="CreateLayoutHeaderAction"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify" style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right"  style="border-style:none;"
+            class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+            <i class="material-icons" style="border-style:none;color:white;width: 20%;">home</i>
+        </button>
+        </div>
+    </header>
+
+    <div class="mdl-shadow--2dp" style="margin:5%;padding:3%;background:#FFF">
+        <center>
+            <h4>Select Record Type : </h4>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <select id="SelectOptionRecordTypeAction" class="mdl-textfield__input"></select>
+            </div>
+            <br/><br/>
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" 
+                    onClick="RedirectToActionLayout()"
+                    style="font-weight:bold;">
+                SELECT
+            </button>
+        </center>
+    </div>
+</div>
+<script>
+    function DataShowSelectActionRecordType() {
+        CountNumberOfOflineItem();
+        console.log('Metadata Action', ActionMetadata);
+        if (ActionLabel!=='undefined' && ActionLabel!==undefined && ActionLabel!=='null' && ActionLabel!==null) {
+            var actionrecordtype = " Create " + ActionLabel;
+            $("#CreateLayoutHeaderAction").text(actionrecordtype);
+        }else {
+            $("#CreateLayoutHeaderAction").text("Action")
+        }
+        var OptionHTML = '';
+        // Future Work.. Check if Master record type is there than don't allow other recordtype to show.. 
+        // Master record type is only available if no other record type is selected for the profile. 
+        try {
+            for (var i = 0;i < ActionMetadata['recordTypeInfos'].length - 1;i++) {
+                if (ActionMetadata['recordTypeInfos'][i]['available'])
+                    OptionHTML+='<option value="' + ActionMetadata['recordTypeInfos'][i]['recordTypeId'] + '" id="' + ActionMetadata['recordTypeInfos'][i]['recordTypeId'] + '">' + ActionMetadata['recordTypeInfos'][i]['name'] + '</option>';
+            }
+        } catch (err) {
+            OptionHTML = '';
+            for (var i = 0;i < ActionMetadata[0]['recordTypeInfos'].length - 1;i++) {
+                if (ActionMetadata[0]['recordTypeInfos'][i]['available'])
+                    OptionHTML+='<option value="' + ActionMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '" id="' + ActionMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '">' + ActionMetadata[0]['recordTypeInfos'][i]['name'] + '</option>';
+            }
+        }    
+        $("#SelectOptionRecordTypeAction").html(OptionHTML);
+    }
+    function DAFSelectActionRecordType() {
+        if (device.platform == "Android") {
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-button')); }
+    }
+    function RedirectToActionLayout() {
+        var SelectedOption = $('#SelectOptionRecordTypeAction').val();
+        app.navigate('view/CreateActionDynamic.html?ActionRecordId=' + SelectedOption);
+    }
+</script>
+
+<style>
+    #SelectActionRecordTypePage .km-content
+    {
+        background: #E6E6E6;
+    }
+</style>

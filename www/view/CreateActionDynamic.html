@@ -1,0 +1,462 @@
+<div data-role="view" data-show="CreateActionLayoutDataShow" id="CreateActionLayoutPage"
+    data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button data-align="left" data-role="backbutton" onclick=""
+                class="ActionPageMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span id="CreateActionHeader"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="ActionPageMDL headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+            <button  style="border-color:white;border-style:none;float:right;margin-top:2%;"
+                class="ActionPageMDL headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon"
+                onclick="SaveActionData();">
+                <i class="material-icons">camera_alt</i>
+            </button>
+        </div>
+    </header>
+    <div id="DivCreateActionLayout">
+    </div>
+    <center>
+        <button
+            class="ActionPageMDL mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            id="actionBtnCreate" onClick="CreateDynamicAction()" style="font-weight:bold;">
+            CREATE
+        </button>
+    </center>
+    <br />
+</div>
+<style>
+    #CreateActionLayoutPage .km-content {
+        background: #E6E6E6;
+    }
+</style>
+<script>
+    var ActionRecordId = '';
+    //var saveaction = {};
+    var CreateAction_uploadimage = false;
+
+    function CreateActionLayoutDataAfterShow() {
+        try {
+                if (createpageSelectedvalueForemail) {
+                    $('#STKR__Email_Action__c[name="ActionLayoutName"]').val(createpageSelectedvalueForemail);
+                }
+            } catch (e) {
+                console.log('error24', e);
+            }
+            if (device.platform == "Android") {
+                componentHandler.upgradeElements(document.getElementsByClassName('ActionPageMDL'));
+            }
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+           
+                                  
+        }
+
+    function CreateActionLayoutDataShow(e) {
+        $('#actionBtnCreate').attr("disabled", false);
+        e.view.scroller.reset();
+        ActionRecordId = '';
+        //   if (!CreateAction_uploadimage) {
+        //     saveaction = {}
+        //}
+        CreateAction_uploadimage = false;
+        $("#CreateActionHeader").text(ActionLabel);
+        try {
+            ActionRecordId = e.view.params.ActionRecordId;
+
+        } catch (err) {
+            StoreError(err)
+            console.log(err);
+        }
+        console.log('ActionRecordId', ActionRecordId);
+
+        if (ActionRecordId) {
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from ActionRecordType where recordid=?", [ActionRecordId],
+                    function (tx, rs) {
+                        if (rs.rows.length) {
+                            var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                            console.log('Action Record Type Layout', Layoutdata);
+                            $('#DivCreateActionLayout').html(ActionLayoutGenerator(Layoutdata));
+                            $(".UniqueSelect option").val(function(idx, val) {
+                                    $(this).siblings('[value="'+ this.val +'"]').remove();
+                                    return val;
+                                   });
+                            CreateActionLayoutDataAfterShow();
+                            SetCreateActionValues();
+                        } else {
+                            app.toastMessage('This record type is not found, Please refresh data', 'long');
+                        }
+                    }, function (tx, error) {
+                        StoreError(error);
+                        console.error(error.message)
+                    });
+            });
+        }
+
+    }
+    /*
+        function SetCreateActionValues() {
+            var ActionLayoutHTMLComponents = $("[name='ActionLayoutName']");
+            console.log(ActionLayoutHTMLComponents);
+            try {
+                for (var i = 0; i < ActionLayoutHTMLComponents.length; i++) {
+                    if (ActionLayoutHTMLComponents[i]['tagName'] === 'SELECT') {
+                        var values = saveaction[ActionLayoutHTMLComponents[i]['id']];
+                        if (values) {
+                            $.each(values.split(";"), function (x, e) {
+                                $('[name="ActionLayoutName"]' + "#" + ActionLayoutHTMLComponents[i]['id'] + " option[value='" + e + "']").prop("selected", true);
+                            });
+                        }
+                    } else if (ActionLayoutHTMLComponents[i]['type'] === "checkbox") {
+                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').prop('checked', saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                    } else if (ActionLayoutHTMLComponents[i]['type'] === "number") {
+                        console.log(ActionLayoutHTMLComponents[i]['id'] + ':' + saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                    } else if (ActionLayoutHTMLComponents[i]['type'] === "date") {
+                        if (saveaction[ActionLayoutHTMLComponents[i]['id']]) {
+                            if (device.platform === 'Android') {
+                                if (typeof (saveaction[ActionLayoutHTMLComponents[i]['id']]) === 'string') {
+                                    $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                } else {
+                                    var dateval = new Date(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                    var month;
+                                    var day;
+                                    if ((dateval.getMonth() + 1) < 10) {
+                                        month = '0' + (dateval.getMonth() + 1)
+                                    } else {
+                                        month = dateval.getMonth() + 1
+                                    }
+                                    if (dateval.getDate() < 10) {
+                                        day = '0' + dateval.getDate()
+                                    } else {
+                                        day = dateval.getDate()
+                                    }
+                                    $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day)
+                                }
+                            }
+                            if (device.platform === 'iOS') {
+                                if (STKR__Date_for_Completion__c !== null) {
+                                    if (typeof (saveaction[ActionLayoutHTMLComponents[i]['id']]) === 'Object') {
+                                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                    } else {
+                                        var dateval = new Date(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                        var month;
+                                        var day;
+                                        if ((dateval.getMonth() + 1) < 10) {
+                                            month = '0' + (dateval.getMonth() + 1)
+                                        } else {
+                                            month = dateval.getMonth() + 1
+                                        }
+                                        if (dateval.getDate() < 10) {
+                                            day = '0' + dateval.getDate()
+                                        } else {
+                                            day = dateval.getDate()
+                                        }
+                                        console.log(dateval);
+                                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                                    }
+                                }
+                            }
+                        }
+                    } else if (ActionLayoutHTMLComponents[i]['type'] === "datetime-local") {
+                        if (saveaction[ActionLayoutHTMLComponents[i]['id']]) {
+                            if (device.platform === 'Android') {
+                                try {
+                                    var dateval = new Date(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                    var month;
+                                    var day;
+                                    if ((dateval.getMonth() + 1) < 10) {
+                                        month = '0' + (dateval.getMonth() + 1)
+                                    } else {
+                                        month = dateval.getMonth() + 1
+                                    }
+                                    if (dateval.getDate() < 10) {
+                                        day = '0' + dateval.getDate()
+                                    } else {
+                                        day = dateval.getDate()
+                                    }
+                                    console.log(ActionLayoutHTMLComponents[i]['id'])
+                                    $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                                } catch (err) {
+                                    console.log('date error' + err)
+                                    $('#' + ActionLayoutHTMLComponents[i]['id']).val('');
+                                }
+                            }
+                            if (device.platform === 'iOS') {
+                                if (STKR__Date_for_Completion__c !== null) {
+                                    if (typeof (saveaction[ActionLayoutHTMLComponents[i]['id']]) === 'Object') {
+                                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                    } else {
+                                        var dateval = new Date(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                                        var month;
+                                        var day;
+                                        if ((dateval.getMonth() + 1) < 10) {
+                                            month = '0' + (dateval.getMonth() + 1)
+                                        } else {
+                                            month = dateval.getMonth() + 1
+                                        }
+                                        if (dateval.getDate() < 10) {
+                                            day = '0' + dateval.getDate()
+                                        } else {
+                                            day = dateval.getDate()
+                                        }
+                                        console.log(dateval);
+                                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(dateval.getFullYear() + '-' + (month) + '-' + day);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        console.log(ActionLayoutHTMLComponents[i]['id'] + ':' + saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                        $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val(saveaction[ActionLayoutHTMLComponents[i]['id']]);
+                    }
+                }
+            } catch (rrt) { }
+        }
+    
+        */
+
+    function NavigateToAttachmentPage(whereto, ActionData) {
+        CreateAction_uploadimage = true;
+        //saveaction = $.extend({}, datatoupload);
+        var PageURL = "view/ShowImage.html?ImageComingFrom=Action";
+
+        if (ActionData['Id']) {
+            PageURL += "&actionId=" + ActionData['Id'];
+        }
+
+        if (ActionData['Id'] &&
+            ActionData['Id'].length < 18 &&
+            ActionData['STKR__Mobile_Unique_Id__c']) {
+            PageURL += "&actionExternalId=" + ActionData['STKR__Mobile_Unique_Id__c'];
+        }
+
+       // debugger;
+        window.setTimeout(function () {
+            app.pane.loader.show();
+            window.history.go(-2);
+        }, 0)
+        window.setTimeout(function () {
+            app.navigate("view/ActionDynamicDetailPage.html?ActionId=" + ActionData["Id"]);
+        }, 500)
+        window.setTimeout(function (PageURL) {
+            app.navigate(PageURL);
+            app.pane.loader.hide();
+        }, 1000, PageURL)
+    }
+
+    function NavigateToAddEmail(whereto, ActionData, htmlid){
+        var PageURL = 'view/SelectLookupAccountContact.html?inputhtmlid='+htmlid +'&passedFromPage=ActionDetailPage_ActionData';
+        if (ActionData['Id']) {
+            PageURL += "&actionId=" + ActionData['Id'];
+        }
+
+        if (ActionData['Id'] &&
+            ActionData['Id'].length < 18 &&
+            ActionData['STKR__Mobile_Unique_Id__c']) {
+            PageURL += "&actionExternalId=" + ActionData['STKR__Mobile_Unique_Id__c'];
+        }
+
+        window.setTimeout(function () {
+            app.pane.loader.show();
+            window.history.go(-2);
+        }, 0)
+        window.setTimeout(function () {
+            app.navigate("view/ActionDynamicDetailPage.html?ActionId=" + ActionData["Id"]);
+        }, 500)
+        window.setTimeout(function (PageURL) {
+            app.navigate(PageURL);
+            app.pane.loader.hide();
+        }, 1000, PageURL)
+        
+    }
+
+    function CreateDynamicAction(whereto,htmlid) {
+        setTimeout(function () { $('#actionBtnCreate').attr("disabled", false); }, 2000);
+        $('#actionBtnCreate').attr("disabled", true);
+        var ActionLayoutHTMLComponents = $("[name='ActionLayoutName']");
+        //console.log(ActionLayoutHTMLComponents);
+        var datatoupload = {};
+        for (var i = 0; i < ActionLayoutHTMLComponents.length; i++) {
+            var values = '';
+            if (ActionLayoutHTMLComponents[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]')[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    console.log(selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (ActionLayoutHTMLComponents[i]['type'] === "checkbox") {
+                values = $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').prop('checked');
+            } else if (ActionLayoutHTMLComponents[i]['type'] === "date") {
+                values = $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val()
+                if (values === '') {
+                    values = null;
+                }
+            } else {
+                values = $('#' + ActionLayoutHTMLComponents[i]['id'] + '[name="ActionLayoutName"]').val()
+            }
+
+            if (ActionLayoutHTMLComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return 'Fill Required Fields';
+            }
+            // Update the value to null if AssignedTo is "Responsible person for site"
+            if (ActionLayoutHTMLComponents[i]['id'] === "STKR__Assigned_To__c" &&
+                values === "Responsible Person for Site") {
+                datatoupload[ActionLayoutHTMLComponents[i]['id']] = null;
+            } else {
+                datatoupload[ActionLayoutHTMLComponents[i]['id']] = values;
+            }
+        }
+        // timestamp will be used as id if device is in offline and also for unique external id.
+
+        var timestamp = (new Date().getTime()).toString();
+        datatoupload['STKR__Visit__c'] = newDetailValue[0]['Id'];
+
+        if (ActionFor === 'FromInspectionDetail') {
+            datatoupload['STKR__Service_Item__c'] = Action_InspectionItemId;
+            datatoupload['STKR__Mobile_Unique_Id__c'] = Action_InspectionItemId + ";MobileAction;" + timestamp;
+        } else if (ActionFor === 'FromVisitDetail') {
+            datatoupload['STKR__Mobile_Unique_Id__c'] = ";MobileAction;" + timestamp;
+        } else if (ActionFor === 'ForSiteActions') {
+            datatoupload['STKR__Mobile_Unique_Id__c'] = ";MobileAction;" + timestamp;
+        }
+        datatoupload['STKR__Account__c'] = newDetailValue[0]['STKR__Account_lkp__c'];
+        datatoupload['RecordTypeId'] = ActionRecordId;
+
+        // Check whether device is online or not
+        if (AppIsOnline && !isCurrentVisitInProgress) {
+            //saveaction = $.extend({}, datatoupload);
+            //Device is online
+            jsconn.sobject("STKR__Actions__c").insert(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    console.error(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Updated Successfully : ' + ret.id);
+                datatoupload['Id'] = ret.id;
+                //saveaction['Id'] = ret.id;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                ActionData.push(datatoupload);
+                app.insertRecord('Action', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    ActionID: datatoupload['Id']
+                });
+                app.toastMessage('New action created', 'long');
+                //Navigate to upload attachment
+                if (whereto == 'uploadimage') {
+                    NavigateToAttachmentPage(whereto, datatoupload);
+                } else if(whereto == 'addEmail'){
+                    console.log('data saved navigate to email page');
+                    NavigateToAddEmail(whereto, datatoupload, htmlid)
+                } else {
+                    window.history.back();
+                }
+            });
+        } else {
+            // Device is offline
+            // Store in DataToUpdate table
+            // I have made STKR__Account__c to stkr__account__c, so that it won't get deleted while offline sync as this is required field. 
+            delete datatoupload['STKR__Account__c'];
+            datatoupload['stkr__account__c'] = newDetailValue[0]['STKR__Account_lkp__c'];
+            datatoupload['Id'] = timestamp;
+            ActionData.push(datatoupload);
+            //saveaction = $.extend({}, datatoupload);
+            app.insertRecord('Action', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                ActionID: datatoupload['Id']
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'STKR__Actions__c',
+                Updated: 'newRecord',
+                //UpdateOrInsert: 'insert',
+                UpdateOrInsert: 'upsert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            app.insertRecord('DataToUpdate', data);
+            app.toastMessage('New action stored offline', 'long');
+            if (whereto == 'uploadimage') {
+                NavigateToAttachmentPage(whereto, datatoupload);
+            } else if (whereto == 'addEmail') {
+                console.log('data saved navigate to email page');
+                NavigateToAddEmail(whereto, datatoupload, htmlid);
+            } else {
+                window.history.back();
+            }
+        }
+
+    }
+
+    /*Uplaod image on action from create action screen!!!
+    Currently not in use.
+    */
+    function SaveActionData() {
+        var options = {
+            androidTheme: window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_LIGHT,
+            title: 'Do you want to save this action and upload image?',
+            buttonLabels: ['Yes', 'No'],
+            position: [20, 40]
+        };
+        // Device have internet and valid token
+        window.plugins.actionsheet.show(options, function (buttonIndex) {
+            if (buttonIndex == 1) {
+                var retVal = CreateDynamicAction('uploadimage');
+            } else {
+                return;
+            }
+        });
+    }
+
+    /* function CreateAction_BackButton() {
+         var options = {
+             androidTheme: window.plugins.actionsheet.ANDROID_THEMES.THEME_HOLO_LIGHT,
+             title: 'Action is not saved, Do you want to save it?',
+             buttonLabels: ['Yes', 'No'],
+             position: [20, 40]
+         };
+         if (saveaction.STKR__Date_for_Completion__c) {
+             window.plugins.actionsheet.show(options, function (buttonIndex) {
+                 if (buttonIndex == 1) {
+                     CreateDynamicAction();
+                     LastAttachmentId = null;
+                     CreateAction_uploadimage = false;
+                 } else {
+                     // if (LastAttachmentId) {
+                     //     if (LastAttachmentId.length == 18) {
+                     //         //Delete the attachment which got created in online mode
+                     //         jsconn.sobject("Attachment").destroy(LastAttachmentId, function (err, ret) {
+                     //             if (err || !ret.success) { return console.error(err, ret); }
+                     //             console.log('Deleted Successfully : ' + ret.id);
+                     //         });
+                     //     } else {
+                     //         // Delete from offline table..
+                     //         app.deleteRecord("DataToUpdate", LastAttachmentId);
+                     //     }
+                     // }
+                     // LastAttachmentId = null;
+                     CreateAction_uploadimage = false;
+                     window.history.back();
+                 }
+             });
+         } else {
+             //LastAttachmentId = null;
+             CreateAction_uploadimage = false;
+             window.history.back();
+         }
+
+     }*/
+</script>

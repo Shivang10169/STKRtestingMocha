@@ -1,0 +1,80 @@
+<div data-role="view" id="ScheduleVisits" data-show="DataShowScheduleVisits"
+    data-after-show="DataAfterShowScheduleVisits" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;border:none;" onclick="window.history.back()"
+                class="MyScheduleMDLIcon mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span>Visits for Selected Schedule</span>
+            <button onclick="app.navigate('view/HomePage.html');"  style="border-style:none;float:right;margin-top:2%;" class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+                <i class="material-icons" style="color:white;">home</i>
+                </button>
+        </div>
+    </header>
+    <div>
+        <div class="mainBody" id="MessageOfSchedules">
+        </div>
+        <ul data-role="listview" id="ListViewForScheduleVisits" data-template="ListViewForVisitTemplate"
+            data-style="inset">
+        </ul>
+    </div>
+</div>
+<script>
+    var ParticularScheduleVisits = [];
+    var OtherScheduleVisits = [];
+    var SimilarAccountNameScheduleVisits = [];
+    var ScheduleId = '';
+    var ScheduleAccountName = '';
+
+    function DataShowScheduleVisits(e) {
+        //To support the popup for others visit on portfolio page
+        currentTab = 'Others Visit';
+
+        ScheduleId = e.view.params.scheduleid;
+        ScheduleAccountName = '';
+        ParticularScheduleVisits = [];
+        OtherScheduleVisits = [];
+        SimilarAccountNameScheduleVisits = [];
+        $('#MessageOfSchedules').empty();
+        for (var j = 0; j < ScheduleData.length; j++) {
+            if (ScheduleData[j]['Id'] === ScheduleId) {
+                //ScheduleAccountName = ScheduleData[j]['AccountName'];
+                ScheduleAccountName = ScheduleData[j]["STKR__Account__r"]["Name"];
+            }
+        }
+        for (var i = 0; i < AllVisits.length; i++) {
+            if (AllVisits[i]['STKR__Service__c'] === ScheduleId && AllVisits[i]['STKR__Status__c'] === 'Open') {
+                ParticularScheduleVisits.push(AllVisits[i]);
+            } else {
+                OtherScheduleVisits.push(AllVisits[i]);
+            }
+        }
+
+        for (var i = 0; i < AllOthersVisits.length; i++) {
+            if (AllOthersVisits[i]['STKR__Service__c'] === ScheduleId && AllOthersVisits[i]['STKR__Status__c'] === 'Open') {
+                ParticularScheduleVisits.push(AllOthersVisits[i]);
+            } else {
+                OtherScheduleVisits.push(AllOthersVisits[i]);
+            }
+        }
+
+        for (var k = 0; k < OtherScheduleVisits.length; k++) {
+            if (OtherScheduleVisits[k]['STKR__Account__c'] === ScheduleAccountName) {
+                SimilarAccountNameScheduleVisits.push(OtherScheduleVisits[k]);
+            }
+        }
+        $("#ListViewForScheduleVisits").data("kendoMobileListView").replace(ParticularScheduleVisits.concat(SimilarAccountNameScheduleVisits));
+        changeVisitColor();
+        if (ParticularScheduleVisits.length === 0) {
+            var ShowPlaceholder = $('<p>').text("This list is empty. Please use the 'Refresh All Data' option on the main menu.")
+            ShowPlaceholder.css('color', 'grey');
+            ShowPlaceholder.css('position', 'absolute');
+            ShowPlaceholder.css('top', '50%');
+            $('#MessageOfVisitOverdue').html(ShowPlaceholder);
+        }
+    }
+
+    function DataAfterShowScheduleVisits() {
+    }
+</script>

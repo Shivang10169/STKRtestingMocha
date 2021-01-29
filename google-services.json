@@ -1,0 +1,41 @@
+{
+  "project_info": {
+    "project_number": "46144060291",
+    "firebase_url": "https://service-tracker-1089.firebaseio.com",
+    "project_id": "service-tracker-1089"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:46144060291:android:34b049ca8a68f9e3",
+        "android_client_info": {
+          "package_name": "com.telerik.ServiceTracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "46144060291-2sr2ai9sotialaog3ma1sfp6d682920b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGZ8en5mDxzxGBI1hGrYZUoqB78dRivE8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

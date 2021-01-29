@@ -1,0 +1,345 @@
+<div data-role="view" data-title="Create Event" data-show="CreateEventLayoutDataShow" id="CreateEventLayoutPage"
+    data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button data-align="left" data-role="backbutton"
+                class="EventPageMDL mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span data-role="view-title"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="EventListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </header>
+    <div id="DivCreateEventLayout">
+    </div>
+    <center>
+        <button class="EventPageMDL mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            onClick="CreateDynamicEvent()" style="font-weight:bold;">
+            CREATE
+        </button>
+    </center>
+    <br />
+</div>
+<style>
+    #CreateEventLayoutPage .km-content {
+        background: #E6E6E6;
+    }
+</style>
+<script>
+    var EventRecordId = '';
+
+    function CreateEventLayoutDataShow(e) {
+        CountNumberOfOflineItem();
+
+        e.view.scroller.reset();
+        EventRecordId = '';
+        try {
+            EventRecordId = e.view.params.EventRecordId;
+        } catch (err) {
+            StoreError(err);
+            console.log(err);
+        }
+        console.log(EventRecordId);
+        if (EventRecordId) {
+            app.db.transaction(function (tx) {
+                tx.executeSql("Select * from EventLayout where recordid=?", [EventRecordId],
+                    function (tx, rs) {
+                        if (rs.rows.length) {
+                            var Layoutdata = JSON.parse(rs.rows.item(0)['jsondata']);
+                            console.log('Event Record Type Layout', Layoutdata);
+                            $('#DivCreateEventLayout').html(EventLayoutGenerator(Layoutdata));
+                            CreateEventLayoutDataAfterShow();
+                        } else {
+                            app.toastMessage('This record type is not found, Please refresh data', 'long');
+                        }
+                    }, function (tx, error) {
+                        StoreError(error);
+                        alert(error.message);
+                    });
+            });
+        }
+    }
+    function EventLayoutGenerator(Layoutdata) {
+        var EventHTML = '';
+        //x=1 to exclude information section; and loop to EventPageDetailData['editLayoutSections'].length-1 to exclude system information
+        for (var x = 0; x < Layoutdata['editLayoutSections'].length - 1; x++) {
+            var layoutRows = Layoutdata['editLayoutSections'][x]['layoutRows'];
+            var layoutHeader = Layoutdata['editLayoutSections'][x]['heading'];
+            EventHTML += '<center><h5>' + layoutHeader + '</h5></center>';
+            EventHTML += '<div class="mdl-shadow--2dp" style="margin:2%;padding:2%;background-color:#fff;border-radius:10px;">';
+            for (var j = 0; j < layoutRows.length; j++) {
+                var layoutItems = layoutRows[j]['layoutItems'];
+                for (var y = 0; y < layoutItems.length; y++) {
+                    if (layoutItems[y]['editableForUpdate']) {
+                        var layoutComponents = layoutItems[y]['layoutComponents'][0];
+                        try {
+                            var label = layoutComponents['details']['label'];
+                            var htmlid = layoutComponents['details']['name'];
+                            var dataType = layoutComponents['details']['type'];
+                            var nillable = layoutComponents['details']['nillable'];
+                            var precision = layoutComponents['details']['precision'];
+                            var scale = layoutComponents['details']['scale'];
+                            var max = Math.pow(10, (precision - scale)) - 1;
+                            var step = Math.pow(10, -1 * scale);
+                            var htmlrequired = nillable ? '' : 'required';
+                            var newhtmlrequired = layoutItems[y]['required'] ? 'required' : '';
+                            var maxlength = layoutComponents['details']['length'];
+                            if (dataType === 'string') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<label class="EventPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                EventHTML += '<input type="text" name="EventLayoutName" class="EventPageMDL mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'combobox') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<label class="EventPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                EventHTML += '<input type="text" name="EventLayoutName" class="EventPageMDL mdl-textfield__input" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'reference') {
+                            } else if (dataType === 'double') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<label class="EventPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                EventHTML += '<input type="number" max="' + max + '" step="' + step + '" name="EventLayoutName" class="EventPageMDL mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'picklist') {
+                                if (newhtmlrequired === 'required') {
+                                    EventHTML += '<label style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label></br>';
+                                } else {
+                                    EventHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label></br>';
+                                }
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<select name="EventLayoutName" id="' + htmlid + '" class="EventPageMDL mdl-textfield__input" ' + newhtmlrequired + '>';
+                                EventHTML += '<option value="">--None--</option>';
+                                for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                    if (layoutComponents['details']['picklistValues'][optionvalues]['defaultValue']) {
+                                        EventHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '" selected>' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+
+                                    } else {
+                                        EventHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                    }
+                                }
+                                EventHTML += '</select>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'date') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield">';
+                                EventHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                EventHTML += '<input class="mdl-textfield__input" onchange="checkDate()" type="date" name="EventLayoutName" id="' + htmlid + '"' + newhtmlrequired + '/>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'textarea') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<label class="EventPageMDL mdl-textfield__label" for="' + htmlid + '">' + label + '</label>';
+                                EventHTML += '<textarea name="EventLayoutName" id="' + htmlid + '"  class="EventPageMDL mdl-textfield__input"  type="text" rows="5" maxlength="' + maxlength + '"' + newhtmlrequired + '></textarea>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'datetime') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield">';
+                                EventHTML += '<label style="color: rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                EventHTML += '<input class="mdl-textfield__input" type="datetime-local" onchange="checkDate()" style="outline:none;" name="EventLayoutName" id="' + htmlid + '"' + newhtmlrequired + '/>';
+                                EventHTML += '</div> <br>';
+                            } else if (dataType === 'boolean') {
+                                if (device.platform === 'Android') {
+                                    EventHTML += '<label class="EventPageMDL mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + htmlid + '">'
+                                    EventHTML += '<input name="EventLayoutName" type="checkbox" id="' + htmlid + '" class="EventPageMDL mdl-checkbox__input"' + newhtmlrequired + '>'
+                                    EventHTML += '<span class="EventPageMDL mdl-checkbox__label">' + label + '</span>';
+                                    EventHTML += '</label><br>';
+                                } else if (device.platform === 'iOS') {
+                                    EventHTML += '<label for="' + htmlid + '">';
+                                    EventHTML += '<input name="EventLayoutName" type="checkbox" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                    EventHTML += '<span>' + label + '</span>';
+                                    EventHTML += '</label><br>';
+                                }
+                            } else if (dataType === 'email') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<label class="EventPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                EventHTML += '<input type="email" name="EventLayoutName" class="EventPageMDL mdl-textfield__input" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'multipicklist') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                if (newhtmlrequired === 'required')
+                                    EventHTML += '<label  style="color:rgb(215,0,0);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                else
+                                    EventHTML += '<label  style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '">' + label + '</label>';
+                                EventHTML += '<select class="EventPageMDL mdl-textfield__input" name="EventLayoutName" id="' + htmlid + '" multiple' + newhtmlrequired + '>';
+                                for (var optionvalues = 0; optionvalues < layoutComponents['details']['picklistValues'].length; optionvalues++) {
+                                    EventHTML += '<option value="' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '">' + layoutComponents['details']['picklistValues'][optionvalues]['value'] + '</option>';
+                                }
+                                EventHTML += '</select>';
+                                EventHTML += '</div><br>';
+                            } else if (dataType === 'time') {
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield">';
+                                EventHTML += '<label style="color:rgb(0,188,212);font-size: 16px;" for="' + htmlid + '"">' + label + '</label>';
+                                EventHTML += '<input type="time" name="EventLayoutName" class="mdl-textfield__input" id="' + htmlid + '"' + newhtmlrequired + '>';
+                                EventHTML += '</div><br>';
+                            }else if (dataType === 'currency'){
+                                EventHTML += '<div class="EventPageMDL mdl-textfield mdl-js-textfield mdl-textfield--floating-label">';
+                                EventHTML += '<label class="EventPageMDL mdl-textfield__label" for="' + htmlid + '"">' + label + '</label>';
+                                EventHTML += '<input type="text" name="EventLayoutName" class="EventPageMDL mdl-textfield__input" id="' + htmlid + '" maxlength="' + maxlength + '" ' + newhtmlrequired + '>';
+                                EventHTML += '</div><br>';
+                            } else {
+                                console.log('In else', dataType);
+                            }
+                        } catch (e) {
+                        }
+                    }
+                }
+            }
+            EventHTML += '</div>';
+        }
+        return EventHTML;
+    }
+    function CreateDynamicEvent() {
+        var EventLayoutHTMLComponents = $("[name='EventLayoutName']");
+        if (new Date($("#StartDateTime[name='EventLayoutName']").val()) > new Date($("#EndDateTime[name='EventLayoutName']").val())) {
+            app.toastMessage('Start Date Time can\'t be greater than End Date Time', 'long');
+            return;
+        }
+        console.log(EventLayoutHTMLComponents);
+        var datatoupload = {};
+        for (var i = 0; i < EventLayoutHTMLComponents.length; i++) {
+            var values = '';
+            if (EventLayoutHTMLComponents[i]['tagName'] === 'SELECT') {
+                var selectedOptions = $('#' + EventLayoutHTMLComponents[i]['id'] + '[name="EventLayoutName"]')[0]['selectedOptions'];
+                for (var j = 0; j < selectedOptions.length; j++) {
+                    console.log(selectedOptions[j].value);
+                    values += selectedOptions[j].value + ';';
+                }
+                values = values.substring(0, values.length - 1);
+            } else if (EventLayoutHTMLComponents[i]['type'] === "checkbox") {
+                values = $("#" + EventLayoutHTMLComponents[i]['id'] + "[name='EventLayoutName']").prop('checked');
+            } else if (EventLayoutHTMLComponents[i]['type'] === "date") {
+                values = $("#" + EventLayoutHTMLComponents[i]['id'] + "[name='EventLayoutName']").val();
+
+                if (values === '') {
+                    values = null;
+                }
+            } else if (EventLayoutHTMLComponents[i]['type'] === "datetime-local") {
+                values = new Date($("#" + EventLayoutHTMLComponents[i]['id'] + "[name='EventLayoutName']").val());
+                console.log('datetime-local', values);
+                if (values === '') {
+                    values = null;
+                }
+            } else if (EventLayoutHTMLComponents[i]['type'] === "time") {
+                values = $("#" + EventLayoutHTMLComponents[i]['id'] + "[name='EventLayoutName']")[0].value;
+                if (values.split(':').length == 3) {
+                    values = values + '.000Z';
+                } else if (values.split(':').length == 2) {
+                    values = values + ":00.000Z";
+                } else {
+                    values = null;
+                }
+            } else {
+                values = $('#' + EventLayoutHTMLComponents[i]['id'] + '[name="EventLayoutName"]').val();
+            }
+            datatoupload[EventLayoutHTMLComponents[i]['id']] = values;
+            if (EventLayoutHTMLComponents[i]['required'] && !values) {
+                app.toastMessage('Please fill all required fields', 'long');
+                return;
+            }
+        }
+        try {
+            datatoupload['DurationInMinutes'] = null;
+        } catch (err) {
+        }
+        datatoupload['ActivityDateTime'] = null;
+        datatoupload['ActivityDate'] = null;
+        datatoupload['OwnerId'] = creds.UserID;
+        datatoupload['RecordTypeId'] = EventRecordId;
+
+        var relatedtoId;
+        for (var i = 0; i < ResourceData.length; i++) {
+            if (ResourceData[i]['STKR__User__c'] === creds.UserID) {
+                relatedtoId = ResourceData[i]['Id'];
+                break;
+            }
+        }
+        datatoupload['WhatId'] = relatedtoId;
+        console.log('datatoupload', datatoupload);
+
+        // WhoId can be contact or lead
+        //datatoupload['WhoId'] = creds.UserID;
+
+        //Check if Start date and end date are within 14 days
+        try {
+            var dur = Math.abs((new Date(datatoupload.EndDateTime) - new Date(datatoupload.StartDateTime)) / (14 * 24 * 60 * 60 * 1000));
+            if (dur > 1) {
+                app.toastMessage("An event can't last longer than 14 days", "short");
+                return;
+            }
+        } catch (er) { alert(err) }
+        console.log('Data to upload', datatoupload);
+
+        // Check whether device is online or not
+        if (AppIsOnline) {
+            //Device is online
+            jsconn.sobject("Event").create(datatoupload, function (err, ret) {
+                if (err || !ret.success) {
+                    alert(err);
+                    StoreError(err);
+                    return console.error(err, ret);
+                }
+                console.log('Updated Successfully : ' + ret.id);
+                datatoupload['Id'] = ret.id;
+                console.log('datatoupload after creating on salesforce', datatoupload);
+                PersonalEvents.push(datatoupload);
+                app.insertRecord('PersonalEvents', {
+                    JsonData: JSON.stringify(datatoupload),
+                    Updated: 'false',
+                    UserId: creds.UserID,
+                    RecordId: datatoupload['Id']
+                }, function () {
+                });
+                //Rearrange the events
+                GetEventdataOffline();
+                app.toastMessage('New Event created', 'long');
+                window.history.back();
+            });
+        } else {
+            // Device is offline 
+            // Store in DataToUpdate table
+            var timestamp = (new Date().getTime()).toString();
+            datatoupload['Id'] = timestamp;
+            PersonalEvents.push(datatoupload);
+            app.insertRecord('PersonalEvents', {
+                JsonData: JSON.stringify(datatoupload),
+                Updated: 'false',
+                UserId: creds.UserID,
+                RecordId: datatoupload['Id']
+            }, function () {
+            });
+            var data = {
+                JsonData: JSON.stringify(datatoupload),
+                ObjectName: 'Event',
+                Updated: 'newRecord',
+                UpdateOrInsert: 'insert',
+                UserId: creds.UserID,
+                RecordId: timestamp /* For Insertion */
+            }
+            app.insertRecord('DataToUpdate', data);
+            //Rearrange the events
+            GetEventdataOffline();
+            app.toastMessage('New Event stored offline', 'long');
+            window.history.back();
+        }
+    }
+
+    function checkDate() {
+        if (new Date($("#StartDateTime[name='EventLayoutName']").val()) > new Date($("#EndDateTime[name='EventLayoutName']").val())) {
+            app.toastMessage('Start Date Time can\'t be greater than End Date Time', 'long');
+            return;
+        }
+    }
+
+    function CreateEventLayoutDataAfterShow() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('EventPageMDL'));
+          
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+    }
+</script>

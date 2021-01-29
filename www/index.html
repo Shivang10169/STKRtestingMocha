@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta name="viewport" content="initial-scale=1, width=device-width, height=device-height, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src https://codepush.appcenter.ms https://debug2.phonegap.com 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+    <!-- <meta http-equiv="Content-Security-Policy"
+        content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://codepush.appcenter.ms https://debug2.phonegap.com https://debug1.phonegap.com https://maps.googleapis.com" /> -->
+
+    <style>
+        html {
+            font-size: 1em;
+            font-family: Arial
+        }
+
+        body {
+            padding-top: constant(safe-area-inset-top);
+            /* iOS 11.0 */
+            padding-top: env(safe-area-inset-top);
+            /* iOS 11.2 */
+        }
+
+        .largeicons {
+            font-size: 150%;
+        }
+    </style>
+    <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet/less" type="text/css" href="kendo/kendo.mobile.all.less" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/3.9.0/less.min.js"></script> -->
+    <script>
+
+        window.MQPROTOCOL= "https://";
+     </script>
+
+    <link rel="stylesheet" href="styles/font-awesome/css/font-awesome.min.css">
+
+    <!--Ionicons-->
+    <link rel="stylesheet" href="styles/ionicons/ionicons.css">
+    <script src="cordova.js"></script>
+    <script src="kendo/js/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+    <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key=GsAuxhsaYy1lT0TtNnlONmRCtsDTbtKV"></script>
+    <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-routing.js?key=GsAuxhsaYy1lT0TtNnlONmRCtsDTbtKV"></script>
+    <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-traffic.js?key=GsAuxhsaYy1lT0TtNnlONmRCtsDTbtKV"></script>
+    <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-geocoding.js?key=GsAuxhsaYy1lT0TtNnlONmRCtsDTbtKV"></script>  
+    <!-- <script src="kendo/js/kendo.all.min.js"></script> -->
+    <script src="kendo/kendo.core.js"></script>
+
+    <script src="js/FastClick.js"></script>
+    <script src="js/jsforce.js"></script>
+    <script src="js/underscore.js"></script>
+    <script src="js/backbone.js"></script>
+    <script src="js/forcetk.mobilesdk.js"></script>
+    <script src="js/forcetk.ui.js"></script>
+
+    <!-- Used on showimage page -->
+    <script src="js/simulate.js"></script>
+    <!--script src="js/waterMark.js"></script-->
+    <script type="text/javascript" src="js/JSignature/flashcanvas.js"></script>
+    <script src="js/JSignature/jSignature.min.js"></script>
+    <!-- Used on Offline Data Page -->
+    <script src="js/pretty-json-min.js"></script>
+    <!--script src="js/pg-plugin-screen-orientation.js"></script-->
+    <!-- New Signature Pad Javascript library -->
+    <script src="js/signature_pad.js"></script>
+
+    <script>
+        var app = new kendo.mobile.Application(document.body, {
+            platform: 'blackberry',
+            //useNativeScrolling: true
+        });
+    </script>
+    <script src="js/sqlite.js"></script>
+    <script src="js/LayoutGenerator.js"></script>
+    <!-- Added by Ashutosh-->
+    <link rel="stylesheet" href="styles/material.cyan-amber.min.css" />
+    <script defer src="js/material.min.js"></script>
+    <link rel="stylesheet" href="styles/MaterialIcons.css" />
+    <!--END-->
+    <!--For Snackbar Added by Payal -->
+    <link rel="stylesheet" href="styles/MaterialSnackbar.min.css" />
+    <link rel="stylesheet" href="styles/Material.css" />
+    <script src="js/MaterialSnackbar.js"></script>
+    <!--END-->
+    <!-- For nearby visits -->
+    <script src="js/GetDistance.js"></script>
+    <!-- For timezone conversion
+    <script src="js/moment.js"></script>
+    <script src="js/moment-timezone.js"></script-->
+
+    <script src="js/function.js"></script>
+    <script src="js/tablenames.js"></script>
+    <script src="js/ZebraScanner.js"></script>
+    <script src="js/momentlocale.js"></script>
+    <script>
+        document.addEventListener("deviceready", onDeviceReady, false);
+
+        /** @define {boolean} */
+        var LOG = true;
+
+        var DataFromCredentialTable;
+
+        var loginUrl = "https://login.salesforce.com/",
+            callbackUrl = "https://login.salesforce.com/services/oauth2/success",
+            consumerKey = "", ConsumerSecret = "",
+            oauthClient,
+            ForcetkClient,
+            pushNotification,
+            jsconn,
+            creds,
+            AllAccounts,
+            AppIsOnline = false,
+            UserId,
+            PhoneHeight = window.innerHeight,
+            PhoneWidth = window.innerWidth,
+            TotalBatchToComplete = 0,
+            BatchCompleted = 0,
+            currentTab = 'Overdue',
+            CheckSecondTimeOnlineStatus = false,
+            OfflineFuctionIsExecuting = false,
+            isAppStartedInOfflineMode = true,
+            calDetails = {};
+        /* Please update this variable whenever database schema is changed */
+        var DatabaseVersion = 2, AppVersionNumber;
+        //added by gaurav on 9th may
+        var valueOfVisitPeyear = '';
+        // Change these for the thumbnail size
+        var thumbnailWidth = 100,
+            thumbnailHeight = 100,
+            StoreVisitId = '', isNetworkPopShowing = false, AlreadyTookTheBackup = false, isDataStoreOffline = 0;
+
+        var StoreInspectionId = '';
+        var UpdatingInspectionRecordType = 0;
+
+        var count_exit = 0;
+        var currentLocation = '', NearbyVisitDataNotOwned = [];
+
+        var InitialPrepWasteId = '';
+        var StoreVolume = '';
+        var UpdatedVolume = '';
+        var UpdatedPrepWasteId = '';
+        var bgcolor = '', MapScheduleToVisitId = {}, userDefaultCurrency = "&pound;", DownloadNewData = true;
+        var currentResourceData;
+        var StoreVisitsAfterFilter = [];
+        var count_AssociatedVisit = 0;
+        var customSettings = {};
+        var googleMapIncluded = false;
+        var VisitArraytoOptimizeRoute = [];
+        //For Complete offline
+        var isCurrentVisitInProgress = false;
+
+        var VisitReasonFOrNoSignature = [];
+        var InternalNotesDescription = '';
+        var InternalNotesinfo = '';
+        var longNotesInfo = '';
+        var UserCurrentLocation = {};
+
+            var UserCurrentLocation_WatchId;
+        function onDeviceReady() {
+            //LOG && console.log(cordova.plugins.notification.local.launchDetails);
+            // Fix : Native scrolling issue on android 9
+            //nativeScrollingIssueFix();
+            // Location the screen to Portrait
+            window.open = cordova.InAppBrowser.open;
+
+            try {
+                codePush.sync(null, { updateDialog: true, installMode: InstallMode.IMMEDIATE });
+            } catch (err) { }
+            includeGoogleMap();
+            try {
+                window.screen.orientation.lock('portrait');
+            } catch (err) {
+                console.error("Can't set orientation to portrait", err);
+            }
+
+            if (device.platform === 'iOS') {
+                consumerKey = "3MVG99qusVZJwhsmpFBHZEzbpThQkW1_Vq8W9RnyVzQxlhcdbYp2svQxncQyI1huaMjwg11mEwf2mZ3OiUrBK";
+                ConsumerSecret = "7173060251584626205";
+            } else {
+                consumerKey = "3MVG99qusVZJwhsmpFBHZEzbpTlF9ZKt0.1tkL7Oh6uIVUXu.sctSo_ONlJrVzkJb2YmstgJoK0cYwmviNwjM";
+                ConsumerSecret = "6986285610977870398";
+            }
+            FastClick.attach(document.body);
+            try {
+                window.cache.clear(function () {
+                }, function () { });
+            } catch (e) { }
+            try {
+                navigator.app.clearCache();
+            } catch (e) {
+                console.error('error on index ' + e)
+            }
+
+            document.addEventListener("resume", function () {
+                checkGeolocationPermissions();
+                //Only if datatoupload table is empty...
+                //Ignore this if on login screen
+                if (window.location.hash == "") {
+                    return;
+                }
+                app.db.transaction(function (tx) {
+                    tx.executeSql("SELECT id FROM datatoupdate", [], function (a, b) {
+                        if (b.rows.length === 0) {
+                            try {
+                                var networkState = navigator.connection.type;
+                                //networkState === 'none'
+                                if (networkState != 'none') {
+                                    // Check if device can download record from salesforce
+                                    jsconn.query("SELECT Id FROM Account LIMIT 1", function (err, result) {
+                                        if (err) {
+                                            err = err.toString();
+                                            if (err === "invalid_grant: expired access/refresh token") {
+                                                app.toastMessage("Session is expired, Please login", "long");
+                                                Login();
+                                            } else if (err.toLowerCase().indexOf('request_limit_exceeded') > -1) {
+                                                app.toastMessage('API Limit is exceeded. Please work in offline mode', 'long');
+                                            } else {
+                                                app.toastMessage('App is unable to connect server', 'long');
+                                                AppIsOnline = false;
+                                                //isAppStartedInOfflineMode = true;
+                                            }
+                                            isNetworkPopShowing = false;
+
+                                            AppIsOnline = false;
+                                            app.toastMessage("App is offline, Please continue working", "long");
+                                            InternetStatusFooter = "ServiceTracker is offline. Data is stored for upload when online";
+                                            $('#InternetStatusFooter').html(InternetStatusFooter);
+                                            $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+                                            $('#MyVisitsFooter').css("color", "#ff6666");
+                                            app.toastMessage('App is offline, Please start the app in online mode', 'long');
+                                            return console.error(err);
+                                        }
+                                        // Device have internet and valid token
+                                        isNetworkPopShowing = false;
+                                        // Check if device can download record from salesforce
+                                        AppIsOnline = true;
+                                        //isAppStartedInOfflineMode = false;
+                                        InternetStatusFooter = "Network is ONLINE- good data signal is assumed - <span style='color:green;font-size:125%;'>" + networkState.toUpperCase() + "</span>";
+                                        $('#InternetStatusFooter').html(InternetStatusFooter);
+                                        $('#InternetStatusInspectionFooter').html(InternetStatusFooter);
+                                        $('#MyVisitsFooter').css("color", "#39B7CD");
+                                    });
+
+                                }
+                            } catch (err) { console.error('onResume', err); }
+                        }
+                    }, function (er) { conosle.error(er); });
+                });
+                if (device.platform.toLowerCase() == "android" &&
+                    device.manufacturer.toLowerCase().indexOf("zebra") > -1) {
+                    registerBroadcastReceiver();
+                }
+            }, false);
+
+            try {
+                currentLocation = document.getElementById("IndexPage").id;
+            } catch (err) { }
+
+            document.addEventListener("backbutton", function () {
+                if (currentLocation === 'HomePage') {
+                    count_exit++;
+                    app.toastMessage('Press again to exit ServiceTracker', 'long');
+                    TerminateApp();
+                } else if (currentLocation === 'SignaturePage') {
+                    SignaturePageMain_unlockOrientation();
+                } else if (currentLocation === 'IndexPage') {
+                    document.removeEventListener("backbutton", onDeviceReady, false);
+                } else if (currentLocation === 'InspectionDetail') {
+                    UpdateValues();
+                } else {
+                    window.history.back();
+                }
+            }, false);
+
+            document.addEventListener("pause", function () {
+                if (device.platform.toLowerCase() == "android" &&
+                    device.manufacturer.toLowerCase().indexOf("zebra") > -1) {
+                    window.plugins.intentShim.unregisterBroadcastReceiver();
+                }
+            })
+
+            // Get app version number; 
+            cordova.getAppVersion.getVersionNumber().then(function (version) {
+                AppVersionNumber = version;
+            });
+
+            navigator.splashscreen.show();
+            // Hide retry button and clear listview when click on retry button
+            try {
+                $('#ReloadButton').hide();
+            } catch (err) {
+            }
+            try {
+                $("#ListViewForDownloadingData").data("kendoMobileListView").replace([]);
+            } catch (err) {
+            }
+            app.openDb();
+
+            app.db.transaction(function (tx) {
+                tx.executeSql("SELECT versionnumber FROM DBVersion", [], function (a, b) {
+                    var totalCount = 0;
+                    var count = 0;
+
+                    try {
+                        if (b.rows.item(0).versionnumber < DatabaseVersion) {
+                            // Drop All The tables ...
+                            totalCount = TableNameData.length;
+                            for (var i = 0; i < TableNameData.length; i++) {
+                                tx.executeSql('DROP TABLE IF EXISTS ' + TableNameData[i], [], function (tx, res) {
+                                    count++;
+                                    if (totalCount === count) {
+                                        // Update DBVersion Table (first row)
+                                        app.db.transaction(function (tx) {
+                                            tx.executeSql("UPDATE DBVersion SET versionnumber = '" + DatabaseVersion + "' WHERE id = 1",
+                                                [],
+                                                function (a, b) {
+                                                    app.createTable(TableNameData);
+                                                    //Credential
+                                                    app.selectAllRecords('Credential', function (a, b) {
+                                                        DataFromCredentialTable = b;
+
+                                                        try {
+                                                            creds = {
+                                                                accessToken: DataFromCredentialTable.rows.item(0).accesstoken,
+                                                                instanceUrl: DataFromCredentialTable.rows.item(0).instanceurl,
+                                                                refresh_token: DataFromCredentialTable.rows.item(0).refreshtoken,
+                                                                UserID: DataFromCredentialTable.rows.item(0).userid
+                                                            };
+                                                        } catch (e) {
+                                                            console.error(e)
+                                                        }
+                                                        try {
+                                                            //window.plugins.spinnerDialog.hide();
+                                                        } catch (e) {
+                                                            console.error('error on index ' + e)
+                                                        }
+                                                        CheckInternetConnection();
+                                                    });
+                                                },
+                                                function (a, b) {
+                                                });
+                                        });
+                                    }
+                                }, function (txt, res) {
+                                });
+                            }
+                        } else {
+                            app.createTable(TableNameData);
+                            //Credential
+                            app.selectAllRecords('Credential', function (a, b) {
+                                DataFromCredentialTable = b;
+
+                                try {
+                                    creds = {
+                                        accessToken: DataFromCredentialTable.rows.item(0).accesstoken,
+                                        instanceUrl: DataFromCredentialTable.rows.item(0).instanceurl,
+                                        refresh_token: DataFromCredentialTable.rows.item(0).refreshtoken,
+                                        UserID: DataFromCredentialTable.rows.item(0).userid
+                                    };
+                                } catch (e) {
+                                    console.error(e)
+                                }
+                                try {
+                                    //window.plugins.spinnerDialog.hide();
+                                } catch (e) {
+                                    console.error('error on index ' + e)
+                                }
+                                CheckInternetConnection();
+                            });
+                        }
+                    } catch (err) {
+                        var totalCount = 0;
+                        var count = 0;
+                        // Drop All The tables ...
+                        totalCount = TableNameData.length;
+                        for (var i = 0; i < TableNameData.length; i++) {
+                            tx.executeSql('DROP TABLE IF EXISTS ' + TableNameData[i], [], function (tx, res) {
+                                count++;
+                                if (count === totalCount) {
+                                    // Create DBversion Table
+                                    try {
+                                        app.db.transaction(function (tx) {
+                                            tx.executeSql("CREATE TABLE IF NOT EXISTS DBVersion (id INTEGER PRIMARY KEY ASC,versionnumber INTEGER)", [], function (a, b) {
+                                                // Insert one row
+                                                tx.executeSql('INSERT INTO DBVersion(versionnumber) VALUES (?)',
+                                                    [DatabaseVersion],
+                                                    function (a, b) {
+                                                        app.createTable(TableNameData);
+                                                        //Credential
+                                                        app.selectAllRecords('Credential', function (a, b) {
+                                                            DataFromCredentialTable = b;
+
+                                                            try {
+                                                                creds = {
+                                                                    accessToken: DataFromCredentialTable.rows.item(0).accesstoken,
+                                                                    instanceUrl: DataFromCredentialTable.rows.item(0).instanceurl,
+                                                                    refresh_token: DataFromCredentialTable.rows.item(0).refreshtoken,
+                                                                    UserID: DataFromCredentialTable.rows.item(0).userid
+                                                                };
+                                                            } catch (e) {
+                                                                console.error(e)
+                                                            }
+                                                            try {
+                                                                //window.plugins.spinnerDialog.hide();
+                                                            } catch (e) {
+                                                                console.error('error on index ' + e)
+                                                            }
+                                                            CheckInternetConnection();
+                                                        });
+                                                    },
+                                                    function (a, b) {
+                                                        console.error('Error', a, b);
+                                                    });
+                                            }, function (error) {
+                                                console.error(error);
+                                            });
+                                        });
+                                    } catch (err1) {
+                                        console.error(err1);
+                                    }
+                                }
+                            }, function (tx, res) {
+                                console.error('Unable to drop the table .. ');
+                            });
+                        }
+                    }
+                }, function (a, b) {
+                    if (b.message.indexOf("no such table") > -1) {
+                        LOG && console.log('No such table .... ');
+                        var totalCount = 0;
+                        var count = 0;
+                        // Drop All The tables ...
+                        totalCount = TableNameData.length;
+                        for (var i = 0; i < TableNameData.length; i++) {
+                            tx.executeSql('DROP TABLE IF EXISTS ' + TableNameData[i], [], function (tx, res) {
+                                count++;
+                                if (count === totalCount) {
+                                    // Create DBversion Table
+                                    try {
+                                        app.db.transaction(function (tx) {
+                                            tx.executeSql("CREATE TABLE IF NOT EXISTS DBVersion (id INTEGER PRIMARY KEY ASC,versionnumber INTEGER)", [], function (a, b) {
+                                                // Insert one row
+                                                tx.executeSql('INSERT INTO DBVersion(versionnumber) VALUES (?)',
+                                                    [DatabaseVersion],
+                                                    function (a, b) {
+                                                        app.createTable(TableNameData);
+                                                        //Credential
+                                                        app.selectAllRecords('Credential', function (a, b) {
+                                                            DataFromCredentialTable = b;
+
+                                                            try {
+                                                                creds = {
+                                                                    accessToken: DataFromCredentialTable.rows.item(0).accesstoken,
+                                                                    instanceUrl: DataFromCredentialTable.rows.item(0).instanceurl,
+                                                                    refresh_token: DataFromCredentialTable.rows.item(0).refreshtoken,
+                                                                    UserID: DataFromCredentialTable.rows.item(0).userid
+                                                                };
+                                                            } catch (e) {
+                                                                LOG && console.log(e)
+                                                            }
+                                                            try {
+                                                                //window.plugins.spinnerDialog.hide();
+                                                            } catch (e) {
+                                                                LOG && console.log('error on index ' + e)
+                                                            }
+                                                            CheckInternetConnection();
+                                                        });
+                                                    },
+                                                    function (a, b) {
+                                                        LOG && console.log('Error', a, b);
+                                                    });
+                                            }, function (error) {
+                                                LOG && console.log(error);
+                                            });
+                                        });
+                                    } catch (err1) {
+                                        LOG && console.log(err1);
+                                    }
+                                }
+                            }, function (tx, res) {
+                                LOG && console.log('Unable to drop the table .. ');
+                            });
+                        }
+                    }
+                });
+            });
+            if (AppIsOnline === true) {
+                $("#SetNetworkStatus").text('Go Offline');
+            } else {
+                $("#SetNetworkStatus").text('Go Online');
+            }
+
+            if (device.platform.toLowerCase() == "android" &&
+                device.manufacturer.toLowerCase().indexOf("zebra") > -1) {
+                createProfile();
+                registerBroadcastReceiver();
+                isZebraDevice = true;
+            }
+        }
+
+        function checkGeolocationPermissions(){
+            console.log('geolocationcalled');
+            cordova.plugins.diagnostic.isLocationEnabled(function (enabled) {
+                console.log("GPS is " + (enabled ? "enabled" : "disabled"));
+                if (!enabled) {
+                    if (confirm("GPS is off, please enable it and reopen the app")) {
+                        cordova.plugins.diagnostic.switchToLocationSettings();
+                    }
+                } else{
+            
+            if (!UserCurrentLocation_WatchId) {
+            
+                UserCurrentLocation_WatchId = navigator.geolocation.watchPosition(function (position) {
+                    UserCurrentLocation = position;
+               
+                }, function (error) {
+                    console.error("Gelocation : " + error);
+                }, { maximumAge: 1000, timeout: 5000, enableHighAccuracy: true });
+            }
+            }
+            }, function (error) {
+                console.error("An error occurred: " + error);
+            });
+        }
+
+        function NavigateToRecentlyViewedRecord() {
+            var VisitFound = false;
+            if (!UserCurrentLocation_WatchId) {
+                app.toastMessage('GPS is off, please enable it to move forward', 'long');
+                return;
+            }
+            if (!StoreVisitId) {
+                try {
+                    StoreVisitId = window.localStorage.getItem('StoreVisitId');
+                } catch (err) {
+                    app.toastMessage("No Recent Visit found", "long");
+                }
+            }
+            for (var i = 0; i < AllVisits.length; i++) {
+                if (AllVisits[i]['Id'] === StoreVisitId) {
+                    gotovisitdetailPageFormMyvisit(AllVisits[i]['Id'], AllVisits[i]['STKR__Account_lkp__c'], AllVisits[i]['RecordTypeId'], creds.UserID);
+                    VisitFound = true;
+                }
+            }
+            if (!VisitFound) {
+                app.toastMessage("No Recent Visit found", "long");
+            }
+        }
+
+        /* var timer_start_filter;
+     var timer_end_filter;
+     var timer_filter;
+     function StartFilterTimer() {
+         timer_start_filter = new Date();
+     }
+     function EndFilterTimer(accountname, tab) {
+         timer_end_filter = new Date();
+         timer_filter = timer_end_filter - timer_start_filter;
+
+         if (timer_filter > 500) {
+             var msg = confirm("There are other visits due on this site. Please consider completing these visits if appropriate.");
+             if (msg === true) {
+                 InvisibleFilter_AssociatedVisits(accountname);
+             } else {
+             }
+         }
+     }*/
+
+        function ChangeNetworkMode() {
+            if (AppIsOnline === true) {
+                AppIsOnline = false;
+                $("#SetNetworkStatus").text('Go Online');
+            } else {
+                jsconn.query("SELECT Id FROM Account LIMIT 1", function (err, result) {
+                    if (err) {
+                        err = err.toString();
+                        if (err === "invalid_grant: expired access/refresh token") {
+                            app.toastMessage("Session is expired, Please login", "long");
+                            Login();
+                        } else if (err.toLowerCase().indexOf('request_limit_exceeded') > -1) {
+                            app.toastMessage('API Limit is exceeded. Please work in offline mode', 'long');
+                        } else {
+                            app.toastMessage('App is unable to connect server', 'long');
+                            AppIsOnline = false;
+                        }
+                        AppIsOnline = false;
+                        return console.error(err);
+                    }
+                    AppIsOnline = true;
+                    $("#SetNetworkStatus").text('Go Offline');
+                });
+            }
+            $("#MyVisitsdrawer").data("kendoMobileDrawer").hide();
+        }
+        //for sorting resoruce array by name
+        Array.prototype.sortBy = function (p) {
+            return this.slice(0).sort(function (a, b) {
+                return (a[p] > b[p]) ? 1 : (a[p] < b[p]) ? -1 : 0;
+            });
+        }
+
+        function includeGoogleMap(callbackFunction) {
+            $.getScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyCoyGxcpmqf1tHYXIoa3ZWOZgUHuCtyuPI", function () {
+                try {
+                    googleMapIncluded = true;
+                    return (callbackFunction && callbackFunction())
+                } catch (err) {
+                    googleMapIncluded = false;
+                    try {
+                        app.toastMessage("Please check your internet connection", "long");
+                    } catch (err) { }
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div id="IndexPage" data-role="view" data-layout="LayoutMain" data-title="Downloading Data">
+        <h4>Loading Data ..... </h4>
+    </div>
+    <div data-role="layout" data-id="LayoutMain">
+        <header data-role="header">
+            <div data-role="navbar">
+                <span data-role="view-title"></span>
+            </div>
+        </header>
+    </div>
+    <div id="PushNotificationModalView" data-role="modalview" data-modal="false" style="width:90%;">
+    </div>
+    <div data-role="drawer" id="MyVisitsdrawer"
+        data-views="['overduevisits_oldestsort','overduevisits_newestsort','todayvisits','thisweekvisits','within45daysvisits','completevisits','errorlog','showimage','VisitsOnAccount','searchVisits','nearbyvisit','nearbyvisit_otherusers','Schedules','SearchSchedules','AssociatedVisits','HomePage']">
+        <div data-role="header">
+            <div data-role="navbar" style="height:85px;background-color:#003F5E;">
+                <img src="img/ServiceTrackerIcon.png" style="margin-top:4%;margin-left:10%;height:60px;float:left;" />
+                <span style="font-weight:bold;color:white;margin-top:10%;font-size:80%;">ServiceTracker </span>
+                <!--br/><span style="font-weight:bold;color:white;font-size:80%;padding-top:2%;" id="DrawerVersionNumber"> Version 2.6.5</span-->
+                <br />
+                <span class="km-view-subtitle" id="getusername" style="color:white;font-size:80%;"></span>
+            </div>
+        </div>
+        <ul data-role="listview" data-type="group" class="km-listview-icons" style="margin-top:-2%;">
+            <li>
+                <ul>
+                    <li>
+                        <a data-role="button" onClick="GotoMyVisitsPage();" >
+                            <i class="fa fa-home" style="margin-left:4%;padding-right:17%;font-size:155%"></i>
+                            My Visits
+                        </a>
+                    </li>
+                    <li>
+                        <a data-role="button" onClick="GotoShowVisitsmap();">
+                            <i class="fa fa-map-marker" style="margin-left:4%;padding-right:19%;font-size:155%"></i>
+                            Show Visits on Map
+                        </a>
+                    </li>
+                    <li>
+                        <a data-role="button" onClick="GotoSearchVisitPage();" >
+                            <i class="fa fa-search" style="margin-left:4%;padding-right:17%;font-size:155%"></i>
+                            Search for Visit
+                        </a>
+                    </li>
+                    <li>
+                        <a data-role="button" onclick="NavigateToRecentlyViewedRecord()">
+                            <i class="material-icons"
+                                style="margin-left:4%;padding-right:17%;font-size:155%">view_list</i>
+                            Recently Viewed Record
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                Manage Data
+                <ul>
+                    <li onclick="movetoLoadAllData()">
+                        <a data-role="button">
+                            <i class="fa fa-refresh" style="margin-left:4%;padding-right:18%;font-size:155%"></i>
+                            Refresh All Data
+                        </a>
+                    </li>
+                    <li>
+                        <a href="view/ViewErrorLog.html">
+                            <i class="fa fa-exclamation-triangle"
+                                style="margin-left:4%;padding-right:17%;font-size:155%"></i>
+                            View Error Log
+                        </a>
+                    </li>
+                    <li>
+                        <a href="view/OfflineData.html">
+                            <i class="fa fa-database" style="margin-left:4%;padding-right:17%;font-size:155%">
+                                <b class="OfflineDataItemCount badge badge-notify"></b>
+                            </i>
+                            View Offline Data
+                        </a>
+                    </li>
+                    <li>
+                        <a onclick="OpenClearAllDataModalView()">
+                            <i class="fa fa-exclamation-triangle"
+                                style="margin-left:4%;padding-right:16%;font-size:155%"></i>
+                            Clear All Data
+                        </a>
+                    </li>
+                    <li onclick="ChangeNetworkMode()">
+                        <a>
+                            <i class="material-icons"
+                                style="margin-left:4%;padding-right:17%;font-size:155%">signal_cellular_connected_no_internet_4_bar</i>
+                            <span id="SetNetworkStatus">Go Offline</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                About/Switch User
+                <ul data-role="listview">
+                    <li onClick="Logout();">
+                        <a>
+                            <i class="fa fa-sign-out" style="margin-left:5%;padding-right:17%;font-size:125%"></i>
+                            Switch User
+                        </a>
+                    </li>
+                    <li onclick="OpenAboutPage()">
+                        <a>
+                            <i class="fa fa-info-circle" style="margin-left:4%;padding-right:17%;font-size:155%;"> </i>
+                            About Servicetracker
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <footer data-role="footer" style="background-color:grey;">
+            <div data-role="listview" data-style="inset">
+
+            </div>
+        </footer>
+    </div>
+    <script type="kendo/x-kend-tempalte" id="PushNotificationModalViewTemplate">
+            #var startdatetime, enddatetime;
+            startdatetime = new Date(additionalData.due_date_time.replace('"','').replace('"',''));
+            enddatetime = new Date(additionalData.VisitDueFinish.replace('"','').replace('"',''));
+            var startString = startdatetime.getDate()+'/'+(startdatetime.getMonth()+1)+'/'+startdatetime.getFullYear()+' '+ startdatetime.getHours()+':'+startdatetime.getMinutes();
+            var endString = enddatetime.getDate()+'/'+(enddatetime.getMonth()+1)+'/'+enddatetime.getFullYear()+' '+ enddatetime.getHours()+':'+enddatetime.getMinutes();
+            #
+            <div style="margin:3%;">
+            <div>
+            <i class="fa fa-times fa-2x" style="color:red;float:right;" onClick="$('\#PushNotificationModalView').kendoMobileModalView('close');"></i>
+            </div>
+            <h4 style="color:green;"> <span>New Notification </span></h4>
+            #if(additionalData.status=="DELETED"){#
+                <h5> Visit ${additionalData.VisitName} Deleted</h5>
+                #}else{#
+                    <h5> Visit ${additionalData.VisitName} assigned to you</h5>
+                    #}#
+            <span style="font-weight:bold;">Due Start : </span>#:startString#<br/>
+            <span style="font-weight:bold;">Due Finish :</span> #:endString# <br/>
+            <span style="font-weight:bold;"> Site :</span> ${additionalData.VisitAccountName} <br/><br/>
+            <div id="pushNotificationButtons" style="width:100%;">
+            <center>
+                    #if(additionalData.status=="DELETED"){#
+                        <br/>This visit is deleted please refresh the data <br/>
+                        <button data-role="button" style="margin:2%;" onClick="attchInterval()" class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Refresh all</button>
+                        #}else{#
+                            <button data-role="button" style="margin:2%;" onClick="gotovisitdetailPageFormMyvisit('${additionalData.VisitId}', '${additionalData.VisitAccountId}','${additionalData.VisitRecordTypeId}','#:creds.UserID#');" class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Open ${additionalData.VisitName}</button>
+                            #}#
+                             <button data-role="button" style="margin:2%;" class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onClick="$('\#PushNotificationModalView').kendoMobileModalView('close');" >Cancel</button>
+            </center>
+            </div>
+            </div>
+        </script>
+    <script type="kendo/x-kend-tempalte" id="iOSPushNotificationModalViewTemplate">
+        #var startdatetime, enddatetime;
+        var Sformatdt = due_date_time.replace('"','').replace('"','').replace(' ','T')+'.000Z';
+        var Eformatdt = VisitDueFinish.replace('"','').replace('"','').replace(' ','T')+'.000Z'; 
+        startdatetime = new Date(Sformatdt);
+        enddatetime = new Date(Eformatdt);
+        var startString = startdatetime.getDate()+'/'+(startdatetime.getMonth()+1)+'/'+startdatetime.getFullYear()+' '+ startdatetime.getHours()+':'+startdatetime.getMinutes();
+        var endString = enddatetime.getDate()+'/'+(enddatetime.getMonth()+1)+'/'+enddatetime.getFullYear()+' '+ enddatetime.getHours()+':'+enddatetime.getMinutes();
+        #
+            <div style="margin:3%;">
+            <div>
+            <i class="fa fa-times fa-2x" style="color:red;float:right;" onClick="$('\#iOSPushNotificationModalViewTemplate').kendoMobileModalView('close');"></i>
+            </div>
+            <h4 style="color:green;"> <span>New Notification </span></h4>
+            #if(additionalData.status=="DELETED"){#
+                <h5> Visit ${additionalData.VisitName} Deleted</h5>
+                #}else{#
+                    <h5> Visit ${additionalData.VisitName} assigned to you</h5>
+                    #}#
+            <span style="font-weight:bold;">Due Start : </span>#:startString#<br/>
+            <span style="font-weight:bold;">Due Finish :</span> #:endString# <br/>
+            <span style="font-weight:bold;"> Site :</span> ${VisitAccountName} <br/><br/>
+            <div id="pushNotificationButtons" style="width:100%;">
+            <center>
+                    #if(additionalData.status=="DELETED"){#
+                        <br/>This visi is deleted please refresh the data <br/>
+                        <button data-role="button" style="margin:2%;" onClick="attchInterval()" class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Refresh all</button>
+                        #}else{#
+                            <button data-role="button" style="margin:2%;" onClick="gotovisitdetailPageFormMyvisit('${additionalData.VisitId}', '${additionalData.VisitAccountId}','${additionalData.VisitRecordTypeId}','#:creds.UserID#');" class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Open ${additionalData.VisitName}</button>
+                            #}#
+                             <button data-role="button" style="margin:2%;" class="NotificationMLDBUttons mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onClick="$('\#PushNotificationModalView').kendoMobileModalView('close');" >Cancel</button>
+            </center>
+            </div>
+            </div>
+        </script>
+    <script type="text/x-kendo-template" id="ChangeStatusOfVisitConfirmation">
+            #if (STKR__Status__c==="Open") {#
+                <h5 style="margin-top:2%;margin-left:4%">Accept visit #:Name#</h5>
+                <p style="margin-left:4%">Are you Sure you want to accept Visit #:Name#</p>
+            #}if (STKR__Status__c==="Accepted") {#
+                <h5 style="margin-top:2%;margin-left:4%">Start Journey for visit #:Name#</h5>
+                <p style="margin-left:4%">Are you sure you want to start the journey to Visit #:Name#</p>
+            #}
+            if (STKR__Status__c==="Journey Started") {#
+                <h5 style="margin-top:2%;margin-left:4%">Arrive at visit #:Name#</h5>
+                <p style="margin-left:4%">Are you sure you want to Arrive at the Visit #:Name#</p>
+            #}#
+            <div data-role="footer" style="background-color:white;">
+                <a  
+                    onClick="ChangeVisitStatus(#:JSON.stringify(data)#,'MyVisitsStatus${Id}');"
+                    style="float:left;margin-left:70%;color:rgb(102,178,255);margin-bottom:3%;font-weight:bold;font-size: 1.2em;">
+                    Yes
+                </a>
+                <a onclick="$('\#ChangeStatusOfVisits_List').kendoMobileModalView('close')" 
+                   style = "float:right;margin-right:3%;color:rgb(102,178,255);margin-bottom:3%;font-weight:bold;font-size: 1.2em;">
+                    No
+                </a>
+            </div>
+            <br/>
+    </script>
+
+    <script type="text/x-kendo-template" id="ListViewForVisitTemplate">
+      
+        #if((Id.substring(0,3))=== VisitMetadata.keyPrefix){#         
+            #var colourClassNameVisit = '';
+            
+            if (STKR__Fixed_Visit__c) {
+                colourClassNameVisit = 'fixedvisitcolor';
+            }else if (STKR__Visit_Type__c==="Follow-Up") {
+                colourClassNameVisit = 'followupvisitcolor';
+            }else if (STKR__Visit_Type__c==="Call Out") {
+                colourClassNameVisit = 'calloutvisitcolor';
+            }else if (STKR__Visit_Type__c==="Job Visit") {
+                colourClassNameVisit = 'jobvisitcolor';
+            }else if (STKR__Visit_Type__c==="Routine Visit") {
+                colourClassNameVisit = 'routinevisitcolor';
+            }else if (STKR__Visit_Type__c==="Contract Visit") {
+                colourClassNameVisit = 'contractvisitcolor';
+            }# 
+            <div class="${colourClassNameVisit}" style="background-color:${STKR__Visit_Colour__c}" onclick="gotovisitdetailPageFormMyvisit('${Id}','${STKR__Account_lkp__c}','${RecordTypeId}','${STKR__UserId__c}')">
+                #try {
+                    if (isOverdue && currentTab === "Nearby") {#
+                        <span style="float:right;color:red;font-size:300%;margin-top:-1%;">*</span>
+                    #}
+                } catch (Error) {
+                }
+                var visitduestartdate;
+                var visitduefinishdate;
+                var lastvisitdate;
+                if (device.platform==='Win32NT') {
+                    visitduestartdate = new Date((STKR__Due_Date__c.split('+')[0]) + 'Z');
+                    visitduefinishdate = new Date(STKR__Due_Finish__c.split('+')[0] + 'Z');
+                    try {
+                        lastvisitdate = new Date((MapScheduleToVisitId[Id]['STKR__Last_Visit__c'].split('+')[0]) + 'Z');
+                    } catch (err) {
+                    }
+                } else if (device.platform==='iOS') {
+                    if (typeof(STKR__Due_Date__c)==='object') {
+                        visitduestartdate = STKR__Due_Date__c;
+                    } else {
+                        visitduestartdate = new Date(STKR__Due_Date__c.split('.')[0]);
+                    }
+                    if (typeof(STKR__Due_Finish__c)==='object') {
+                        visitduefinishdate = STKR__Due_Finish__c;
+                    } else {
+                        visitduefinishdate = new Date(STKR__Due_Finish__c.split('.')[0]);
+                    }
+                    try {
+                        lastvisitdate = new Date(MapScheduleToVisitId[Id]['STKR__Last_Visit__c'].split('.')[0]);
+                    } catch (e) {
+                    }
+                } else {
+                    visitduestartdate = new Date(STKR__Due_Date__c);
+                    visitduefinishdate = new Date(STKR__Due_Finish__c);
+                    try {
+                        lastvisitdate = new Date(MapScheduleToVisitId[Id]['STKR__Last_Visit__c']);
+                    }catch (e) {
+                    }
+                }
+                var shortdescription = '';
+                try {
+                    if (STKR__Notes_Long__c.length > 60) {
+                        shortdescription = STKR__Notes_Long__c.substring(0, 59) + '...';
+                    } else {
+                        shortdescription = STKR__Notes_Long__c;
+                    }
+                } catch (err) {
+                }
+                
+                var storeCircleValue = ''; 
+                var storeNumberOfVisit = '';
+                var storeCurrentVisitNumber = '';
+                var storecircleBgcolor =  '';
+                try {
+                 if(MapScheduleToVisitId[Id]['STKR__Frequency__c']=="Week Numbers") {
+                        storeCircleValue = '22';
+                    }else if(MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c']){
+                        storeCircleValue = MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c'];
+                    }else{
+                        //storeCircleValue = MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c'];
+                    }
+                   } catch(e){
+                       console.error(e);
+                }
+
+                try{
+                    var contractDate = (new Date(MapScheduleToVisitId[Id].STKR__Service_Contract__r.STKR__Start_Date__c)).getTime();
+
+                    if(contractDate<=new Date().setDate(new Date().getDate()+46) && contractDate>= new Date().getTime()){
+                        storecircleBgcolor= 'display:inline-block;margin-right:1%;float:right;text-align:center;width:25px;height:25px;line-height:2em;border-radius:50%;background:yellow;color:black';
+                       
+                    }
+                    else{
+                        storecircleBgcolor='display:inline-block;margin-right:1%;float:right;text-align:center;width:25px;height:25px;line-height:2em;border-radius:50%;background:rgb(105,105,105);color:white';
+                    }
+                }catch(e){
+                    console.error(e);
+                }
+               
+                try {
+                    if (MapScheduleToVisitId[Id]['STKR__Number_of_Visit_Per_Year__c']) {
+                      storeNumberOfVisit = MapScheduleToVisitId[Id]['STKR__Number_of_Visit_Per_Year__c'];
+                      }
+                     } catch(e){
+                         console.error(e);
+                  }
+                  try {
+                    if (MapScheduleToVisitId[Id]['STKR__Current_Visit_Number__c']) {
+                      storeCurrentVisitNumber = MapScheduleToVisitId[Id]['STKR__Current_Visit_Number__c'];
+                      }
+                     } catch(e){
+                         LOG && console.log(e);
+                  }
+                  
+                  if(storeCircleValue){#
+                    <span style="${storecircleBgcolor}">#:storeCircleValue#</span> 
+                  #}# 
+                
+                  <span style="font-size:15px;">
+                      #  if(contractDate<=new Date().setDate(new Date().getDate()+46) && contractDate>= new Date().getTime()){#
+             
+                    <span style="font-weight:bold;">#:STKR__Account__c# [ <span style="color:\#7FE817;">New </span> ]</span> 
+                       # } else{#
+                        <span style="font-weight:bold;">#:STKR__Account__c#</span> 
+                     #  }#
+                    <br>
+                    <span style="float:right;margin-right:2%;" #if (STKR__Fixed_Visit__c) {
+                        #style="color:red;"#
+                }
+                    #>#:STKR__Visit_Type__c#</span>
+                    #if(storeNumberOfVisit||storeCurrentVisitNumber){#
+                        Visit #:storeCurrentVisitNumber# of #:storeNumberOfVisit#
+                    #}#
+                    <br/>
+                    <span>#:STKR__Address__c#</span> <br/> #if (shortdescription.length) {
+                        #<span style="font-weight:bold;">#:shortdescription#
+                    </span><br>#}# </span>
+                    # var hour = visitduestartdate.getHours() < 10?"0" + visitduestartdate.getHours():visitduestartdate.getHours();
+                    var minute = visitduestartdate.getMinutes() < 10?"0" + visitduestartdate.getMinutes():visitduestartdate.getMinutes();
+                    var date =  visitduestartdate.getDate() < 10?"0" + visitduestartdate.getDate():visitduestartdate.getDate();
+                    var month = (visitduestartdate.getMonth() +1) < 10?"0" + (visitduestartdate.getMonth()+1):(visitduestartdate.getMonth()+1);
+                # 
+                <span style="font-weight:normal;font-size:100%">#if (STKR__Due_Date__c) {
+                    #
+                    #:date#
+                    /#:month#
+                    /#:visitduestartdate.getFullYear()#
+                    #:hour#
+                    :#:minute#
+                #}# 
+                    #try {#
+                        #if (MapScheduleToVisitId[Id]['STKR__Last_Visit__c']) {
+                        #  (<span>
+                            # var lastvisit_date =  lastvisitdate.getDate() < 10?"0" + lastvisitdate.getDate():lastvisitdate.getDate();
+                            var lastvisit_month = (lastvisitdate.getMonth() +1) < 10?"0" + (lastvisitdate.getMonth()+1):(lastvisitdate.getMonth()+1);
+                          #  
+                                    #:lastvisit_date#
+                                    /#:lastvisit_month#
+                                    /#:lastvisitdate.getFullYear()#
+                        </span>) #}#
+                    #} catch (err) {
+                        // StoreError(err);
+                        #<span id="LastVisit#:Id#"></span>#
+                    }# </span>
+
+                    # try {#
+                        <span style="color:grey;font-weight:normal;float:right;">
+                                <span>#:Name# - #:STKR__Status__c.toUpperCase()#</span>
+                        </span>
+                    #} catch (e) {
+                    }#
+            </div>
+            #} else {
+                var colourClassNameEvent = '';
+                var event_recordTypeId = '';
+                try {
+                  colourClassNameEvent = 'eventcolor';
+                  var StoreColourCode = $.parseHTML(STKR__Colour_Code__c);
+                  bgcolor = StoreColourCode[0].alt;
+                 } catch(e) {    
+                  colourClassNameEvent = 'neweventcolor';                    
+               }
+               
+                 try{
+                    event_recordTypeId =  RecordTypeId;
+                 }catch(err){
+                     event_recordTypeId = '';
+                 }#
+    
+                 <div class="${colourClassNameEvent}" style="background:#=bgcolor#;" onclick="app.navigate('view/EventDetailPage.html?EventId=${Id}&RecordTypeId=#:event_recordTypeId#')">
+                     #if (device.platform==='Android') {
+                        //For StartDateTime
+                        try {
+                            var datevalstart = new Date(StartDateTime);
+                            var monthstart;
+                            var daystart;
+                            var Hoursstart;
+                            var Minutesstart;                   
+                        } catch (e) {
+                        } 
+                        try {
+                            if ((datevalstart.getMonth() + 1) < 10) {
+                                monthstart = '0' + (datevalstart.getMonth() + 1)
+                            } else {
+                                monthstart = datevalstart.getMonth() + 1
+                            }
+                            if (datevalstart.getDate() < 10) {
+                                daystart = '0' + datevalstart.getDate()
+                            } else {
+                                daystart = datevalstart.getDate()
+                            }
+                            if (datevalstart.getHours() < 10) {
+                                Hoursstart = '0' + datevalstart.getHours()
+                            } else {
+                                Hoursstart = datevalstart.getHours()
+                            }
+                            if (datevalstart.getMinutes() < 10) {
+                                Minutesstart = '0' + datevalstart.getMinutes()
+                            } else {
+                                Minutesstart = datevalstart.getMinutes()
+                            }                           
+                            var PEstartdate = (daystart + '/' + (monthstart) + '/' + datevalstart.getFullYear() + ' ' + (Hoursstart) + ':' + (Minutesstart));
+                                } catch (err) {
+                            console.error('date error' + err);
+                        }
+                    } 
+                    if (device.platform==='iOS') {
+                        //For StartDateTime
+                        try {
+                            var datevalstartios;                    
+                            if (typeof(StartDateTime) === 'string') {
+                                datevalstartios = new Date(StartDateTime.split('.')[0]);
+                            } else {
+                                datevalstartios = new Date(StartDateTime);
+                            }
+                            var monthstartios;
+                            var daystartios;
+                            var Hoursstartios;
+                            var Minutesstartios;                            
+                        } catch (e1) {
+                        }
+                        try {
+                            if ((datevalstartios.getMonth() + 1) < 10) {
+                                monthstartios = '0' + (datevalstartios.getMonth() + 1);
+                            } else {
+                                monthstartios = datevalstartios.getMonth() + 1;
+                            }
+                            if (datevalstartios.getDate() < 10) {
+                                daystartios = '0' + datevalstartios.getDate()
+                            } else {
+                                daystartios = datevalstartios.getDate()
+                            }
+                            if (datevalstartios.getHours() < 10) {
+                                Hoursstartios = '0' + datevalstartios.getHours()
+                            } else {
+                                Hoursstartios = datevalstartios.getHours()
+                            }
+                            if (datevalstartios.getMinutes() < 10) {
+                                Minutesstartios = '0' + datevalstartios.getMinutes()
+                            } else {
+                                Minutesstartios = datevalstartios.getMinutes()
+                            }                            
+                            var PEstartdate = (daystartios + '/' + (monthstartios) + '/' + datevalstartios.getFullYear() + ' ' + (Hoursstartios) + ':' + (Minutesstartios));
+                           } catch (err) {
+                            console.error('date error' + err);
+                        }
+                    }#                        
+                   #try {if (Subject) {#
+                        <span style="color:black;font-weight:bold;font-size:15px;">${Subject}</span><br/>
+                        #}} catch(err){}# 
+                    #try {if(data.Location) {if (Subject && data.Location) {# - #}#
+                        <span style="color:black;font-weight:normal;font-size:15px;">${data.Location}</span><br/>
+                    #}} catch(er){}#  
+                    #try {if (StartDateTime) {#                        
+                        <span style="color:black;font-weight:normal;font-size:15px;">${PEstartdate}</span><br/>
+                    #}}catch(err){}#
+                </div>
+            #}#
+            
+    </script>
+
+    <script type="text/x-kendo-template" id="ListViewForVisitTemplateToday">
+        #if((Id.substring(0,3))=== VisitMetadata.keyPrefix){#         
+            #var colourClassNameVisit = '';
+            if (STKR__Fixed_Visit__c) {
+                colourClassNameVisit = 'fixedvisitcolor';
+            }else if (STKR__Visit_Type__c==="Follow-Up") {
+                colourClassNameVisit = 'followupvisitcolor';
+            }else if (STKR__Visit_Type__c==="Call Out") {
+                colourClassNameVisit = 'calloutvisitcolor';
+            }else if (STKR__Visit_Type__c==="Job Visit") {
+                colourClassNameVisit = 'jobvisitcolor';
+            }else if (STKR__Visit_Type__c==="Routine Visit") {
+                colourClassNameVisit = 'routinevisitcolor';
+            }else if (STKR__Visit_Type__c==="Contract Visit") {
+                colourClassNameVisit = 'contractvisitcolor';
+            }# 
+            <div class="${colourClassNameVisit}" style="background-color:${STKR__Visit_Colour__c}" onclick="gotovisitdetailPageFormMyvisit('${Id}','${STKR__Account_lkp__c}','${RecordTypeId}','${STKR__UserId__c}')">
+                <div style="float:right;width:20px;">            
+                    <i onClick="manuallySortTheTodayList('${Id}','up');event.stopPropagation();" class="fa fa-chevron-up" style="font-size: x-large;"></i>
+                    <i onClick="manuallySortTheTodayList('${Id}','down');event.stopPropagation();" class="fa fa-chevron-down" style="font-size: x-large;margin-top:50%;"></i>
+                </div>
+                #try {
+                    if (isOverdue && currentTab === "Nearby") {#
+                        <span style="float:right;color:red;font-size:300%;margin-top:-1%;">*</span>
+                    #}
+                } catch (Error) {
+                }
+                var visitduestartdate;
+                var visitduefinishdate;
+                var lastvisitdate;
+                if (device.platform==='Win32NT') {
+                    visitduestartdate = new Date((STKR__Due_Date__c.split('+')[0]) + 'Z');
+                    visitduefinishdate = new Date(STKR__Due_Finish__c.split('+')[0] + 'Z');
+                    try {
+                        lastvisitdate = new Date((MapScheduleToVisitId[Id]['STKR__Last_Visit__c'].split('+')[0]) + 'Z');
+                    } catch (err) {
+                    }
+                } else if (device.platform==='iOS') {
+                    if (typeof(STKR__Due_Date__c)==='object') {
+                        visitduestartdate = STKR__Due_Date__c;
+                    } else {
+                        visitduestartdate = new Date(STKR__Due_Date__c.split('.')[0]);
+                    }
+                    if (typeof(STKR__Due_Finish__c)==='object') {
+                        visitduefinishdate = STKR__Due_Finish__c;
+                    } else {
+                        visitduefinishdate = new Date(STKR__Due_Finish__c.split('.')[0]);
+                    }
+                    try {
+                        lastvisitdate = new Date(MapScheduleToVisitId[Id]['STKR__Last_Visit__c'].split('.')[0]);
+                    } catch (e) {
+                    }
+                } else {
+                    visitduestartdate = new Date(STKR__Due_Date__c);
+                    visitduefinishdate = new Date(STKR__Due_Finish__c);
+                    try {
+                        lastvisitdate = new Date(MapScheduleToVisitId[Id]['STKR__Last_Visit__c']);
+                    }catch (e) {
+                    }
+                }
+                var shortdescription = '';
+                try {
+                    if (STKR__Notes_Long__c.length > 60) {
+                        shortdescription = STKR__Notes_Long__c.substring(0, 59) + '...';
+                    } else {
+                        shortdescription = STKR__Notes_Long__c;
+                    }
+                } catch (err) {
+                }
+                
+                var storeCircleValue = ''; 
+                var storeNumberOfVisit = '';
+                var storeCurrentVisitNumber = '';
+                var storecircleTextColor =  '';
+                var storecircleBgcolor =  '';
+                try {
+                 if(MapScheduleToVisitId[Id]['STKR__Frequency__c']=="Week Numbers") {
+                        storeCircleValue = '22';
+                    }else if(MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c']){
+                        storeCircleValue = MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c'];
+                    }else{
+                        //storeCircleValue = MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c'];
+                    }
+                   } catch(e){
+                       console.error(e);
+                }
+
+                try{
+                    var contractDate = (new Date(MapScheduleToVisitId[Id].STKR__Service_Contract__r.STKR__Start_Date__c)).getTime();
+
+                    if(contractDate<=new Date().setDate(new Date().getDate()+46) && contractDate>= new Date().getTime()){
+                        storecircleBgcolor= 'display:inline-block;margin-right:1%;float:right;text-align:center;width:25px;height:25px;line-height:2em;border-radius:50%;background:yellow;color:black';
+                       
+                    }
+                    else{
+                        storecircleBgcolor='display:inline-block;margin-right:1%;float:right;text-align:center;width:25px;height:25px;line-height:2em;border-radius:50%;background:rgb(105,105,105);color:white';
+                    }
+                }catch(e){
+                    console.error(e);
+                }
+               
+                try {
+                    if (MapScheduleToVisitId[Id]['STKR__Number_of_Visit_Per_Year__c']) {
+                      storeNumberOfVisit = MapScheduleToVisitId[Id]['STKR__Number_of_Visit_Per_Year__c'];
+                      }
+                     } catch(e){
+                         console.error(e);
+                  }
+                  try {
+                    if (MapScheduleToVisitId[Id]['STKR__Current_Visit_Number__c']) {
+                      storeCurrentVisitNumber = MapScheduleToVisitId[Id]['STKR__Current_Visit_Number__c'];
+                      }
+                     } catch(e){
+                         LOG && console.log(e);
+                  }
+                  
+                  if(storeCircleValue){#
+                    <span style="${storecircleBgcolor}">#:storeCircleValue#</span> 
+                  #}# 
+                
+                  <span style="font-size:15px;">
+                    #  if(contractDate<=new Date().setDate(new Date().getDate()+46) && contractDate>= new Date().getTime()){#
+           
+                  <span style="font-weight:bold;">#:STKR__Account__c# [ <span style="color:\#7FE817;">New </span> ]</span> 
+                     # } else{#
+                      <span style="font-weight:bold;">#:STKR__Account__c#</span> 
+                   #  }#
+                  <br>
+                    <span style="float:right;margin-right:2%;" #if (STKR__Fixed_Visit__c) {
+                        #style="color:red;"#
+                }
+                    #>#:STKR__Visit_Type__c#</span>
+                    #if(storeNumberOfVisit||storeCurrentVisitNumber){#
+                        Visit #:storeCurrentVisitNumber# of #:storeNumberOfVisit#
+                    #}#
+                    <br/>
+                    <span>#:STKR__Address__c#</span> <br/> #if (shortdescription.length) {
+                        #<span style="font-weight:bold;">#:shortdescription#
+                    </span><br>#}# </span>
+                    # var hour = visitduestartdate.getHours() < 10?"0" + visitduestartdate.getHours():visitduestartdate.getHours();
+                    var minute = visitduestartdate.getMinutes() < 10?"0" + visitduestartdate.getMinutes():visitduestartdate.getMinutes();
+                    var date =  visitduestartdate.getDate() < 10?"0" + visitduestartdate.getDate():visitduestartdate.getDate();
+                    var month = (visitduestartdate.getMonth() +1) < 10?"0" + (visitduestartdate.getMonth()+1):(visitduestartdate.getMonth()+1);
+                # 
+                <span style="font-weight:normal;font-size:100%">#if (STKR__Due_Date__c) {
+                    #
+                    #:date#
+                    /#:month#
+                    /#:visitduestartdate.getFullYear()#
+                    #:hour#
+                    :#:minute#
+                #}# 
+                    #try {#
+                        #if (MapScheduleToVisitId[Id]['STKR__Last_Visit__c']) {
+                        #  (<span>
+                            # var lastvisit_date =  lastvisitdate.getDate() < 10?"0" + lastvisitdate.getDate():lastvisitdate.getDate();
+                            var lastvisit_month = (lastvisitdate.getMonth() +1) < 10?"0" + (lastvisitdate.getMonth()+1):(lastvisitdate.getMonth()+1);
+                          #  
+                                    #:lastvisit_date#
+                                    /#:lastvisit_month#
+                                    /#:lastvisitdate.getFullYear()#
+                        </span>) #}#
+                    #} catch (err) {
+                        // StoreError(err);
+                        #<span id="LastVisit#:Id#"></span>#
+                    }# </span>
+
+                    # try {#
+                        <span style="color:grey;font-weight:normal;float:right;">
+                                <span>#:Name# - #:STKR__Status__c.toUpperCase()#</span>
+                        </span>
+                    #} catch (e) {
+                    }#
+            </div>
+            #} else {
+                var colourClassNameEvent = '';
+                var event_recordTypeId = '';
+                try {
+                  colourClassNameEvent = 'eventcolor';
+                  var StoreColourCode = $.parseHTML(STKR__Colour_Code__c);
+                  bgcolor = StoreColourCode[0].alt;
+                 } catch(e) {    
+                  colourClassNameEvent = 'neweventcolor';                    
+               }
+               
+                 try{
+                    event_recordTypeId =  RecordTypeId;
+                 }catch(err){
+                     event_recordTypeId = '';
+                 }#
+    
+                 <div class="${colourClassNameEvent}" style="background:#=bgcolor#;" onclick="app.navigate('view/EventDetailPage.html?EventId=${Id}&RecordTypeId=#:event_recordTypeId#')">
+                     #if (device.platform==='Android') {
+                        //For StartDateTime
+                        try {
+                            var datevalstart = new Date(StartDateTime);
+                            var monthstart;
+                            var daystart;
+                            var Hoursstart;
+                            var Minutesstart;                   
+                        } catch (e) {
+                        } 
+                        try {
+                            if ((datevalstart.getMonth() + 1) < 10) {
+                                monthstart = '0' + (datevalstart.getMonth() + 1)
+                            } else {
+                                monthstart = datevalstart.getMonth() + 1
+                            }
+                            if (datevalstart.getDate() < 10) {
+                                daystart = '0' + datevalstart.getDate()
+                            } else {
+                                daystart = datevalstart.getDate()
+                            }
+                            if (datevalstart.getHours() < 10) {
+                                Hoursstart = '0' + datevalstart.getHours()
+                            } else {
+                                Hoursstart = datevalstart.getHours()
+                            }
+                            if (datevalstart.getMinutes() < 10) {
+                                Minutesstart = '0' + datevalstart.getMinutes()
+                            } else {
+                                Minutesstart = datevalstart.getMinutes()
+                            }                           
+                            var PEstartdate = (daystart + '/' + (monthstart) + '/' + datevalstart.getFullYear() + ' ' + (Hoursstart) + ':' + (Minutesstart));
+                                } catch (err) {
+                            console.error('date error' + err);
+                        }
+                    } 
+                    if (device.platform==='iOS') {
+                        //For StartDateTime
+                        try {
+                            var datevalstartios;                    
+                            if (typeof(StartDateTime) === 'string') {
+                                datevalstartios = new Date(StartDateTime.split('.')[0]);
+                            } else {
+                                datevalstartios = new Date(StartDateTime);
+                            }
+                            var monthstartios;
+                            var daystartios;
+                            var Hoursstartios;
+                            var Minutesstartios;                            
+                        } catch (e1) {
+                        }
+                        try {
+                            if ((datevalstartios.getMonth() + 1) < 10) {
+                                monthstartios = '0' + (datevalstartios.getMonth() + 1);
+                            } else {
+                                monthstartios = datevalstartios.getMonth() + 1;
+                            }
+                            if (datevalstartios.getDate() < 10) {
+                                daystartios = '0' + datevalstartios.getDate()
+                            } else {
+                                daystartios = datevalstartios.getDate()
+                            }
+                            if (datevalstartios.getHours() < 10) {
+                                Hoursstartios = '0' + datevalstartios.getHours()
+                            } else {
+                                Hoursstartios = datevalstartios.getHours()
+                            }
+                            if (datevalstartios.getMinutes() < 10) {
+                                Minutesstartios = '0' + datevalstartios.getMinutes()
+                            } else {
+                                Minutesstartios = datevalstartios.getMinutes()
+                            }                            
+                            var PEstartdate = (daystartios + '/' + (monthstartios) + '/' + datevalstartios.getFullYear() + ' ' + (Hoursstartios) + ':' + (Minutesstartios));
+                           } catch (err) {
+                            console.error('date error' + err);
+                        }
+                    }#  
+                    <div style="float:right;width: 20px;">            
+                        <i onClick="manuallySortTheTodayList('${Id}','up');event.stopPropagation();" class="fa fa-chevron-up" style="font-size: x-large;"></i>
+                        <i onClick="manuallySortTheTodayList('${Id}','down');event.stopPropagation();" class="fa fa-chevron-down" style="font-size: x-large;"></i>
+                    </div>
+                                          
+                   #try {if (Subject) {#
+                        <span style="color:black;font-weight:bold;font-size:15px;">${Subject}</span><br/>
+                        #}} catch(err){}# 
+                    #try {if(data.Location) {if (Subject && data.Location) {# - #}#
+                        <span style="color:black;font-weight:normal;font-size:15px;">${data.Location}</span><br/>
+                    #}} catch(er){}#  
+                    #try {if (StartDateTime) {#                        
+                        <span style="color:black;font-weight:normal;font-size:15px;">${PEstartdate}</span><br/>
+                    #}}catch(err){}#
+                </div>
+            #}#
+            
+    </script>
+
+    <script type="text/x-kendo-template" id="ListViewForVisitCompletetab">
+            #var colourClassNameVisit = '';
+            if (STKR__Fixed_Visit__c) {
+                colourClassNameVisit = 'fixedvisitcolor';
+            }else if (STKR__Visit_Type__c==="Follow-Up") {
+                colourClassNameVisit = 'followupvisitcolor';
+            }else if (STKR__Visit_Type__c==="Call Out") {
+                colourClassNameVisit = 'calloutvisitcolor';
+            }else if (STKR__Visit_Type__c==="Job Visit") {
+                colourClassNameVisit = 'jobvisitcolor';
+            }else if (STKR__Visit_Type__c==="Routine Visit") {
+                colourClassNameVisit = 'routinevisitcolor';
+            }else if (STKR__Visit_Type__c==="Contract Visit") {
+                colourClassNameVisit = 'contractvisitcolor';
+            }# 
+            <div class="${colourClassNameVisit}" style="background-color:${STKR__Visit_Colour__c}" onclick="gotovisitdetailPageFormMyvisit('${Id}','${STKR__Account_lkp__c}','${RecordTypeId}','${STKR__UserId__c}')">
+                #try {
+                    if (isOverdue && currentTab === "Nearby") {#
+                        <span style="float:right;color:red;font-size:300%;margin-top:-1%;">*</span>
+                    #}
+                } catch (Error) {
+                }
+                var visitcompletiondate;
+                var visitduefinishdate;
+                var lastvisitdate;
+                if (device.platform==='Win32NT') {
+                    visitcompletiondate = new Date((STKR__Completion_Time__c.split('+')[0]) + 'Z');
+                    visitduefinishdate = new Date(STKR__Due_Finish__c.split('+')[0] + 'Z');
+                    try {
+                        lastvisitdate = new Date((MapScheduleToVisitId[Id]['STKR__Last_Visit__c'].split('+')[0]) + 'Z');
+                    } catch (err) {
+                    }
+                } else if (device.platform==='iOS') {
+                    if (typeof(STKR__Due_Date__c)==='object') {
+                        visitcompletiondate = STKR__Completion_Time__c;
+                    } else {
+                        visitcompletiondate = new Date(STKR__Completion_Time__c.split('.')[0]);
+                    }
+                    if (typeof(STKR__Due_Finish__c)==='object') {
+                        visitduefinishdate = STKR__Due_Finish__c;
+                    } else {
+                        visitduefinishdate = new Date(STKR__Due_Finish__c.split('.')[0]);
+                    }
+                    try {
+                        lastvisitdate = new Date(MapScheduleToVisitId[Id]['STKR__Last_Visit__c'].split('.')[0]);
+                    } catch (e) {
+                    }
+                } else {
+                    if (typeof(STKR__Completion_Time__c)==='object') {
+                        visitcompletiondate = STKR__Completion_Time__c;
+                    } else {visitcompletiondate = new Date(STKR__Completion_Time__c);
+                    }
+                    visitduefinishdate = new Date(STKR__Due_Finish__c);
+                    try {
+                        lastvisitdate = new Date(MapScheduleToVisitId[Id]['STKR__Last_Visit__c']);
+                    }catch (e) {
+                    }
+                }
+                var shortdescription = '';
+                try {
+                    if (STKR__Notes_Long__c.length > 60) {
+                        shortdescription = STKR__Notes_Long__c.substring(0, 59) + '...';
+                    } else {
+                        shortdescription = STKR__Notes_Long__c;
+                    } 
+                } catch (err) {
+                }
+                
+                var storeCircleValue = '';
+                var storeNumberOfVisit = '';
+                var storeCurrentVisitNumber = '';
+                var storecircleBgcolor =  '';
+                try {
+                    if(MapScheduleToVisitId[Id]['STKR__Frequency__c']=="Week Numbers") {
+                        storeCircleValue = '22';
+                    }else if(MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c']){
+                        storeCircleValue = MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c'];
+                    }else{
+                        //storeCircleValue = MapScheduleToVisitId[Id]['STKR__Schedule_Summary__c'];
+                    }
+                }catch(e){
+                    console.error(e);
+                }
+
+                try{
+                    var contractDate = (new Date(MapScheduleToVisitId[Id].STKR__Service_Contract__r.STKR__Start_Date__c)).getTime();
+
+                    if(contractDate<=new Date().setDate(new Date().getDate()+46) && contractDate>= new Date().getTime()){
+                        storecircleBgcolor= 'display:inline-block;margin-right:1%;float:right;text-align:center;width:25px;height:25px;line-height:2em;border-radius:50%;background:yellow;color:black';
+                       
+                    }
+                    else{
+                        storecircleBgcolor='display:inline-block;margin-right:1%;float:right;text-align:center;width:25px;height:25px;line-height:2em;border-radius:50%;background:rgb(105,105,105);color:white';
+                    }
+ 
+                }catch(e){
+                    console.error(e);
+                }
+              
+                try {
+                    if (MapScheduleToVisitId[Id]['STKR__Number_of_Visit_Per_Year__c']) {
+                      storeNumberOfVisit = MapScheduleToVisitId[Id]['STKR__Number_of_Visit_Per_Year__c'];
+                      }
+                     } catch(e){
+                         console.error(e);
+                  }
+                  try {
+                    if (MapScheduleToVisitId[Id]['STKR__Current_Visit_Number__c']) {
+                      storeCurrentVisitNumber = MapScheduleToVisitId[Id]['STKR__Current_Visit_Number__c'];
+                      }
+                     } catch(e){
+                         console.error(e);
+                  }
+
+                if(storeCircleValue){#
+                    <span style="${storecircleBgcolor}">#:storeCircleValue#</span> 
+                #}# 
+                
+                <span style="font-size:15px;">
+                    #  if(contractDate<=new Date().setDate(new Date().getDate()+46) && contractDate>= new Date().getTime()){#
+           
+                  <span style="font-weight:bold;">#:STKR__Account__c# [ <span style="color:\#7FE817;">New </span> ]</span> 
+                     # } else{#
+                      <span style="font-weight:bold;">#:STKR__Account__c#</span> 
+                   #  }#
+                  <br>
+                    <span style="float:right;margin-right:2%;" #if (STKR__Fixed_Visit__c) {
+                    #style="color:red;"#
+                }
+                #>#:STKR__Visit_Type__c#</span>
+                #if(storeNumberOfVisit||storeCurrentVisitNumber){#
+                    Visit #:storeCurrentVisitNumber# of #:storeNumberOfVisit#
+                #}#
+                <br/>
+                <span>#:STKR__Address__c#</span> <br/> #if (shortdescription.length) {
+                    #<span style="font-weight:bold;">#:shortdescription#
+                </span><br>#}# </span>
+                
+                    #var hour = (visitcompletiondate.getHours() < 10)?"0" + visitcompletiondate.getHours(): visitcompletiondate.getHours();
+                    var minute = visitcompletiondate.getMinutes() < 10?"0" + visitcompletiondate.getMinutes():visitcompletiondate.getMinutes();
+                    var date =  visitcompletiondate.getDate() < 10?"0" + visitcompletiondate.getDate():visitcompletiondate.getDate();
+                    var month = (visitcompletiondate.getMonth() +1) < 10?"0" + (visitcompletiondate.getMonth()+1):(visitcompletiondate.getMonth()+1);
+                    #
+                <span style="font-weight:normal;font-size:100%">#if (STKR__Completion_Time__c) {
+                    #
+                    #:date#
+                    / #:month#
+                    /#:visitcompletiondate.getFullYear()#
+                    #:hour#
+                    :#:minute#
+                #}#
+                    #try {#
+                        #if (MapScheduleToVisitId[Id]['STKR__Last_Visit__c']) {
+                        #  (<span>
+                            # var lastvisit_date =  lastvisitdate.getDate() < 10?"0" + lastvisitdate.getDate():lastvisitdate.getDate();
+                var lastvisit_month = (lastvisitdate.getMonth() +1) < 10?"0" + (lastvisitdate.getMonth()+1):(lastvisitdate.getMonth()+1);
+              #  
+                        #:lastvisit_date#
+                        /#:lastvisit_month#
+                            /#:lastvisitdate.getFullYear()#
+                        </span>) #}#
+                    #} catch (err) {
+                        
+                        // StoreError(err);
+                        #<span id="LastVisit#:Id#"></span>#
+                    }# </span>
+                    # try {#
+                        <span style="color:grey;font-weight:normal;float:right;">
+                                <span>#:Name# - #:STKR__Status__c.toUpperCase()#</span>
+                        </span>
+                    #} catch (e) {
+                    }#
+            </div>
+        </script>
+
+    <div class="colldetail" data-role="modalview" data-modal="false" id="MyVisitModalView"
+        style="width:100%;height:85%;padding: 5px;">
+        <br />
+        <div id="innerVisitModalView"></div>
+    </div>
+    <script type="text/x-kendo-template" id="MyVisitModalViewTemplate">
+            <a data-role="button" onClick="CloseVisitModelViewForAll();" class="km-primary fa fa-times fa-2x" style="margin-right:3%;padding:5px;float:right;background-color:rgb(244,67,54);"></a>
+            <span style="margin:0%;margin-left:4%;">#:Name#</span><br>
+            <p style="margin:0%;margin-left:4%;font-weight:bold;line-height:100%">#:STKR__Account__c#
+            </p><br>
+            #var visitduestartdate;
+            var visitduefinishdate; 
+            if (device.platform==='Win32NT') {
+                visitduestartdate = new Date((STKR__Due_Date__c.split('+')[0]) + 'Z');
+                visitduefinishdate = new Date(STKR__Due_Finish__c.split('+')[0] + 'Z');
+            } else if (device.platform==='iOS') {
+                if (typeof(STKR__Due_Date__c)==='object') {
+                    visitduestartdate = STKR__Due_Date__c;
+                } else {
+                    visitduestartdate = new Date(STKR__Due_Date__c.split('.')[0]);
+                }
+                if (typeof(STKR__Due_Finish__c)==='object') {
+                    visitduefinishdate = STKR__Due_Finish__c;
+                } else {
+                    visitduefinishdate = new Date(STKR__Due_Finish__c.split('.')[0]);
+                }
+            } else {
+                visitduestartdate = new Date(STKR__Due_Date__c);
+                visitduefinishdate = new Date(STKR__Due_Finish__c);
+            }#
+            <h5>
+                #if (STKR__Status__c==='In Progress') {#
+                    <img src="img/InProgress.png"  style="width:10%;height:10%;" />
+                #} else if (STKR__Status__c==='Open') {#
+                    <img src="img/Open.png" style="width:10%;height:10%;" />
+                #} else if (STKR__Status__c==='Accepted') {#
+                    <img src="img/Accepted.png " style="width:10%;height:10%;" />
+                #} else if (STKR__Status__c==='Journey Started') {#
+                    <img src="img/JourneyStarted.png" style="width:10%;height:10%;"/>
+                #} else if (STKR__Status__c==='Complete') {#
+                    <img src="img/check (2).png" style="width:10%;height:10%;"/>
+                #}#
+                #:STKR__Status__c#
+                #if (STKR__Status__c==='Open') {#
+                    <button onClick="ConfirmationDialogVisitStatusChange(#:JSON.stringify(data)#,'MyVisitsStatus${Id}')"
+                            id="MyVisitsStatus${Id}"
+                            style="float:right;font-weight:bold;background:\#FFC107;border-style:none;color:white;border-radius:0 px;"
+                            class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                        <!--i class="material-icons">cloud_download</i--><i class="fa fa-cloud-download"></i> ACCEPT
+                    </button>
+                #} else if (STKR__Status__c==='Accepted') {#
+                    <button onClick="ConfirmationDialogVisitStatusChange(#:JSON.stringify(data)#,'MyVisitsStatus${Id}')"
+                            id="MyVisitsStatus${Id}"
+                            style="float:right;font-weight:bold;background:\#00796B;border-style:none;color:white;border-radius:0 px;"
+                            class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                        <!--i class="material-icons">directions_car</i--><i class="fa fa-car"></i> START
+                    </button>
+                #} else if (STKR__Status__c==='Journey Started') {#
+                    <button onClick="ConfirmationDialogVisitStatusChange(#:JSON.stringify(data)#,'MyVisitsStatus${Id}')"
+                            id="MyVisitsStatus${Id}"
+                            style="float:right;font-weight:bold;background:\#795548;border-style:none;color:white;border-radius:0;"
+                            class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                        <i class="material-icons">forward</i>
+                        ARRIVE
+                    </button>
+                #}#
+            </h5>
+            #try {#
+                #if (STKR__Notes_Long__c) {#
+                    <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;"   >Visit Description 
+                #if (STKR__Notes_Long__c.length > 50) {#
+                    <p style="line-height:100%;margin-left:4%;">#:STKR__Notes_Long__c.substring(0, 50)+'.... '#
+                        <a onclick="ShowVisitDescriptionModal(#:JSON.stringify(data)#,'${Id}');"            
+                           style="color:rgb(102,178,255);">More </a> </p>
+                    <br/>
+                #} else {#
+                    <p style="line-height:100%;margin-left:4%;">#:STKR__Notes_Long__c#
+                        <!--a onclick="ShowVisitDescriptionModal('${Id}');"            
+                        style="color:rgb(102,178,255);">Edit </a--> </p>
+                    <br/>
+                    #}#
+                        </span>
+                #}
+            } catch (err) {  
+            }#
+
+            #try {#
+                #if (STKR__Internal_Notes__c) {#
+                    <span style="margin:0%;margin-left:4%;color:black;font-weight:bold;"   >Internal Notes
+                #if (STKR__Internal_Notes__c.length > 50) {#
+                    <p style="line-height:100%;margin-left:4%;">#:STKR__Internal_Notes__c.substring(0, 50)+'.... '#
+                        <a onclick="ShowInternalNotesDescriptionModal(#:JSON.stringify(data)#,'${Id}');"            
+                           style="color:rgb(102,178,255);">More </a> </p>
+                    <br/>
+                #} else {#
+                    <p style="line-height:100%;margin-left:4%;">#:STKR__Internal_Notes__c#
+                        <!--a onclick="ShowVisitDescriptionModal('${Id}');"            
+                        style="color:rgb(102,178,255);">Edit </a--> </p>
+                    <br/>
+                    #}#
+                        </span>
+                #}
+            } catch (err) {  
+            }#
+            
+            <span id="CurrentVisitOfVisitPeryear" style="margin:0%;margin-left:4%;"></span><br/>
+            <p id="AddressOfAccount" style="margin:0%;margin-left:4%;line-height:100%;"></p>
+            <hr/>
+            <div class="contentingrey">
+                <span style="margin:0%;margin-left:4%;">
+                    #:STKR__Visit_Type__c# (<span id="VisitFrequency"></span>)
+                </span>
+                <br/>
+                <span style="margin:0%;margin-left:4%;"> Ref: <span id="ref"></span></span><br>
+                <span style="float:left;margin-left:4%;">Last visit: <span id="LastVisitCollapsible"></span></span><br/>
+                #if (STKR__Priority__c==="High") {#
+                    <br/>
+                    <span style="font-weight:bold;margin:0%;margin-left:4%;">${STKR__Priority__c} priority</span><br/>
+                #}#
+                #
+                var NewToInspect = 0;
+                for (var i = 0; i < InspectionData.length; i++) {
+                    if ((InspectionData[i]['STKR__Visit__c']===Id) && (InspectionData[i]['STKR__Status__c']==="Pending")) {
+                        NewToInspect++;
+                    }
+                }
+                if (NewToInspect) {#    
+                    <br/>
+                    <span style="margin:0%;margin-left:4%;color:rgb(102,178,255);font-weight:bold;">#:NewToInspect# items to be inspected</span>
+                    <br/>    
+                #}
+                var OpenAction = 0;
+                for (var i = 0; i < ActionData.length; i++) {
+                    if ((ActionData[i]['STKR__Account__c']===STKR__Account_lkp__c) && (ActionData[i]['STKR__Status__c']==='Open')) {
+                        OpenAction++;
+                    }
+                }
+                    
+                if (OpenAction) {#<span 
+                    style="margin:0%;margin-left:4%;color:rgb(102,178,255);font-weight:bold;">#:OpenAction#
+                    Open Action#if (OpenAction > 1) {
+                    #s#}
+                #</span>#}
+                #
+                <!--  <span id="OpenActionMyVisitModal" 
+                style="margin:0%;margin-left:4%;color:rgb(102,178,255);font-weight:bold;"></span>--><br/>
+                <hr/>
+                #var starthour = (visitduestartdate.getHours() > 12)? visitduestartdate.getHours() - 12 : visitduestartdate.getHours();
+                var startampm = visitduestartdate.getHours() >= 12 ? 'pm' : 'am';
+                var startminute = visitduestartdate.getMinutes() < 10?"0" + visitduestartdate.getMinutes():visitduestartdate.getMinutes();
+                var finishHour = (visitduefinishdate.getHours() > 12)? visitduefinishdate.getHours() - 12 : visitduefinishdate.getHours();
+                var finishampm = visitduefinishdate.getHours() >= 12 ? 'pm' : 'am';
+                var finishminute = visitduefinishdate.getMinutes() < 10?"0" + visitduefinishdate.getMinutes():visitduefinishdate.getMinutes()
+                #
+                <span style="margin:0%;margin-left:4%;font-weight:bold;">Due to start: #if (STKR__Due_Date__c) {
+                    # #:visitduestartdate.getDate()#/
+                    #:(visitduestartdate.getMonth() + 1)#/
+                    #:visitduestartdate.getFullYear()#
+                    #:starthour#
+                    :#:startminute#
+                    #:startampm.toUpperCase()#
+                #}#</span><br>
+                <span style="margin:0%;margin-left:4%;font-weight:bold;">Due to finish:#if (STKR__Due_Finish__c) {
+                    #  #:visitduefinishdate.getDate()#
+                    /#:(visitduestartdate.getMonth() + 1)#
+                    /#:visitduefinishdate.getFullYear()#
+                    #:finishHour#
+                    :#:finishminute#
+                    #:finishampm.toUpperCase()#
+                #}
+                    # </span><br/>
+                # for (var j = 0;j < AllAccounts.length;j++) {
+                    if (AllAccounts[j]['Id'] === STKR__Account_lkp__c) {#
+                    <span style="margin:0%;margin-left:4%;">Phone :
+                        # if (!(AllAccounts[j]['Phone']===null)) {
+                            #
+                            <a href="tel:#:AllAccounts[j]['Phone']#
+                               " style="color:black">#:AllAccounts[j]['Phone']#</a></span>
+                        <br/><br/>
+                        #}
+                    }
+                }# 
+
+                #if(!STKR__UserId__c || (STKR__UserId__c!=creds.UserID && STKR__UserId__c != creds.UserID.substring(0, 15))){#
+                    <span style="margin:0%;margin-left:4%;">Current Assigned User :  
+                        #if(!STKR__UserId__c){#
+                            #:STKR__Resource_Name__c#(Inactive)
+                        #}else{#
+                            #:STKR__Resource_Name__c#
+                        #}#
+                        <br/><br/>
+                    </span>  
+                #}#
+
+            </div>
+            <!--   <center>
+            <h3>#if (STKR__Items_to_inspect__c) {#
+                <a href="view/Inspection.html?visitid=${Id}" data-role="button" class="km-button">Inspections(#:STKR__Items_to_inspect__c#)</a>
+            #}
+            #</h3>
+            </center>-->
+
+            <span style="width:100%;font-size:130%;display: inline-block;">
+                <center>
+                    
+                    #if(STKR__UserId__c && (STKR__UserId__c==creds.UserID || STKR__UserId__c == creds.UserID.substring(0, 15))){#
+                        <a data-role="button" class="fa fa-pencil lg" style="background: red;border-radius:0px;width:20%;line-height: 1.7;color:white;"  onclick="gotovisitdetailPageFormMyvisit('${Id}','${STKR__Account_lkp__c}','${RecordTypeId}','${STKR__UserId__c}')">
+                        </a>    
+                    #}#
+                    
+                    <a data-role="button" class="fa fa-users lg" style="background:\#3090C7;border-radius:0px;width:20%;line-height: 1.7;color:white;" href="view/ContactsList.html?AccountId=${STKR__Account_lkp__c}&VisitId=${Id}" >
+                    </a>
+                    <!--a data-role="button" class="material-icons " style="background:\#41A317;width:20%;line-height: 1.7;color:white;" onclick="GotomapWithparam('#=Name#','#=STKR__Account_lkp__c#')" >
+                    place
+                    </a-->
+                    <a data-role="button" class="fa fa-map-marker lg" style="background:\#41A317;width:20%;line-height: 1.7;color:white;" onclick="GotomapWithparam('#=Name#','#=STKR__Account_lkp__c#')" >
+                    </a>
+                    <!--a data-role="button" class="material-icons " style="background: orange;border-radius:0px;width:20%;line-height: 1.7;border-radius:0px;color:white;" onClick="navigator.app.loadUrl('https://stkr.eu2.visual.force.com/apex/stkr__RelatedContent?Id=#:STKR__Account_lkp__c#', { openExternal:true });">
+                    attach_file
+                    </a-->
+                    <!--a data-role="button" 
+                    class="fa fa-paperclip lg" 
+                    style="background: orange;border-radius:0px;width:20%;line-height: 1.7;border-radius:0px;color:white;" 
+                    onClick="NavigateToRelatedContent('#:STKR__Account_lkp__c#')">
+                    </a-->
+                    <a data-role="button" 
+                       class="fa fa-paperclip lg" 
+                       style="background: orange;border-radius:0px;width:20%;line-height:1.7;border-radius:0px;color:white;" 
+                       onclick="NavigateToClientAttachment('#=STKR__Account_lkp__c#','#=Id#','Card','#=STKR__Service__c#')"></a>
+                    </center>
+            </span>
+        </script>
+    <div class="VisitDescriptionModalView" data-role="modalview" data-modal="false" id="VisitDescriptionModalView"
+        style="width:100%;height:70%;">
+        <header data-role="header">
+            <div data-role="navbar">
+                <span>Visit Description</span>
+            </div>
+        </header>
+        <div class="mdl-shadow--2dp" style="margin:5%;">
+            <textarea id="STKR__Notes_Long__c" style="padding-left:1%;margin-right: 1%;height:18em;"
+                name="VisitLayoutName"></textarea>
+        </div>
+        <br />
+        <center>
+            <button onClick="CloseInnervisitDetailModalView();"
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                Save
+            </button>
+        </center>
+    </div>
+    <!-- For Internal notes    -->
+    <div class="InternalNotesModalView" data-role="modalview" data-modal="false" id="InternalNotesModalView"
+        style="width:100%;height:70%;">
+        <header data-role="header">
+            <div data-role="navbar">
+                <span>Internal Notes</span>
+            </div>
+        </header>
+        <div class="mdl-shadow--2dp" style="margin:5%;">
+            <textarea style="padding-left:1%;margin-right: 1%;height:15em;" type="text" id="STKR__Internal_Notes__c"
+                name="VisitLayoutName" maxlength="1000" class="VisitDetailPageMDLName mdl-textfield__input "></textarea>
+        </div>
+        <br />
+        <center>
+            <button onClick="CloseInnerInternalModalView();"
+                class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                Save
+            </button>
+        </center>
+    </div>
+
+    <!-- For Internal notes    -->
+
+
+
+
+
+
+    <div data-role="modalview" id="ClearAllDataModalView" style="width:90%;">
+        <div data-role="header">
+            <div data-role="navbar">
+                <span style="font-weight:bold;">Confirm removal of cache</span>
+            </div>
+        </div>
+        <p>
+            Are you Sure you want to clear out all the locally stored(cached) data?
+            <br>This will loss any pending offline data changed
+            <br> Please only do this after you have successfully refreshed all data while you are online.
+            <br> This option only intended to be used if there are error prevening the offline cached data from being
+            uploaded
+            correctly.
+        </p>
+        <div data-role="footer" style="margin:2%;background-color:white;">
+
+            <button data-role="button" style="float:left;" onclick="ClearAllDataShow()"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                CLEAR DATA
+            </button>
+            <button data-role="button" onclick="$('#ClearAllDataModalView').kendoMobileModalView('close')"
+                style="float:right;"
+                class="MyVisitMDLIcon mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                CANCEL
+            </button>
+        </div>
+    </div>
+    <style>
+        textarea::-webkit-scrollbar {
+  width: 15px !important;
+  background-color: #F5F5F5; }
+  textarea::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  background-color: #3090C7; }
+        /*.VisitDescriptionModalView {}*/
+        .headerIconStyleForAll {
+            border-style: solid !important;
+            
+            border-radius: 5px !important;
+            border-color: #fafafa;
+            margin-left: 4px;
+            padding: 0;
+        }
+
+        input[type=checkbox] {
+             appearance:auto !important;
+        }
+
+        .OfflineDataItemCount {
+            border-radius: 0 !important;
+            top: 0 !important;
+            left: 0px !important;
+            height: 43px !important;
+            width: 20px !important;
+        }
+
+        .mdl-checkbox__box-outline {
+            position: absolute;
+            top: 3px;
+            left: 0;
+            display: inline-block;
+            box-sizing: border-box;
+            width: 20px !important;
+            height: 20px !important;
+            margin: 0;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid rgba(0, 0, 0, .54);
+            border-radius: 2px;
+            z-index: 2;
+        }
+
+        .mainBody {
+            width: 100%;
+            bottom: 0px;
+            top: 0px;
+            position: absolute;
+        }
+
+        .km-collapsible-header .km-icon {
+            display: none;
+            font-size: .8em;
+            margin-right: .3em;
+        }
+
+        .contentingrey {
+            /*color: grey;*/
+            color: black;
+            font-weight: normal;
+        }
+
+        #buttongroup-home .km-list span {
+            float: right;
+        }
+
+        #buttongroup-home .sales-up {
+            color: green;
+        }
+
+        #buttongroup-home .sales-down {
+            color: red;
+        }
+
+        #buttongroup-home .sales-hold {
+            color: blue;
+        }
+
+        .km-ios7 .km-button.km-state-active {
+            background: currentcolor;
+        }
+
+        .ShowPlaceholder[placeholder]:empty:before {
+            content: attr(placeholder);
+            color: grey;
+            padding: 30%;
+        }
+
+        .km-phone .km-tabstrip .km-icon {
+            height: 0.1rem;
+            font-size: 0.1rem;
+        }
+
+        #tabstripoverduevisits>span.km-text {
+            font-weight: bold;
+            margin-bottom: 25%;
+        }
+
+        /*#tabstripoverduevisits>span.km-icon {}*/
+
+        #tabstriptodayvisits>span.km-text {
+            font-weight: bold;
+            margin-bottom: 25%;
+        }
+
+        #tabstripthisweekvisits>span.km-text {
+            font-weight: bold;
+            margin-bottom: 25%;
+        }
+
+        #tabstripwithin45daysvisits>span.km-text {
+            font-weight: bold;
+            margin-bottom: 25%;
+        }
+
+        #tabstripcompletevisits>span.km-text {
+            font-weight: bold;
+            margin-bottom: 25%;
+        }
+
+        #tabstripnearbyvisits>span.km-text {
+            font-weight: bold;
+            margin-bottom: 25%;
+        }
+
+        /*#contentingrey span {}*/
+
+        .followupvisitcolor {
+            background-color: #e1bee7;
+        }
+
+        .calloutvisitcolor {
+            background-color: #ff8c8c;
+        }
+
+        .jobvisitcolor {
+            background-color: #E0F2F1;
+        }
+
+        .routinevisitcolor {
+            background-color: #00ffbf;
+        }
+
+        .contractvisitcolor {
+            background-color: #c2d5f4;
+        }
+
+        .fixedvisitcolor {
+            background-color: #fdfd96;
+        }
+
+        .mdl-textfield--floating-label.is-focused .mdl-textfield__label,
+        .mdl-textfield--floating-label.is-dirty .mdl-textfield__label,
+        .mdl-textfield--floating-label.has-placeholder .mdl-textfield__label {
+            font-size: 16px;
+        }
+
+        [Id ^="textOfImage"] {
+            width: 80%;
+            height: 20px;
+            font-weight: bold;
+        }
+
+        #Filename {
+            height: 20px;
+            width: 80%;
+            font-weight: bold;
+        }
+
+        /* Show number of offline items*/
+
+        .badge-notify {
+            font-weight: normal;
+            background: red;
+            position: relative;
+            top: -8px;
+            left: 0px;
+            font-size: smaller;
+            padding: 1px;
+            border-radius: 50%;
+        }
+
+        /* internalnotes scrollbar */
+        textarea#STKR__Internal_Notes__c {
+            height: 260px !important;
+            overflow-y: auto !important;
+            resize: none !important;
+            border: 0.5px solid grey;
+            border-radius: 6px;
+            outline: none !important;
+            width: 98%;
+        }
+
+        textarea#STKR__Internal_Notes__c::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        textarea#STKR__Internal_Notes__c::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        textarea#STKR__Internal_Notes__c::-webkit-scrollbar-thumb {
+            border-radius: 5px;
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+        }
+
+        /* visitdescription */
+        textarea#STKR__Notes_Long__c {
+            height: 260px !important;
+            overflow-y: auto !important;
+            resize: none !important;
+            border: 0.5px solid grey;
+            border-radius: 6px;
+            outline: none !important;
+            width: 98%;
+        }
+
+        textarea#STKR__Notes_Long__c::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        textarea#STKR__Notes_Long__c::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        textarea#STKR__Notes_Long__c::-webkit-scrollbar-thumb {
+            border-radius: 5px;
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+<div data-role="view" data-show="CreatePrepWasteDataShow" data-after-show="CreatePrepWasteDataAfterShow"
+    id="CreatePrepWastePage" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="backbutton">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span id="CreateLayoutHeaderPrepWaste"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="CreatePrepWasteMDLButton headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </header>
+    <div class="mdl-shadow--2dp" style="margin:5%;padding:3%;">
+        <center>
+            <div class="CreatePrepWasteMDLButton mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <select class="CreatePrepWasteMDLButton mdl-textfield__input" id="CreatePrepWasteSelectRecordType"
+                    style="margin:2%;"></select>
+                <label class="CreatePrepWasteMDLButton mdl-textfield__label"
+                    for="CreatePrepWasteSelectRecordType">Select Record Type</label>
+            </div>
+            <br /><br />
+            <button
+                class="CreatePrepWasteMDLButton mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="CreatePrepWasteLayout()" style="font-weight:bold;">
+                SELECT
+            </button>
+        </center>
+    </div>
+</div>
+<script>
+    var CreatePrepWaste_VisitId = '';
+    var CreatePrepWaste_VisitName = '';
+    var CreatePrepWaste_InspectionId = '';
+    var CreatePrepWaste_PrepWasteId = '';
+    var CreatePrepWaste_ActionId='';
+
+    function CreatePrepWasteDataShow(e) {
+        CountNumberOfOflineItem();
+
+        e.view.scroller.reset();
+        if (PrepWasteLabel !== 'undefined' && PrepWasteLabel !== undefined && PrepWasteLabel !== 'null' && PrepWasteLabel !== null) {
+            var prepwasterecordtype = " Create " + PrepWasteLabel;
+            $("#CreateLayoutHeaderPrepWaste").text(prepwasterecordtype);
+        } else {
+            $("#CreateLayoutHeaderPrepWaste").text("Prep/Waste")
+        }
+        var OptionHTML = '';
+        $("#CreatePrepWasteSelectRecordType").html(OptionHTML);
+        CreatePrepWaste_VisitId = e.view.params.VisitId;
+        CreatePrepWaste_VisitName = e.view.params.Visitname;
+        CreatePrepWaste_InspectionId = e.view.params.InspectionId;
+        CreatePrepWaste_PrepWasteId = e.view.params.PrepWasteId;
+        CreatePrepWaste_ActionId=e.view.params.actionid;
+        try {
+            OptionHTML = '';
+            for (var i = 0; i < PrepWasteManagementMetadata['recordTypeInfos'].length - 1; i++) {
+                if (PrepWasteManagementMetadata.recordTypeInfos[i]['available']) {
+                    OptionHTML += '<option value="' + PrepWasteManagementMetadata['recordTypeInfos'][i]['recordTypeId'] + '" id="' + PrepWasteManagementMetadata['recordTypeInfos'][i]['recordTypeId'] + '">' + PrepWasteManagementMetadata['recordTypeInfos'][i]['name'] + '</option>';
+                }
+            }
+        } catch (err) {
+            OptionHTML = '';
+            for (var i = 0; i < PrepWasteManagementMetadata[0]['recordTypeInfos'].length - 1; i++) {
+                if (PrepWasteManagementMetadata[0]['recordTypeInfos'][i]['available']) {
+                    OptionHTML += '<option value="' + PrepWasteManagementMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '" id="' + PrepWasteManagementMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '">' + PrepWasteManagementMetadata[0]['recordTypeInfos'][i]['name'] + '</option>';
+                }
+            }
+        }
+        $("#CreatePrepWasteSelectRecordType").html(OptionHTML);
+    }
+    function CreatePrepWasteDataAfterShow() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementsByClassName('CreatePrepWasteMDLButton'));
+        }
+        componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__input'));
+            componentHandler.upgradeElements(document.getElementsByClassName('mdl-textfield__label'));
+    }
+
+    function CreatePrepWasteLayout() {
+        var SelectedOption = $('#CreatePrepWasteSelectRecordType').val();
+        if(FromWhichPage=="Inspection" || FromWhichPage== 'Visit'){
+            app.navigate('view/CreatePrepManagement.html?PrepWasteRecordId=' + SelectedOption + '&visitid=' + CreatePrepWaste_VisitId + '&Visitname=' + CreatePrepWaste_VisitName + '&InspectionId=' + CreatePrepWaste_InspectionId + '&PrepWasteId=' + CreatePrepWaste_PrepWasteId);
+        }else if(FromWhichPage=="Action"){
+            app.navigate('view/CreatePrepManagement.html?PrepWasteRecordId=' + SelectedOption + '&visitid=' + CreatePrepWaste_VisitId + '&Visitname=' + CreatePrepWaste_VisitName + '&actionid=' + CreatePrepWaste_ActionId + '&PrepWasteId=' + CreatePrepWaste_PrepWasteId);
+        }
+       
+    }
+</script>

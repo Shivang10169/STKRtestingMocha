@@ -1,0 +1,143 @@
+<div data-role="view" data-use-native-scrolling="true" data-show="DSAttachmentFolder">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span>Folders</span>
+            <i class="fa fa-pencil fa-lg headerIconStyleForAll" onclick="app.navigate('view/DrawFloorPlan.html');" style="border-style:none;color:white;padding:5px;"></i>
+            <i class="fa fa-upload fa-lg headerIconStyleForAll" id="uploadDoc1" style="border-style:none;color:white;padding:5px;"></i>
+            <button onclick="app.navigate('view/HomePage.html');" data-align="right"  style="border-style:none;"
+            class="headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon" >
+            <i class="material-icons" style="color:white;" >home</i>
+            </button>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;">
+            </span>
+           
+           
+               
+        </div>
+    </header>
+    <input type="file" id="att_file1" onchange="onchange_attUploadDoc('att_file1')" />
+    <ul data-role="listview" id="ListviewForAttachmentFolderData" data-template="ListviewForAttachmentFolderTemplate"
+        data-style="inset" style="width:100%;">
+    </ul>
+</div>
+
+<script>
+    var Accountid;
+    var Attachment_Visitid;
+    var  Schedula_id;
+    var FromWhere_Attachment = '';
+    var AttachmentData = [];
+    var AllAttachmentData = [];
+    var ParticularAttachmentFolderData = [];
+    var AttachmentTypeData = [];
+    var foldername = [];
+    var NewFolderName = [];
+
+    function DSAttachmentFolder(e) {
+        CountNumberOfOflineItem();
+        Accountid = '';
+        Schedula_id = '';
+        Countquery = 0;
+        ParticularAttachmentFolderData = [];
+        $(".isa_error").hide();
+        try {
+            Accountid = e.view.params.accountid;
+            Attachment_Visitid = e.view.params.visitid;
+            FromWhere_Attachment = e.view.params.From;
+            Schedula_id= e.view.params.scheduleid;
+        } catch (err) {
+            StoreError(err);
+        }
+
+        try {
+            $("#att_file1").css('opacity', '0');
+            $("#uploadDoc1").click(function (e) {
+                e.preventDefault();
+                $("#att_file1").trigger('click');
+            });
+        } catch (err) { }
+
+        if (navigator.onLine) {
+            try {
+                AllAttachmentData = [];
+                AttachmentTypeData = [];
+
+                jsconn.query(`Select Id, Name, STKR__Attachment__c, STKR__SchdeuleAttachement__c, STKR__Client__c, STKR__Description__c, STKR__Type__c, CreatedDate FROM STKR__Client_Attachment__c where (STKR__Client__c='${Accountid}' OR STKR__SchdeuleAttachement__c='${newDetailValue[0]['STKR__Service__c']}') ORDER BY Name DESC`, function (err, result) {
+                    if (err) {
+                        err = err.toString();
+                        if (err === "invalid_grant: expired access/refresh token") {
+                            app.toastMessage("Session is expired, Please login", "long");
+                            Login();
+                        } else if (err.toLowerCase().indexOf('request_limit_exceeded') > -1) {
+                            app.toastMessage('API Limit is exceeded. Please work in offline mode', 'long');
+                        } else {
+                            app.toastMessage('App is unable to connect server', 'long');
+                            AppIsOnline = false;
+                        }
+                        if (err.indexOf("ERROR_HTTP_400") > -1) {
+                            AppIsOnline = false;
+                        }
+                        return console.error(err);
+                    }
+                    AttachmentData = result;
+                    for (var a = 0; a < result.records.length; a++) {
+                        AttachmentTypeData.push(result.records[a]['STKR__Type__c']);
+                    }
+
+                    for (var i = 0; i < AttachmentData.records.length; i++) {
+                        AllAttachmentData.push(AttachmentData.records[i]);
+
+                    }
+                    console.log('AllAttachmentData', AllAttachmentData);
+                    getUnique(AttachmentTypeData);
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        } else {
+            app.toastMessage("Internet connection is required.", "long");
+        }
+    }
+
+    function getUnique(array) {
+        foldername = [];
+        NewFolderName = [];
+        for (var value of array) {
+            if (foldername.indexOf(value) === -1) {
+                foldername.push(value);
+            }
+        }
+        for (var i = 0; i < foldername.length; i++) {
+            var createObj = {
+                name: foldername[i]
+            };
+            NewFolderName.push(createObj);
+        }
+        $("#ListviewForAttachmentFolderData").data("kendoMobileListView").replace(NewFolderName);
+    }
+
+    function CategorizeAttachments(type) {
+        console.log(type);
+        for (var i = 0; i < AllAttachmentData.length; i++) {
+            if ((AllAttachmentData[i]['STKR__Type__c'].toLowerCase() === type.toLowerCase())) {
+                ParticularAttachmentFolderData.push(AllAttachmentData[i]);
+            }
+        }
+        app.navigate('view/Attachment.html');
+    }    
+</script>
+
+<script type="text/x-kendo-template" id="ListviewForAttachmentFolderTemplate">
+    <div class="collapsible" style="width:100%;" onclick="CategorizeAttachments('${name}')">
+        # try { #
+        <div>
+            <i class="material-icons" style="float:left;margin-top:-5px;">folder</i> <span style="color:black;margin-left:1%;font-size:small;">#:name#</span>
+        </div>
+        #} catch (e) {
+        } #
+    </div>
+</script>

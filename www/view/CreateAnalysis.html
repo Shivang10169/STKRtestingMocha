@@ -1,0 +1,76 @@
+<div data-role="view" data-title="Create Analysis" data-show="CreateAnalysisDataShow"
+    data-after-show="CreateAnalysisDataAfterShow" id="CreateAnalysislistPage" data-use-native-scrolling="true">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-align="left" data-role="backbutton">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span data-role="view-title"></span>
+
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="AnalysisListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </header>
+    <div class="mdl-shadow--2dp" style="margin:5%;padding:3%;">
+        <center>
+            <h4>Select Record Type : </h4>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <select id="CreateAnalysisSelectRecordType" class="mdl-textfield__input"></select>
+            </div>
+            <br /><br />
+            <button id="CreateAnalysisMDLButton"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                onClick="CreateAnalysisLayout()" style="font-weight:bold;">
+                SELECT
+            </button>
+        </center>
+    </div>
+</div>
+<script>
+
+    function CreateAnalysisDataShow() {
+        CountNumberOfOflineItem();
+
+        FromCreateAnaylsisPage = true;
+        console.log('Metadata Analysis', AnalysisMetadata);
+        var OptionHTML = '';
+        $("#CreateAnalysisSelectRecordType").html(OptionHTML);
+        console.log('AnalysisRecordTypeHardcoded', AnalysisRecordTypeHardcoded);
+        try {
+            OptionHTML = '';
+            for (var i = 0; i < AnalysisMetadata['recordTypeInfos'].length - 1; i++) {
+                if (AnalysisMetadata.recordTypeInfos[i]['available']) {
+                    OptionHTML += '<option value="' + AnalysisMetadata['recordTypeInfos'][i]['recordTypeId'] + '" id="' + AnalysisMetadata['recordTypeInfos'][i]['recordTypeId'] + '">' + AnalysisMetadata['recordTypeInfos'][i]['name'] + '</option>';
+                }
+            }
+        } catch (err) {
+            OptionHTML = '';
+            for (var i = 0; i < AnalysisMetadata[0]['recordTypeInfos'].length - 1; i++) {
+                if (AnalysisMetadata[0]['recordTypeInfos'][i]['available']) {
+                    OptionHTML += '<option value="' + AnalysisMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '" id="' + AnalysisMetadata[0]['recordTypeInfos'][i]['recordTypeId'] + '">' + AnalysisMetadata[0]['recordTypeInfos'][i]['name'] + '</option>';
+                }
+            }
+        }
+        $("#CreateAnalysisSelectRecordType").html(OptionHTML);
+    }
+    function CreateAnalysisDataAfterShow() {
+        if (device.platform == "Android") {
+            componentHandler.upgradeElements(document.getElementById('CreateAnalysisMDLButton'));
+        }
+    }
+    function CreateAnalysisLayout() {
+        var SelectedOption = $('#CreateAnalysisSelectRecordType').val();
+        AnalysisRecordTypeHardcoded = SelectedOption;
+        app.navigate('view/CreateAnalysisLayout.html?AnalysisRecordId=' + SelectedOption);
+    }
+</script>
+
+<style>
+    #CreateAnalysislistPage .km-content {
+        background: #E6E6E6;
+    }
+</style>

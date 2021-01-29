@@ -1,0 +1,208 @@
+<div data-role="view" data-show="GetAllPrepWasteManagement" data-use-native-scrolling="true"
+    data-after-show="PrepWasteListDataAterShow">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <button style="float:left;margin-top:2%;" onclick="window.history.back();"
+                class="PrepwasteListMDLIcon mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">keyboard_backspace</i>
+            </button>
+            <span id="HeaderPrepWaste"></span>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button style="float:right;margin-top:2%;" onclick="goToSelectPrepWaste()"
+                class="PrepwasteListMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <button style="float:right;margin-top:2%;border-style:none;" onclick="navigateToSearchPageFromList()"
+                class="ActionListMDLClass headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">search</i>
+            </button>
+
+            <button onclick="app.navigate('view/HomePage.html');" style="border-style:none;float:right;margin-top:2%;"
+                class="PrepwasteListMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons" style="color:white;">home</i>
+            </button>
+        </div>
+    </header>
+    <div class="mainBody" id="MessageOfPrepWaste"></div>
+    <ul data-role="listview" id="PrepWasteMgmtlistview" data-template="PrepWasteMgmtTemplate" data-style="inset"></ul>
+
+</div>
+<script>
+    var PrepWasteMgmtList = [];
+    var PrepWasteMgmtInspectionList = [];
+    var VisitId;
+    var Visitname;
+    var InspectionId;
+    var FromWhichPage = '';
+    var ActionId;
+
+    function navigateToSearchPageFromList() {
+        app.navigate('view/SearchPrepwaste.html?VisitId=' + VisitId + '&Visitname=' + Visitname + '&InspectionId=' + InspectionId);
+    }
+
+    function GetAllPrepWasteManagement(e) {
+        CountNumberOfOflineItem();
+        PrepWasteMgmtList = [];
+        PrepWasteMgmtInspectionList = [];
+        VisitId = e.view.params.visitid;
+        Visitname = e.view.params.Visitname;
+        InspectionId = e.view.params.inspectionid;
+        FromWhichPage = e.view.params.From;
+        ActionId=e.view.params.actionid;
+
+
+        if (PrepWasteLabel !== 'undefined' && PrepWasteLabel !== undefined && PrepWasteLabel !== 'null' && PrepWasteLabel !== null) {
+            $("#HeaderPrepWaste").text(PrepWasteLabel);
+        } else {
+            $("#HeaderPrepWaste").text("Prep/Waste");
+        }
+        try {
+            $("#PrepWasteMgmtlistview").data("kendoMobileListView").refresh();
+        } catch (e) {
+        }
+        for (var i = 0; i < Prep_WasteManagementData.length; i++) {
+            if (FromWhichPage === 'Inspection' && Prep_WasteManagementData[i]['STKR__Inspection__c'] === InspectionId) {
+                function SyncPrepWasteMgmt(i) {
+                    app.db.transaction(function (tx) {
+                        tx.executeSql("SELECT * FROM Prep_Waste WHERE Prep_WasteId=?", [Prep_WasteManagementData[i]['STKR__Prep_Waste__c']],
+                            function (tx, rs) {
+                                var data = {};
+                                try {
+                                    data['Pre_WasteJson'] = (JSON.parse(rs.rows.item(0)['jsondata']));
+                                } catch (err) {
+                                }
+                                data['PrepWasteMgmtJson'] = (Prep_WasteManagementData[i]);
+                                PrepWasteMgmtInspectionList.push(data);
+                                $("#PrepWasteMgmtlistview").data("kendoMobileListView").replace(PrepWasteMgmtInspectionList);
+                                $('#PrepWasteMgmtlistview li:nth-child(odd)').css('background-color', 'lightblue');
+                                if (PrepWasteMgmtInspectionList.length === 0) {
+                                    $('#MessageOfPrepWaste').show();
+                                } else {
+                                    $('#MessageOfPrepWaste').hide();
+                                }
+                            }, function (error) {
+                                StoreError(error);
+                            })
+                    })
+                }
+
+                SyncPrepWasteMgmt(i)
+            } else if (FromWhichPage === 'Visit' && Prep_WasteManagementData[i]['STKR__Visit__c'] === e.view.params.visitid) {
+                function SyncPrepWasteMgmt(i) {
+                    app.db.transaction(function (tx) {
+                        tx.executeSql("SELECT * FROM Prep_Waste WHERE Prep_WasteId=?  ", [Prep_WasteManagementData[i]['STKR__Prep_Waste__c']],
+                            function (tx, rs) {
+                                var data = {};
+                                try {
+                                    data['Pre_WasteJson'] = (JSON.parse(rs.rows.item(0)['jsondata']));
+                                } catch (err) {
+                                }
+                                data['PrepWasteMgmtJson'] = (Prep_WasteManagementData[i]);
+
+                                PrepWasteMgmtList.push(data);
+                                for(p=0;p<PrepWasteMgmtList.length;p++){
+                                    if(PrepWasteMgmtList[p].Pre_WasteJson.STKR__Exclude_from_Visit_Prep__c){
+                                        console.log("DCSDCEC",PrepWasteMgmtList[p].Pre_WasteJson.STKR__Exclude_from_Visit_Prep__c)
+                                        PrepWasteMgmtList.splice(p,1) 
+                                    }
+                                }
+                                $("#PrepWasteMgmtlistview").data("kendoMobileListView").replace(PrepWasteMgmtList);
+                                $('#PrepWasteMgmtlistview li:nth-child(odd)').css('background-color', 'lightblue');
+                                if (PrepWasteMgmtList.length === 0) {
+                                    $('#MessageOfPrepWaste').show();
+                                } else {
+                                    $('#MessageOfPrepWaste').hide();
+                                }
+                            }, function (error) {
+                                StoreError(error);
+                            })
+                    })
+                }
+
+                SyncPrepWasteMgmt(i)
+            } else if (FromWhichPage === 'Action' && Prep_WasteManagementData[i]['STKR__Action__c'] === e.view.params.actionid) {
+                function SyncPrepWasteMgmt(i) {
+                    app.db.transaction(function (tx) {
+                        tx.executeSql("SELECT * FROM Prep_Waste WHERE Prep_WasteId=?", [Prep_WasteManagementData[i]['STKR__Prep_Waste__c']],
+                            function (tx, rs) {
+                                var data = {};
+                                try {
+                                    data['Pre_WasteJson'] = (JSON.parse(rs.rows.item(0)['jsondata']));
+                                } catch (err) {
+                                }
+                                data['PrepWasteMgmtJson'] = (Prep_WasteManagementData[i]);
+                                PrepWasteMgmtList.push(data);
+                                $("#PrepWasteMgmtlistview").data("kendoMobileListView").replace(PrepWasteMgmtList);
+                                $('#PrepWasteMgmtlistview li:nth-child(odd)').css('background-color', 'lightblue');
+
+                                if (PrepWasteMgmtList.length === 0) {
+                                    $('#MessageOfPrepWaste').show();
+                                } else {
+                                    $('#MessageOfPrepWaste').hide();
+                                }
+                            }, function (error) {
+                                StoreError(error);
+                            })
+                    })
+                }
+
+                SyncPrepWasteMgmt(i)
+            }
+        }
+    }
+
+    function gotoPrepManagementDetailPage(id) {
+        try {
+            if(FromWhichPage=="Inspection" || FromWhichPage== 'Visit'){
+                app.navigate('view/PrepManagementDetail.html?PreWasteMgmtId=' + id + '&VisitId=' + VisitId + '&Visitname=' + Visitname + '&InspectionId=' + InspectionId);
+            }else if(FromWhichPage=="Action"){
+                app.navigate('view/PrepManagementDetail.html?PreWasteMgmtId=' + id + '&VisitId=' + VisitId + '&Visitname=' + Visitname + '&actionid=' + ActionId );
+            }
+           
+        } catch (err) {
+            alert('1. PrepWasteManagement.html :' + err);
+        }
+    }
+
+    function goToSelectPrepWaste() {
+        app.navigate('view/SelectPrepWasteToCreate.html?VisitId=' + VisitId + '&Visitname=' + Visitname + '&InspectionId=' + InspectionId+ '&ActionId='+ActionId);
+       
+    }
+
+    function PrepWasteListDataAterShow() {
+        if (!PrepWasteMgmtList.length || !PrepWasteMgmtInspectionList.length) {
+            var PrepWastePlaceholder = $('<p>').text("No Prep/Waste added to visit. Please use the + icon to add an entry.")
+            PrepWastePlaceholder.css('color', 'grey');
+            PrepWastePlaceholder.css('position', 'absolute');
+            PrepWastePlaceholder.css('top', '50%');
+            $('#MessageOfPrepWaste').html(PrepWastePlaceholder);
+        }
+        if (device.platform == "Android")
+            componentHandler.upgradeElements(document.getElementsByClassName('PrepwasteListMDLIcon'));
+    }
+</script>
+
+<script type="script/x-kendo-template" id="PrepWasteMgmtTemplate">
+    <div style="border-radius:10px;padding:2%;margin:2%;"
+         onclick="gotoPrepManagementDetailPage('#:PrepWasteMgmtJson.Id#')">
+        
+        #try {#
+            <label>${Pre_WasteJson.Name} (${Pre_WasteJson.STKR__Type__c})</label>
+        #}catch (err) {
+        }
+        
+        #
+        #if (PrepWasteMgmtJson.Name) {#
+            <span style="float:right;margin-right:2%;font-weight:bold">${PrepWasteMgmtJson.Name}</span>
+        #}#
+        <br/>
+        <span style="margin-top:1%;"> Qty:${PrepWasteMgmtJson.STKR__Qty__c}
+            #if (PrepWasteMgmtJson.STKR__Removed_from_Site__c) {
+            # <span style="float:right;">Removed from site</span>#}#
+        </span>
+        <br>
+        <span style="margin-right:3%;line-height:100%;margin-top:1%;"><b>Notes:</b>${PrepWasteMgmtJson.STKR__Notes__c}</span>
+
+    </div>
+</script>

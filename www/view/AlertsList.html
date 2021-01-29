@@ -1,0 +1,109 @@
+<!-- <div data-role="view" data-use-native-scrolling="true" data-show="DataShowAlerts" data-title="Contacts with alerts">
+    <header data-role="header">
+        <div data-role="navbar" class="km-accent">
+            <a data-role="backbutton" data-align="left">
+                <i class="material-icons">keyboard_backspace</i>
+            </a>
+            <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
+                style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
+            <button onclick="gotoCreateAlert()" style="border-style:none;float:right;margin-top:2%;" class="AlertListMDLClass mdl-button mdl-js-button mdl-button--icon">
+                <i class="material-icons">add</i>
+            </button>
+            <span>Email Alerts</span>
+        </div>
+    </header>
+    <ul data-role="listview" id="ListviewForAlertsData" data-template="ListviewForAlertsTemplate" data-style="inset"
+        style="width:100%;"></ul>
+</div>
+<script>
+    var NewAlertsData = [];
+    var Accountid = '';
+    var Email = '';
+    var visitId = '';
+
+    function DataShowAlerts(e) {
+        CountNumberOfOflineItem();
+        Accountid = '';
+        try {
+            Accountid = e.view.params.accountid;
+            visitId = e.view.params.VisitId;
+        } catch (err) {
+            StoreError(err);
+        }
+        try {
+            $("#ListviewForAlertsData").data("kendoMobileListView").refresh();
+            NewAlertsData = [];
+            for (var i = 0; i < ContactData.length; i++) {
+                if (ContactData[i]['AccountId'] === newDetailValue[0]['STKR__Account_lkp__c'] && ContactData[i]['STKR__Status__c'] === "Active") {
+                    for (var j = 0; j < AlertsData.length; j++) {
+                        if (AlertsData[j]['STKR__Contact__c'] === ContactData[i]['Id']) {
+                            NewAlertsData.push(ContactData[i]);
+                        }
+                    }
+                }
+            }
+            $("#ListviewForAlertsData").data("kendoMobileListView").replace(NewAlertsData);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    function gotoCreateAlert() {
+        app.navigate('view/CreateAlert.html');
+    }
+
+    function gotoPhoneCalldial(phone) {
+        window.open('tel:' + phone);
+    }
+
+    function gotoComposeEmail(email) {
+        Email = email;
+        if (AppIsOnline) {
+            try {
+                cordova.plugins.email.isAvailable(function (hasAccount) {
+                    if (hasAccount) {
+                        cordova.plugins.email.open({
+                            to: Email,
+                            cc: null,
+                            bcc: null,
+                            subject: 'Subject',
+                            body: 'Message'
+                        }, function (a) { });
+                    } else {
+                        app.toastMessage("Please add an account", "long");
+                    }
+                });
+            } catch (e) {
+                console.error("Error" + e);
+            }
+        }
+        else {
+            app.toastMessage('No Internet', 'long')
+        }
+    }
+
+    function ContactDetail(id) {
+        ContactId = id;
+        app.navigate('view/ContactDetail.html?ContactId=' + ContactId + '&accountid=' + accountid + '&VisitId=' + visitId);
+    }
+
+</script>
+<script type="text/x-kendo-template" id="ListviewForAlertsTemplate">
+    <div style="background-color:white;margin:0.5%;" 
+         onclick="ContactDetail('${Id}')">
+        #if (FirstName || LastName) {#
+            <span style="font-weight:bold">${FirstName} ${LastName}</span>
+        #}#
+        <div>
+            #if (Title) {#
+            <span>${Title}</span><br/>#}
+            if (Phone) {#
+                <span style="text-decoration: underline;color:rgb(102,178,255);" onclick="gotoPhoneCalldial(${Phone});event.stopPropagation();" >${Phone}</span><br/>
+            #}if (MobilePhone) {#
+                <span style="text-decoration: underline;color:rgb(102,178,255);" onclick="gotoPhoneCalldial(${MobilePhone});event.stopPropagation();" >${MobilePhone}</span><br/>
+            #}if (Email) {#
+                <a style="text-decoration: underline;color:rgb(102,178,255);" onclick="gotoComposeEmail('#=Email#');event.stopPropagation();">${Email}</a><br/>
+            #}#
+        </div>
+    </div>
+</script> -->

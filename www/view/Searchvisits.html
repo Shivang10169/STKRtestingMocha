@@ -6,7 +6,7 @@
                 href="#MyVisitsdrawer"></a>
             <span onclick="app.navigate('view/OfflineData.html');" class="OfflineDataItemCount badge badge-notify"
                 style="border-radius:0 !important;top:0 !important;left:0 !important;float:right;"></span>
-            <button data-align="right" onClick="app.navigate('view/HomePage.html');"
+            <button id="HomePage" data-align="right" onClick="app.navigate('view/HomePage.html');"
                 class="MyVisitMDLIcon headerIconStyleForAll mdl-button mdl-js-button mdl-button--icon">
                 <i class="material-icons" style="color:white;">home</i>
             </button>
@@ -51,7 +51,7 @@
         try {
             if (device.platform == "Android")
                 componentHandler.upgradeElements(document.getElementsByClassName('SearchVisitsMDLClass'));
-            var SearchVisitPlaceholder = $('<p>').text("No Visits found please amend your search criteria or refresh all data if you believe the Visit should be on your device.");
+            var SearchVisitPlaceholder = $('<p id="VisitNotFoundMessage">').text("No Visits found please amend your search criteria or refresh all data if you believe the Visit should be on your device.");
             SearchVisitPlaceholder.css('color', 'grey');
             SearchVisitPlaceholder.css('position', 'absolute');
             SearchVisitPlaceholder.css('top', '50%');

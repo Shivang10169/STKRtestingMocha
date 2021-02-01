@@ -3,7 +3,11 @@ const Todos = require('../index')
 let todos = new Todos();
 
 const expect = require('chai').expect;
+// const jsdom = require('jsdom');
 
+// const doc = jsdom.jsdom(html),
+//       window = doc.parentWindow,
+//       $ = global.jQuery = require('jquery')(window);
 describe('Login', () => {
     it('normal test', () => {
         expect('foo').to.equal('foo');
@@ -67,15 +71,15 @@ describe('Login', () => {
         LoginPage.searchTextBox.addValue("astrea");
         LoginPage.searchTextBtn.click();
     
-        if(LoginPage.searchItemListView){
+        if(LoginPage.searchItemListView.getText()){
             console.log("kjhgtfrdsxcvbhkjlukyhgf",LoginPage.searchItemListView)
         }
         
         //console.log("dhcvhsdgcv db",LoginPage.restvisit);
         
-        if(todos.VisitSearchlist()){
-            console.log("searched list");
-        }
+        // if(todos.VisitSearchlist()){
+        //     console.log("searched list");
+        // }
 
     });
 
@@ -84,7 +88,31 @@ describe('Login', () => {
         LoginPage.searchTextBox.addValue("");
         LoginPage.searchTextBox.addValue("zzz");
         LoginPage.searchTextBtn.click();
+        if(LoginPage.searchNotFoundVisitMessage.getText()){
+            console.log("not found test",LoginPage.searchNotFoundVisitMessage.getText())
+        }
         console.log("for zzz not found");
+        LoginPage.homePage.click();
     });
+
+    it("Check Vehicle",()=>{
+        LoginPage.finishBtn.click();
+        LoginPage.finishBtnPopupOk.click()
+        //LoginPage.requiedValue.click()
+
+       // LoginPage.createVehicle.click();
+    })
+
+    // it("Check Vehicle Cancel",()=>{
+        // LoginPage.finishBtn.click();
+        //  LoginPage.finishBtn.click();
+        // LoginPage.finishBtnPopupCancel.click()
+        //  LoginPage.requiedVaslue.click()
+        // LoginPage.createVehicle.click();
+    // })
+
+    // it('',()=>{
+
+    // })
     
 })

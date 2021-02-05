@@ -3,14 +3,22 @@ const Todos = require('../index')
 let todos = new Todos();
 var webdriver = require('selenium-webdriver')
 var driver = new webdriver.Builder()
-
-
 const expect = require('chai').expect;
-// const jsdom = require('jsdom');
 
-// const doc = jsdom.jsdom(html),
-//       window = doc.parentWindow,
-//       $ = global.jQuery = require('jquery')(window);
+const { JSDOM } = require( 'jsdom' );
+const jsdom = new JSDOM('../../www/view/visitdetail');
+
+const { window } = jsdom;
+const { document } = window;
+global.window = window;
+global.document = document;
+
+const $ = global.jQuery = require( 'jquery' );
+
+
+console.log("kjhgcv ",browser.isAndroid);
+
+
 describe('Authentication', function () {
     // this.timeout(76000);
     console.log('driver ',driver)
@@ -19,7 +27,7 @@ describe('Authentication', function () {
 
     beforeEach(function (done) {
         setTimeout(function () {
-            done();
+            //done();
         }, 45000);
     });
 
@@ -41,12 +49,12 @@ describe('Authentication', function () {
         console.log("Time 3: " + c.toISOString());
 
         ////username
-        var error = LoginPage.userNameField.error.error
+        //var error = LoginPage.userNameField.error.error
         //if(!error){
 
         LoginPage.userNameField.addValue("fielduser@servicetracker.uk.com");
         let username = LoginPage.userNameField.getText();
-        expect(username).equal("fielduser@servicetracker.uk.com");
+        //expect(username).equal("fielduser@servicetracker.uk.com");
 
         //// password 
         LoginPage.passwordField.addValue("Start2014");
@@ -55,7 +63,7 @@ describe('Authentication', function () {
 
         ///// remember Me 
         LoginPage.rememberMe.getText();
-        //let remember = LoginPage.rememberMe.getAttribute('checked');
+        let remember = LoginPage.rememberMe.getAttribute('checked');
         // expect(text).equal("Actual User");
         //}
 
@@ -109,7 +117,7 @@ describe('Authentication', function () {
 describe('download all data page', function () {
     beforeEach(function (done) {
         setTimeout(function () {
-            done();
+            console.log('all data');
         }, 95000);
     });
     it('check page', function(){
@@ -120,6 +128,7 @@ describe('download all data page', function () {
         
     })
 })
+
 describe('Search Module', function () {
     it('click search button',() =>{
         
@@ -158,7 +167,88 @@ describe('Start/End work', function () {
         LoginPage.finishBtn.click();
         LoginPage.finishBtnPopupOk.click()
         //LoginPage.requiedValue.click()
-
+       // browser.click('#homePageBtn');
+        // driver.findElement(By.id("homePageBtn")).click();
+        LoginPage.homePage.click();
        // LoginPage.createVehicle.click();
     })
+})
+
+// describe('Test Myvisit',function(){
+//     it("scroll to inspection button",function(){
+    
+//           LoginPage.MyVisitPage.click()
+//           LoginPage.VisitTest.click()
+//           LoginPage.inspectionbtn.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"})
+//        // driver.findElements(webdriver.By.xpath(LoginPage.inspectionbtn)).click();
+//         LoginPage.inspectionbtn.click(); 
+//     })
+
+// })
+
+describe("Check statuses",function(){
+    it("My visit Open state",function(){
+
+        browser.touchPerform([{
+            action: 'press',
+            options: {
+                x: 100,
+                y: 250
+            }
+        }]);
+        
+        
+        LoginPage.MyVisitPage.click()
+    LoginPage.VisitTest.click()
+    console.log("Status",LoginPage.statusText.getText())
+    
+        LoginPage.VisitstatusBtn.click()
+        LoginPage.statusChangePopUp.click()
+    //browser.touchScroll("#StatusButtton",0,250)
+    //browser.touchFlick(10,100,"#StatusButtton")
+    //browser.touchScroll(10,100,"StatusButtton")
+
+    browser.touchAction([{action: 'press', x: 10, y: 100}, { action: 'moveTo', x: 10, y: 500 }, 'release'])
+    })
+
+    it("My visit next state",function(){
+        console.log("Status",LoginPage.statusText.getText())
+    
+        LoginPage.VisitstatusBtn.click()
+        LoginPage.statusChangePopUp.click()
+    })
+
+    it("My visit next state",function(){
+        console.log("Status",LoginPage.statusText.getText())
+    
+        LoginPage.VisitstatusBtn.click()
+        LoginPage.statusChangePopUp.click()
+    })
+
+    it("My visit next state",function(){
+        console.log("Status",LoginPage.statusText.getText())
+    
+        LoginPage.VisitstatusBtn.click()
+        LoginPage.statusChangePopUp.click()
+    })
+
+    it("My visit next state",function(){
+        console.log("Status",LoginPage.statusText.getText())
+    
+        LoginPage.VisitstatusBtn.click()
+        LoginPage.statusChangePopUp.click()
+    })
+
+    it("My visit next state",function(){
+        console.log("Status",LoginPage.statusText.getText())
+    
+        LoginPage.VisitstatusBtn.click()
+        LoginPage.statusChangePopUp.click()
+    })
+
+
+    //LoginPage.inspectionbtn.scrollIntoView("false");
+  //driver.scroll(10, 100, LoginPage.inspectionbtn);
+
+    
 })

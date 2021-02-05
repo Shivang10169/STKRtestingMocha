@@ -3000,11 +3000,11 @@ console.log('afterreturn', newDetailValue[0]);
              # </span>
                <br/>
                
-            <h5 style="margin-top: 5%;">                        
+            <h5 id="StatusText" style="margin-top: 5%;">                        
             #if (STKR__Status__c==='In Progress') {#
                 <img src="img/InProgress.png"  style="width:10%;height:10%;" />
                 #:STKR__Status__c#  
-                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                <button id="StatusButtton" onClick="ConfirmationDialogVisitDetailStatusChange()"
                         style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
                         <i class="fa fa-pause  my-float"  ></i>  PAUSE
@@ -3012,7 +3012,7 @@ console.log('afterreturn', newDetailValue[0]);
             #} else if (STKR__Status__c==='Open') {#
                 <img src="img/Open.png" style="width:10%;height:10%;" />
             #:STKR__Status__c#   
-                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                <button id="StatusButtton" onClick="ConfirmationDialogVisitDetailStatusChange()"
                         style="float:right;font-weight:normal;font-size:75%;background:\#FFC107;border-style:none;color:white;border-style:none;padding-top: 0%;"
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"     >
                     <span><!--i class="material-icons">cloud_download</i--> <i class="fa fa-cloud-download"></i>
@@ -3021,7 +3021,7 @@ console.log('afterreturn', newDetailValue[0]);
             #} else if (STKR__Status__c==='Accepted') {#
                 <img src="img/Accepted.png " style="width:10%;height:10%;" />
                 #:STKR__Status__c# 
-                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                <button id="StatusButtton" onClick="ConfirmationDialogVisitDetailStatusChange()"
                         style="float:right;font-weight:normal;font-size:75%;background:\#00796B;border-style:none;color:white;padding-top: 0%;"
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"    >
                     <!--i class="material-icons">directions_car</i-->
@@ -3030,7 +3030,7 @@ console.log('afterreturn', newDetailValue[0]);
             #} else if (STKR__Status__c==='Journey Started') {#
                 <img src="img/JourneyStarted.png" style="width:10%;height:10%;"/>
                 #:STKR__Status__c#
-                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                <button id="StatusButtton" onClick="ConfirmationDialogVisitDetailStatusChange()"
                         style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
                     <i class="material-icons">forward</i> ARRIVE
@@ -3038,7 +3038,7 @@ console.log('afterreturn', newDetailValue[0]);
             #} else if (STKR__Status__c==='Complete' && STKR__Aborted_Visit__c===false) {#
                 <img src="img/check (2).png" style="width:10%;height:10%;"/>
                 #:STKR__Status__c#
-                <button onclick="PrintServiceReport()"
+                <button id="StatusButtton" onclick="PrintServiceReport()"
                         id="VisitDetail_ServiceReport"
                         style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
@@ -3047,7 +3047,7 @@ console.log('afterreturn', newDetailValue[0]);
             #} else if(STKR__Status__c==='Complete' && STKR__Aborted_Visit__c===true){#
                 <img src="img/remove.png" style="width:10%;height:10%;"/>
                 Aborted Visit 
-                <button onclick="PrintServiceReport()"
+                <button id="StatusButtton" onclick="PrintServiceReport()"
                         id="VisitDetail_ServiceReport"
                         style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
@@ -3056,7 +3056,7 @@ console.log('afterreturn', newDetailValue[0]);
                #} else if(STKR__Status__c=='Paused'){#
                 <img src="img/playState.png" style="width:10%;height:10%;"/>
                 #:STKR__Status__c#
-                <button onClick="ConfirmationDialogVisitDetailStatusChange()"
+                <button id="StatusButtton" onClick="ConfirmationDialogVisitDetailStatusChange()"
                 style="float:right;font-weight:normal;font-size:75%;background:\#795548;border-style:none;color:white;padding-top: 0%;"  
                 class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" >
                 <i class="fa fa-play-circle my-float"  ></i>  RESUME
@@ -3221,7 +3221,7 @@ console.log('afterreturn', newDetailValue[0]);
             #if (STKR__Items_to_inspect__c || STKR__Items_Inspected__c) {
                 if ((STKR__Items_to_inspect__c) || (STKR__Items_to_inspect__c && STKR__Items_Inspected__c)) {
                     if(ButtonSettings.STKR__disableInspectionButton__c){#
-                <button onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
+                <button id="InspectionVisit" onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
                         style="font-weight:bold;"
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                     <i class="material-icons">visibility</i>
@@ -3231,7 +3231,7 @@ console.log('afterreturn', newDetailValue[0]);
                 #} 
             } else {
                 if(ButtonSettings.STKR__disableInspectionButton__c){#          
-                <button onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
+                <button id="InspectionVisit" onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
                             style="font-weight:bold;"
                             class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                         <i class="material-icons">visibility</i>
@@ -3242,7 +3242,7 @@ console.log('afterreturn', newDetailValue[0]);
             #}
                 } else {
                     if(ButtonSettings.STKR__disableInspectionButton__c){#
-                <button onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
+                <button id="InspectionVisit" onClick="GotoInpectionPage('${Id}','${STKR__Account_lkp__c}');" 
                         style="font-weight:bold;"
                         class="VisitDetailMDLClass mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                     <i class="material-icons">visibility</i>

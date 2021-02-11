@@ -83,6 +83,8 @@ describe('Authentication', function () {
     });
 });
 
+
+//Download all data page For refesh button
 describe('download all data page', function () {
     beforeEach(function (done) {
         setTimeout(function () {
@@ -99,13 +101,16 @@ describe('download all data page', function () {
     });
 });
 
+
+//Test search module
 describe('Search Module', function () {
 
     it('click search button',function(){
         SearchPageAcess.searchBtn.click();
         SearchPageAcess.searchTextBox.addValue("astrea");
+        expect(SearchPageAcess.searchTextBox.getText()).equal("astrea");
         SearchPageAcess.searchTextBtn.click();
-    
+        
         if(SearchPageAcess.searchItemListView.getText()){
             console.log("Search list view",SearchPageAcess.searchItemListView.getText())
         }
@@ -113,7 +118,9 @@ describe('Search Module', function () {
 
     it('click search button for not exist value',function(){
         SearchPageAcess.searchTextBox.addValue("");
+        expect(SearchPageAcess.searchTextBox.getText()).equal("");
         SearchPageAcess.searchTextBox.addValue("zzz");
+        expect(SearchPageAcess.searchTextBox.getText()).equal("zzz");
         SearchPageAcess.searchTextBtn.click();
         if(SearchPageAcess.searchNotFoundVisitMessage.getText()){
             console.log("not found test",SearchPageAcess.searchNotFoundVisitMessage.getText())
@@ -123,6 +130,8 @@ describe('Search Module', function () {
     });
 });
 
+
+//
 describe('Start/End work', function () {
     it("Check Vehicle",()=>{
         StartWorkPage.finishBtn.click();
@@ -134,46 +143,54 @@ describe('Start/End work', function () {
 
 describe("Check statuses",function(){
 
+
     it("My visit Open state",function(){
         CheckMyVisitStatus.MyVisitPage.click()
         CheckMyVisitStatus.VisitTest.click()
         console.log("Status",CheckMyVisitStatus.statusText.getText())
         CheckMyVisitStatus.VisitstatusBtn.click()
-        CheckMyVisitStatus.statusChangePopUp.click()        
+        CheckMyVisitStatus.statusChangePopUp.click()     
+        expect(CheckMyVisitStatus.statusText.getText()).equal(" Accepted START");   
     });
 
-    it("My visit next state",function(){
+    it("My visit Acceptes start state",function(){
         console.log("Status",CheckMyVisitStatus.statusText.getText())
         CheckMyVisitStatus.VisitstatusBtn.click()
         CheckMyVisitStatus.statusChangePopUp.click()
+        expect(CheckMyVisitStatus.statusText.getText()).equal(" Accepted START");
+        //setTimeout(function(){console.log('wait accept')},20000)
     });
 
-    it("My visit next state",function(){
+    it("My visit journey started state",function(){
         console.log("Status",CheckMyVisitStatus.statusText.getText())
         CheckMyVisitStatus.VisitstatusBtn.click()
         CheckMyVisitStatus.statusChangePopUp.click()
+        expect(CheckMyVisitStatus.statusText.getText()).equal(" In Progress PAUSE");
     });
 
-    it("My visit next state",function(){
+    it("My visit In Progress PAUSE state",function(){
         console.log("Status",CheckMyVisitStatus.statusText.getText())
-    
+        expect(CheckMyVisitStatus.statusText.getText()).equal(" In Progress PAUSE");
         CheckMyVisitStatus.VisitstatusBtn.click()
         CheckMyVisitStatus.statusChangePopUp.click()
+        
     });
 
-    it("My visit next state",function(){
+    it("My visit Paused RESUME state",function(){
         console.log("Status",CheckMyVisitStatus.statusText.getText())
-    
+        expect(CheckMyVisitStatus.statusText.getText()).equal(" Paused RESUME");
         CheckMyVisitStatus.VisitstatusBtn.click()
         CheckMyVisitStatus.statusChangePopUp.click()
+        
     });
 
-    it("My visit next state",function(){
+    it("My visit In Progress PAUSE state",function(){
         console.log("Status",CheckMyVisitStatus.statusText.getText())
         CheckMyVisitStatus.VisitstatusBtn.click()
         CheckMyVisitStatus.statusChangePopUp.click()
-        var result = browser.execute('mobile: scroll', {direction: 'down'})
-        console.log("visit scroll",result)
+        expect(CheckMyVisitStatus.statusText.getText()).equal(" In Progress PAUSE");
+        // var result = browser.execute('mobile: scroll', {direction: 'down'})
+        // console.log("visit scroll",result)
     });
     
 });

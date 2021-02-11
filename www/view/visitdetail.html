@@ -1374,8 +1374,12 @@ console.log('afterreturn', newDetailValue[0]);
     }
     // Confirmation message to complete visit
     function OpenConfirmCompleteVisit(name) {
-        newDetailValue[0].STKR__endDate__c=new Date().toJSON(); 
-        newDetailValue[0].STKR__visitTimer__c=newDetailValue[0].STKR__visitTimer__c+diff_minutes(newDetailValue[0].STKR__endDate__c,newDetailValue[0].STKR__startDate__c)
+
+        if(newDetailValue[0].STKR__Status__c!="Complete"){
+            newDetailValue[0].STKR__endDate__c=new Date().toJSON(); 
+            newDetailValue[0].STKR__visitTimer__c=newDetailValue[0].STKR__visitTimer__c+diff_minutes(newDetailValue[0].STKR__endDate__c,newDetailValue[0].STKR__startDate__c)
+        }
+
         // Disable the complete this visit button once clicked
         $('#CompletBtnEnabled').attr("disabled", true);
         setTimeout(function () { $('#CompletBtnEnabled').attr("disabled", false); }, 1500);

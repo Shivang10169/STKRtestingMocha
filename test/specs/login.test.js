@@ -7,8 +7,8 @@ const CheckMyVisitStatus=require("../../PageObject/Android/MyVisitStatus.page");
 
 const Todos = require('../index')
 let todos = new Todos();
-var webdriver = require('selenium-webdriver')
-var driver = new webdriver.Builder()
+//var webdriver = require('selenium-webdriver')
+//var driver = new webdriver.Builder()
 const expect = require('chai').expect;
 
 const { JSDOM } = require( 'jsdom' );
@@ -26,19 +26,20 @@ const $ = global.jQuery = require( 'jquery' );
 describe('Authentication', function () {
     // this.timeout(76000);
     
-    var a = new Date();
+    //var a = new Date();
     //console.log("Time 1: " + a.toISOString());
 
-    beforeEach(function (done) {
-        setTimeout(function () {
-            //done();
-        }, 45000);
-    });
+    // beforeEach(function (done) {
+    //     setTimeout(function () {
+    //         //done();
+    //     }, 45000);
+    // });
 
     it('check login screen present or not', function (done) {
-        var c = new Date();
-        console.log("Time 2: " + c.toISOString());
-
+        driver.setImplicitTimeout(2000)
+        var b = new Date();
+        console.log("Time 2: " + b.toISOString());
+        
         var error = LoginPage.userNameField.error.error
         expect(error).equal("no such element");
         if (error) {
@@ -49,6 +50,7 @@ describe('Authentication', function () {
     });
 
     it('fill input values ', function (done) {
+        driver.setImplicitTimeout(3000)
         var c = new Date();
         console.log("Time 3: " + c.toISOString());
 
@@ -57,25 +59,29 @@ describe('Authentication', function () {
         //if(!error){
 
         LoginPage.userNameField.addValue("fielduser@servicetracker.uk.com");
-        let username = LoginPage.userNameField.getText();
-        expect(username).equal("fielduser@servicetracker.uk.com");
+        //let username = LoginPage.userNameField.getText();
+        //expect(username).equal("fielduser@servicetracker.uk.com");
 
         //// password 
         LoginPage.passwordField.addValue("Start2014");
-        let password = LoginPage.passwordField.getText();
+        //let password = LoginPage.passwordField.getText();
         //expect(password).equal("Start2014");
 
         ///// remember Me 
         LoginPage.rememberMe.getText();
         let remember = LoginPage.rememberMe.getAttribute('checked');
+
+        LoginPage.loginButton.click();
+
     });
 
-    it('click login button', function () {
-        LoginPage.loginButton.click();
-        console.log('clicked on the login button')
-    });
+    // it('click login button', function () {
+    //     LoginPage.loginButton.click();
+    //     console.log('clicked on the login button')
+    // });
 
     it('allow deny screen',function(){
+        driver.setImplicitTimeout(4000)
         if(AllowPage.AllowAccessPage.getText()){
             console.log()
         }
@@ -86,17 +92,28 @@ describe('Authentication', function () {
 
 //Download all data page For refesh button
 describe('download all data page', function () {
-    beforeEach(function (done) {
-        setTimeout(function () {
-            console.log('all data');
-        }, 95000);
-    });
+    //driver.pause(2000)
+    
+
+    // beforeEach(function (done) {
+    //     setTimeout(function () {
+    //         console.log('all data');
+    //     }, 95000);
+    // });
 //make change after all done
     it('check page', function(){
+        driver.setImplicitTimeout(2000)
+        var d = new Date();
+        console.log("Time 4: " + d.toISOString());
+        driver.touchAction([
+            { action: 'press', x: 650, y: 1760 },
+            { action: 'moveTo', x: 650, y: 1666 },
+            'release',
+             ])
         let RefeshPage = refreshAlldataPage.refreshAlldataPageBtn.getText();
         console.log(' on the Refesh all data screen ', RefeshPage)
         // if(RefeshPage)
-        //   LoginPage.refreshAlldataPage.click();
+          refreshAlldataPage.refreshAlldataPageBtn.click();
         
     });
 });

@@ -1,5 +1,5 @@
 class refeshAllDataPage{
-    get refreshAlldataPageBtn(){return $('/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.webkit.WebView/android.webkit.WebView/android.view.View/android.view.View[2]/android.view.View[2]/android.view.View[2]')}
+    get refreshAlldataPageBtn(){return $('//android.widget.Button[@resource-id="LoadAllDataMDLButton"]')}
 }
 
 module.exports = new refeshAllDataPage();

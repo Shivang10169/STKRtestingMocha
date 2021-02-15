@@ -51,6 +51,7 @@ exports.config = {
         platformName: 'Android',
         'appium:autoGrantPermissions': true,
         'appium:deviceName': '7b4e5300',
+        'appium:noReset': true,
         'appium:app': join(process.cwd(), './app-debug.apk')
     }],
     //

@@ -50,11 +50,11 @@ exports.config = {
     capabilities: [{
         platformName: 'Android',
         'appium:autoGrantPermissions': true,
-        'appium:deviceName': '7b4e5300',
-        'appium:noReset': true,
+        //'appium:noReset': true,
+        'appium:deviceName': '5200f812ee401589',
         'appium:app': join(process.cwd(), './app-debug.apk')
     }],
-    //
+    //'appium:noReset': true
     // ===================
     // Test Configurations
     // ===================
